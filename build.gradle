@@ -1,0 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'application'
+
+archivesBaseName = 'bryg'
+version = '0.1.0'
+group = 'io.collap.bryg'
+mainClassName = 'io.collap.bryg.Bryg'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.google.code.findbugs:jsr305:2.0.3'
+    compile 'org.antlr:antlr4:4.2.2'
+    compile 'org.ow2.asm:asm:5.0.3'
+    compile 'org.ow2.asm:asm-tree:5.0.3'
+    compile 'org.ow2.asm:asm-util:5.0.3'
+    compile 'org.reflections:reflections:0.9.9-RC1'
+    compile 'com.google.guava:guava:17.0'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            srcDir 'gen'
+        }
+    }
+}
+
+jar {
+    destinationDir = file ("$rootDir")
+    from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } // NOTE: Quick fix!
+    manifest {
+        attributes 'Implementation-Title': archivesBaseName,
+                   'Implementation-Version': version,
+                   'Main-Class': 'io.collap.bryg.Bryg'
+    }
+}
