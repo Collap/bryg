@@ -1,5 +1,6 @@
-package io.collap.bryg.template;
+package io.collap.bryg;
 
+import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.Model;
 
 import java.io.Writer;

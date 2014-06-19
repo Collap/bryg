@@ -19,22 +19,22 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import javax.annotation.Nullable;
 import java.io.Writer;
 
-public class RenderVisitor extends BrygBaseVisitor<Node> {
+public class StandardVisitor extends BrygBaseVisitor<Node> {
 
     private BrygMethodVisitor method;
     private Scope scope = new Scope ();
     private Library library;
     private ClassResolver classResolver;
 
-    public RenderVisitor (BrygMethodVisitor method, Library library, ClassResolver classResolver) {
+    public StandardVisitor (BrygMethodVisitor method, Library library, ClassResolver classResolver) {
         this.method = method;
         this.library = library;
         this.classResolver = classResolver;
 
         /* Register parameters in the correct order. */
         scope.registerVariable ("this", null); // TODO: Proper type.
-        scope.registerVariable ("writer", new ClassType (Writer.class));
-        scope.registerVariable ("model", new ClassType (Model.class));
+        scope.registerVariable ("writer", Writer.class);
+        scope.registerVariable ("model", Model.class);
     }
 
     @Override

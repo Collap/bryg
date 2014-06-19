@@ -1,12 +1,12 @@
 package io.collap.bryg.compiler.helper;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 
 public abstract class CompileHelper {
 
-    protected RenderVisitor visitor;
+    protected StandardVisitor visitor;
 
-    public CompileHelper (RenderVisitor visitor) {
+    public CompileHelper (StandardVisitor visitor) {
         this.visitor = visitor;
     }
 

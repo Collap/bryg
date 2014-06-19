@@ -1,10 +1,9 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.expression.ClassType;
-import io.collap.bryg.compiler.expression.PrimitiveType;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
-import io.collap.bryg.compiler.util.TypeHelper;
+import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 import java.lang.reflect.Field;
@@ -21,25 +20,21 @@ public class AccessExpression extends Expression {
     private Method getter;
     private Method setter;
 
-    public AccessExpression (RenderVisitor visitor, BrygParser.AccessExpressionContext ctx) throws NoSuchFieldException {
+    public AccessExpression (StandardVisitor visitor, BrygParser.AccessExpressionContext ctx) throws NoSuchFieldException {
         super (visitor);
 
         String fieldName = ctx.Id ().getText ();
         child = (Expression) visitor.visit (ctx.expression ());
+        Class<?> childType = child.getType ();
 
-        if (child.getType () instanceof PrimitiveType) {
+        if (childType.isPrimitive ()) {
             // TODO: Probably not the most appropriate Exception.
-            throw new RuntimeException ("The expression child of an access expression must not be a primitive type!");
+            throw new RuntimeException ("The expression that is accessed by an access expression must not be a primitive type!"
+                + " (" + childType + ")");
         }
 
-        Class<?> expressionClass = ((ClassType) child.getType ()).getActualType ();
-        field = expressionClass.getDeclaredField (fieldName);
-        Class<?> fieldClass = field.getType ();
-        if (fieldClass.isPrimitive ()) {
-            setType (PrimitiveType.fromJavaClass (fieldClass));
-        }else {
-            setType (new ClassType (fieldClass));
-        }
+        field = childType.getDeclaredField (fieldName);
+        setType (field.getType ());
 
         if (Modifier.isPublic (field.getModifiers ())) {
             getter = null;
@@ -49,7 +44,7 @@ public class AccessExpression extends Expression {
             String fieldNameCapitalized = fieldName.substring (0, 1).toUpperCase () + fieldName.substring (1); // TODO: Inefficient?
             try {
                 String getterName = "get" + fieldNameCapitalized;
-                Method localGetter = expressionClass.getMethod (getterName);
+                Method localGetter = childType.getMethod (getterName);
                 if (localGetter.getReturnType ().equals (field.getType ())) {
                     if (Modifier.isPublic (localGetter.getModifiers ())) {
                         getter = localGetter;
@@ -65,7 +60,7 @@ public class AccessExpression extends Expression {
 
             try {
                 String setterName = "set" + fieldNameCapitalized;
-                Method localSetter = expressionClass.getMethod (setterName, type.getActualType ());
+                Method localSetter = childType.getMethod (setterName, type);
                 if (Modifier.isPublic (localSetter.getModifiers ())) {
                     setter = localSetter;
                 }else {
@@ -82,10 +77,11 @@ public class AccessExpression extends Expression {
         BrygMethodVisitor method = visitor.getMethod ();
 
         child.compile ();
+        String childInternalName = Types.getAsmType (child.getType ()).getInternalName ();
 
         /* The following code concerns getters. */
         if (getter != null) {
-            method.visitMethodInsn (INVOKEVIRTUAL, ((ClassType) child.getType ()).getJvmName (),
+            method.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
                     getter.getName (), TypeHelper.generateMethodDesc (
                             null,
                             type
@@ -93,8 +89,8 @@ public class AccessExpression extends Expression {
             // -> type
         }else if (field != null) {
             /* Get the field directly. */
-            method.visitFieldInsn (GETFIELD, ((ClassType) child.getType ()).getJvmName (),
-                field.getName (), type.toDescriptorFormat ());
+            method.visitFieldInsn (GETFIELD, childInternalName,
+                field.getName (), Types.getAsmType (type).getDescriptor ());
             // -> type
         }
 

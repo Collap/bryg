@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 public class LogicalAndBinaryBooleanExpression extends BinaryBooleanExpression {
 
-    public LogicalAndBinaryBooleanExpression (RenderVisitor visitor, BrygParser.BinaryLogicalAndExpressionContext ctx) {
+    public LogicalAndBinaryBooleanExpression (StandardVisitor visitor, BrygParser.BinaryLogicalAndExpressionContext ctx) {
         super (visitor, ctx.expression (0), ctx.expression (1));
     }
 

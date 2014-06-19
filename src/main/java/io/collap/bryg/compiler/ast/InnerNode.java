@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -10,13 +10,12 @@ public abstract class InnerNode extends Node {
 
     protected List<Node> children = new ArrayList<> ();
 
-    protected InnerNode (RenderVisitor visitor) {
+    protected InnerNode (StandardVisitor visitor) {
         super (visitor);
     }
 
     @Override
     public void compile () {
-        System.out.println ("Compile Block!");
         for (Node child : children) {
             child.compile ();
         }

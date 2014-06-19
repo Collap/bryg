@@ -1,10 +1,9 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.expression.bool.BooleanExpression;
-import io.collap.bryg.compiler.expression.PrimitiveType;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -18,9 +17,9 @@ public class IfExpression extends Expression {
     private Node ifStatementOrBlock;
     private Node elseStatementOrBlock;
 
-    public IfExpression (RenderVisitor visitor, BrygParser.IfExpressionContext ctx) {
+    public IfExpression (StandardVisitor visitor, BrygParser.IfExpressionContext ctx) {
         super (visitor);
-        setType (PrimitiveType._void); // TODO: Implement if as a proper expression?
+        setType (Void.TYPE); // TODO: Implement if as a proper expression?
 
         System.out.println ("If type: " + getType ());
 

@@ -1,13 +1,13 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
 
 import java.util.List;
 
 public class RootNode extends InnerNode {
 
-    public RootNode (RenderVisitor visitor, BrygParser.StartContext ctx) {
+    public RootNode (StandardVisitor visitor, BrygParser.StartContext ctx) {
         super (visitor);
 
         List<BrygParser.InDeclarationContext> inDeclarationContexts = ctx.inDeclaration ();

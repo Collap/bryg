@@ -1,13 +1,13 @@
 package io.collap.bryg.compiler.library;
 
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
 
 public abstract class BlockFunction implements Function {
 
     @Override
-    public void compile (RenderVisitor visitor, FunctionCallExpression call) {
+    public void compile (StandardVisitor visitor, FunctionCallExpression call) {
         BrygMethodVisitor method = visitor.getMethod ();
         enter (method);
         call.getStatementOrBlock ().compile ();

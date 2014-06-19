@@ -1,22 +1,20 @@
 package io.collap.bryg.compiler;
 
 import io.collap.bryg.compiler.ast.Node;
-import io.collap.bryg.compiler.expression.ClassType;
-import io.collap.bryg.compiler.expression.PrimitiveType;
-import io.collap.bryg.compiler.expression.Type;
 import io.collap.bryg.compiler.library.BasicLibrary;
 import io.collap.bryg.compiler.parser.BrygClassVisitor;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.DebugVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
-import io.collap.bryg.compiler.util.TypeHelper;
+import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.compiler.preprocessor.Preprocessor;
-import io.collap.bryg.template.InvalidInputParameterException;
-import io.collap.bryg.template.Template;
+import io.collap.bryg.exception.InvalidInputParameterException;
+import io.collap.bryg.Template;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.objectweb.asm.ClassVisitor;
@@ -28,11 +26,11 @@ import java.io.*;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class TestCompiler implements Compiler {
+public class StandardCompiler implements Compiler {
 
     private ClassResolver classResolver;
 
-    public TestCompiler (ClassResolver classResolver) {
+    public StandardCompiler (ClassResolver classResolver) {
         this.classResolver = classResolver;
     }
 
@@ -75,20 +73,20 @@ public class TestCompiler implements Compiler {
     }
 
     private void compile (ClassVisitor classVisitor, String name, BrygParser.StartContext startContext) {
-        classVisitor.visit (V1_7, ACC_PUBLIC, name, null, ClassType.OBJECT.getJvmName (),
-                new String[] { new ClassType (Template.class).getJvmName () });
+        classVisitor.visit (V1_7, ACC_PUBLIC, name.replace ('.', '/'), null, Types.getAsmType (Object.class).getInternalName (),
+                new String[] { Types.getAsmType (Template.class).getInternalName () });
         {
             createEmptyConstructor (classVisitor);
 
             BrygMethodVisitor render = (BrygMethodVisitor) classVisitor.visitMethod (ACC_PUBLIC, "render",
                     TypeHelper.generateMethodDesc (
-                            new Type[] { new ClassType (Writer.class), new ClassType (Model.class) },
-                            PrimitiveType._void
+                            new Class<?>[] { Writer.class, Model.class },
+                            Void.TYPE
                     ),
                     null,
-                    new String[] { InvalidInputParameterException.CLASS_TYPE.getJvmName () });
+                    new String[] { Types.getAsmType (InvalidInputParameterException.class).getInternalName () });
             {
-                RenderVisitor visitor = new RenderVisitor (render, new BasicLibrary (), classResolver);
+                StandardVisitor visitor = new StandardVisitor (render, new BasicLibrary (), classResolver);
                 Node node = visitor.visit (startContext);
                 node.print (System.out, 0);
                 node.compile ();
@@ -104,7 +102,7 @@ public class TestCompiler implements Compiler {
     private void createEmptyConstructor (ClassVisitor classVisitor) {
         MethodVisitor constructor = classVisitor.visitMethod (ACC_PUBLIC, "<init>", "()V", null, null);
         constructor.visitVarInsn (ALOAD, 0);
-        constructor.visitMethodInsn (INVOKESPECIAL, ClassType.OBJECT.getJvmName (), "<init>", "()V", false);
+        constructor.visitMethodInsn (INVOKESPECIAL, Types.getAsmType (Object.class).getInternalName (), "<init>", "()V", false);
         constructor.visitInsn (RETURN);
         constructor.visitMaxs (1, 1);
         constructor.visitEnd ();

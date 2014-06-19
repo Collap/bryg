@@ -1,11 +1,9 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.expression.Operator;
-import io.collap.bryg.compiler.expression.PrimitiveType;
-import io.collap.bryg.compiler.expression.Type;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -17,7 +15,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
 
     protected Operator operator;
 
-    protected OperatorBinaryBooleanExpression (RenderVisitor visitor, BrygParser.ExpressionContext left,
+    protected OperatorBinaryBooleanExpression (StandardVisitor visitor, BrygParser.ExpressionContext left,
                                                BrygParser.ExpressionContext right, Operator operator) {
         super (visitor, left, right);
         this.operator = operator;
@@ -38,8 +36,8 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
 
         BrygMethodVisitor method = visitor.getMethod ();
 
-        Type type = left.getType ();
-        if (type.equals (PrimitiveType._int)) {
+        Class<?> type = left.getType ();
+        if (type.equals (Integer.TYPE)) {
             switch (operator) {
                 case equality:
                     method.visitJumpInsn (IF_ICMPNE, nextFalse);

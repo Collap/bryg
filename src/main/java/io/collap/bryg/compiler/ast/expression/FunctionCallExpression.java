@@ -1,9 +1,8 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.BlockNode;
 import io.collap.bryg.compiler.ast.Node;
-import io.collap.bryg.compiler.expression.Type;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.parser.BrygParser;
 
@@ -15,7 +14,7 @@ public class FunctionCallExpression extends Expression {
     // TODO: Argument list.
     private Node statementOrBlock;
 
-    public FunctionCallExpression (RenderVisitor visitor, BrygParser.FunctionCallContext ctx) {
+    public FunctionCallExpression (StandardVisitor visitor, BrygParser.FunctionCallContext ctx) {
         super (visitor);
 
         String name = ctx.Id ().getText ();
@@ -34,7 +33,7 @@ public class FunctionCallExpression extends Expression {
         }
     }
 
-    public FunctionCallExpression (RenderVisitor visitor, Function function) {
+    public FunctionCallExpression (StandardVisitor visitor, Function function) {
         super (visitor);
         this.function = function;
         statementOrBlock = new BlockNode (visitor);

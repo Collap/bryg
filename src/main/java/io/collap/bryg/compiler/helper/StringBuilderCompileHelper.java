@@ -1,17 +1,13 @@
 package io.collap.bryg.compiler.helper;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.expression.ClassType;
-import io.collap.bryg.compiler.expression.Type;
-import io.collap.bryg.compiler.parser.RenderVisitor;
-import io.collap.bryg.compiler.util.TypeHelper;
+import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.TypeHelper;
 
 public class StringBuilderCompileHelper extends ObjectCompileHelper {
 
-    private static final ClassType TYPE = new ClassType (StringBuilder.class);
-
-    public StringBuilderCompileHelper (RenderVisitor visitor) {
-        super (visitor, TYPE);
+    public StringBuilderCompileHelper (StandardVisitor visitor) {
+        super (visitor, StringBuilder.class);
     }
 
     public void compileAppend (Expression expression) {
@@ -22,10 +18,10 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
      * StringBuilder -> StringBuilder
      */
     public void compileAppend (Expression expression, boolean compileExpression) {
-        Type argumentType = expression.getType ();
-        if (argumentType instanceof ClassType) { /* All objects are supplied as either String or Object. */
-            if (!argumentType.equals (ClassType.STRING)) {
-                argumentType = ClassType.OBJECT;
+        Class<?> argumentType = expression.getType ();
+        if (!argumentType.isPrimitive ()) { /* All objects are supplied as either String or Object. */
+            if (!argumentType.equals (String.class)) {
+                argumentType = Object.class;
             }
         }
 
@@ -35,14 +31,14 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
         }
 
         compileInvokeVirtual ("append", TypeHelper.generateMethodDesc (
-                new Type[] { argumentType },
+                new Class<?>[] { argumentType },
                 type
         ));
         // StringBuilder, T -> StringBuilder
     }
 
     public void compileToString () {
-        compileInvokeVirtual ("toString", TypeHelper.generateMethodDesc (null, ClassType.STRING));
+        compileInvokeVirtual ("toString", TypeHelper.generateMethodDesc (null, String.class));
         // StringBuilder -> String
     }
 

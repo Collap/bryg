@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.expression;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,20 +13,19 @@ public class Scope {
         return variables.get (name);
     }
 
-    public Variable registerVariable (String name, Type type) {
+    public Variable registerVariable (String name, Class<?> type) {
         Variable variable = new Variable (type, name, calculateNextId (type));
         variables.put (name, variable);
         return variable;
     }
 
-    public int calculateNextId (Type type) {
+    public int calculateNextId (@Nullable Class<?> type) {
         int id = nextId;
 
         /* Double and long use two variable slots. */
         boolean isWide = false;
-        if (type instanceof PrimitiveType) {
-            PrimitiveType primitiveType = (PrimitiveType) type;
-            isWide = primitiveType == PrimitiveType._long || primitiveType == PrimitiveType._double;
+        if (type != null && type.isPrimitive ()) {
+            isWide = type.equals (Long.TYPE) || type.equals (Double.TYPE);
         }
 
         if (isWide) {

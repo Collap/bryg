@@ -1,22 +1,21 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.Node;
-import io.collap.bryg.compiler.expression.Type;
 
 public abstract class Expression extends Node {
 
-    protected Type type;
+    protected Class<?> type;
 
-    protected Expression (RenderVisitor visitor) {
+    protected Expression (StandardVisitor visitor) {
         super (visitor);
     }
 
-    public Type getType () {
+    public Class<?> getType () {
         return type;
     }
 
-    public void setType (Type type) {
+    public void setType (Class<?> type) {
         this.type = type;
     }
 

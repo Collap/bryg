@@ -2,10 +2,12 @@ package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.expression.*;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
-import io.collap.bryg.compiler.util.TypeHelper;
+import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.parser.BrygParser;
-import io.collap.bryg.template.InvalidInputParameterException;
+import io.collap.bryg.exception.InvalidInputParameterException;
 import org.objectweb.asm.Label;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -14,7 +16,7 @@ public class InDeclarationNode extends Node {
 
     private Variable parameter;
 
-    public InDeclarationNode (RenderVisitor visitor, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
+    public InDeclarationNode (StandardVisitor visitor, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
         super (visitor);
 
         String name = ctx.Id ().getText ();
@@ -42,11 +44,11 @@ public class InDeclarationNode extends Node {
         // -> String
 
         method.visitMethodInsn (INVOKEINTERFACE,
-                ((ClassType) model.getType ()).getJvmName (),
+                Types.getAsmType (model.getType ()).getInternalName (),
                 "getVariable",
                 TypeHelper.generateMethodDesc (
-                        new Type[] { ClassType.STRING},
-                        ClassType.OBJECT
+                        new Class<?>[] { String.class },
+                        Object.class
                 ),
                 true);
         // Model, String -> Object
@@ -63,18 +65,18 @@ public class InDeclarationNode extends Node {
         // Object ->
 
         /* Throw exception when the null check failed. */
-        ClassType exceptionClass = InvalidInputParameterException.CLASS_TYPE;
-        method.visitTypeInsn (NEW, exceptionClass.getJvmName ());
+        String exceptionInternalName = Types.getAsmType (InvalidInputParameterException.class).getInternalName ();
+        method.visitTypeInsn (NEW, exceptionInternalName);
         method.visitInsn (DUP);
         // -> InvalidParameterException, InvalidParameterException
 
         method.visitLdcInsn (parameter.getName () + " could not be loaded!");
         // -> String
 
-        method.visitMethodInsn (INVOKESPECIAL, exceptionClass.getJvmName (), "<init>",
+        method.visitMethodInsn (INVOKESPECIAL, exceptionInternalName, "<init>",
                 TypeHelper.generateMethodDesc (
-                        new Type[] { ClassType.STRING},
-                        PrimitiveType._void
+                        new Class<?>[] { String.class },
+                        Void.TYPE
                 ),
                 false);
         // InvalidParameterException, String ->
@@ -82,50 +84,54 @@ public class InDeclarationNode extends Node {
         method.visitInsn (ATHROW);
         // InvalidParameterException ->
 
-        method.visitFrame (F_SAME1, 0, null, 1, new Object[] { ClassType.OBJECT.getJvmName () });
+        method.visitFrame (F_SAME1, 0, null, 1, new Object[] { Types.getAsmType (Object.class).getInternalName () });
         method.visitLabel (skipException);
     }
 
     private void castAndStore () {
-        Type type = parameter.getType ();
-        if (type instanceof ClassType) {
-            castAndStoreObject ();
-        }else { /* PrimitiveType. */
-            switch ((PrimitiveType) type) {
-                // case _boolean:   castAndStoreBool (); break;
-                // case _char:   castAndStoreChar (); break;
-                // case _byte:   castAndStoreByte (); break;
-                // case _short:  castAndStoreShort (); break;
-                case _int:    castAndStoreInt (); break;
-                // case _long:   castAndStoreLong (); break;
-                // case _float:  castAndStoreFloat (); break;
-                // case _double: castAndStoreDouble (); break;
+        Class<?> type = parameter.getType ();
+        if (type.isPrimitive ()) {
+            if (type.equals (Integer.TYPE)) {
+                castAndStoreInt ();
             }
+            /* switch (type) {
+                // case _boolean:   castAndStoreBool (); break;
+                // case _char:      castAndStoreChar (); break;
+                // case _byte:      castAndStoreByte (); break;
+                // case _short:     castAndStoreShort (); break;
+                // case _int:       castAndStoreInt (); break;
+                // case _long:      castAndStoreLong (); break;
+                // case _float:     castAndStoreFloat (); break;
+                // case _double:    castAndStoreDouble (); break;
+            } */
+        }else {
+            castAndStoreObject ();
         }
     }
 
     private void castAndStoreObject () {
         BrygMethodVisitor method = visitor.getMethod ();
-        ClassType type = (ClassType) parameter.getType ();
+        String internalTypeName = Types.getAsmType (parameter.getType ()).getInternalName ();
 
-        method.visitTypeInsn (CHECKCAST, type.getJvmName ());
+        method.visitTypeInsn (CHECKCAST, internalTypeName);
         // Object -> T
 
         method.visitVarInsn (ASTORE, parameter.getId ());
-        method.visitFrame (F_APPEND, 1, new Object[] { type.getJvmName () }, 0, null);
+        method.visitFrame (F_APPEND, 1, new Object[] { internalTypeName }, 0, null);
         // T ->
     }
 
     private void castAndStoreInt () {
         BrygMethodVisitor method = visitor.getMethod ();
+        String internalTypeName = Types.getAsmType (Integer.class).getInternalName ();
 
-        method.visitTypeInsn (CHECKCAST, ClassType.INTEGER.getJvmName ());
+        method.visitTypeInsn (CHECKCAST, internalTypeName);
         // Object -> Integer
 
-        method.visitMethodInsn (INVOKEVIRTUAL, ClassType.INTEGER.getJvmName (), "intValue",
+        method.visitMethodInsn (INVOKEVIRTUAL, internalTypeName, "intValue",
                 TypeHelper.generateMethodDesc (
                         null,
-                        PrimitiveType._int
+                        Integer.TYPE
                 ),
                 false
         );

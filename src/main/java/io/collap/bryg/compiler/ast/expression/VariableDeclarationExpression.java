@@ -1,10 +1,10 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 
 public class VariableDeclarationExpression extends Expression {
 
-    public VariableDeclarationExpression (RenderVisitor visitor) {
+    public VariableDeclarationExpression (StandardVisitor visitor) {
         super (visitor);
     }
 

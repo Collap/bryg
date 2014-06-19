@@ -1,12 +1,12 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 
 public class TextCommandNode extends Node {
 
     private String text;
 
-    public TextCommandNode (RenderVisitor visitor, String text) {
+    public TextCommandNode (StandardVisitor visitor, String text) {
         super (visitor);
         this.text = text;
     }

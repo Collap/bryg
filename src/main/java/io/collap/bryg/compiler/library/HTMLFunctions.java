@@ -1,10 +1,8 @@
 package io.collap.bryg.compiler.library;
 
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
-import io.collap.bryg.compiler.expression.PrimitiveType;
-import io.collap.bryg.compiler.expression.Type;
 
 public class HTMLFunctions {
 
@@ -27,8 +25,8 @@ public class HTMLFunctions {
         }
 
         @Override
-        public Type getReturnType () {
-            return PrimitiveType._void;
+        public Class<?> getReturnType () {
+            return Void.TYPE;
         }
     }
 
@@ -41,13 +39,13 @@ public class HTMLFunctions {
         }
 
         @Override
-        public void compile (RenderVisitor visitor, FunctionCallExpression call) {
+        public void compile (StandardVisitor visitor, FunctionCallExpression call) {
             visitor.getMethod ().writeConstantString ("<" + tag + "/>");
         }
 
         @Override
-        public Type getReturnType () {
-            return PrimitiveType._void;
+        public Class<?> getReturnType () {
+            return Void.TYPE;
         }
     }
 

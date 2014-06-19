@@ -2,13 +2,11 @@ package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.ast.expression.VariableDeclarationExpression;
-import io.collap.bryg.compiler.expression.ClassType;
-import io.collap.bryg.compiler.expression.PrimitiveType;
-import io.collap.bryg.compiler.expression.Type;
-import io.collap.bryg.compiler.util.TypeHelper;
+import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
@@ -19,7 +17,7 @@ public class StatementNode extends Node {
 
     private Node child;
 
-    public StatementNode (RenderVisitor visitor, BrygParser.StatementContext ctx) {
+    public StatementNode (StandardVisitor visitor, BrygParser.StatementContext ctx) {
         super (visitor);
 
         if (ctx.expression () != null) {
@@ -38,8 +36,8 @@ public class StatementNode extends Node {
          * declaration is written automatically. */
         if (child instanceof Expression) {
             Expression expression = (Expression) child;
-            Type type = expression.getType ();
-            if (type != PrimitiveType._void && !(expression instanceof VariableDeclarationExpression)) {
+            Class<?> type = expression.getType ();
+            if (type != Void.TYPE && !(expression instanceof VariableDeclarationExpression)) {
                 BrygMethodVisitor method = visitor.getMethod ();
 
                 // TODO: Does not work for double and long!
@@ -48,29 +46,22 @@ public class StatementNode extends Node {
                 // -> Writer
 
                 /* Stringify if necessary. */
-                if (type instanceof ClassType) {
-                    expression.compile ();
-                    // -> value
-
-                    ClassType classType = (ClassType) type;
-                    if (!classType.getActualType ().equals (String.class)) {
-                        method.visitMethodInsn (INVOKEVIRTUAL, classType.getJvmName (), "toString",
-                                TypeHelper.generateMethodDesc (null, PrimitiveType._void), false);
-                        // T -> String
-                    }
-                }else { /* PrimitiveType. */
-                    PrimitiveType primitiveType = (PrimitiveType) type;
+                if (type.isPrimitive ()) {
                     StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (visitor);
                     stringBuilder.compileNew ();
                     stringBuilder.compileAppend (expression); // Note: The expression is compiled here!
                     stringBuilder.compileToString ();
                     // value -> String
-                }
+                }else {
+                    expression.compile ();
+                    // -> value
 
-                /* if (!(type instanceof ClassType) || !((ClassType) type).getActualType ().equals (String.class)) {
-                    throw new UnsupportedOperationException ("Currently only Strings can be written (Type: "
-                            + type + ", Expression class: " + child.getClass ().getSimpleName () + ")");
-                } */
+                    if (!type.equals (String.class)) {
+                        method.visitMethodInsn (INVOKEVIRTUAL, Types.getAsmType (type).getInternalName (), "toString",
+                                TypeHelper.generateMethodDesc (null, Void.TYPE), false);
+                        // T -> String
+                    }
+                }
 
                 method.writeString ();
                 // Writer, value ->

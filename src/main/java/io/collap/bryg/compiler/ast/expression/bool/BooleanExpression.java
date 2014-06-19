@@ -1,17 +1,16 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.expression.PrimitiveType;
 import org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 
 public abstract class BooleanExpression extends Expression {
 
-    protected BooleanExpression (RenderVisitor visitor) {
+    protected BooleanExpression (StandardVisitor visitor) {
         super (visitor);
-        setType (PrimitiveType._boolean);
+        setType (Boolean.TYPE);
     }
 
     @Override

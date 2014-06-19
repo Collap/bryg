@@ -1,12 +1,12 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.parser.RenderVisitor;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 public class BlockNode extends InnerNode {
 
-    public BlockNode (RenderVisitor visitor, BrygParser.BlockContext ctx) {
+    public BlockNode (StandardVisitor visitor, BrygParser.BlockContext ctx) {
         super (visitor);
 
         for (ParseTree tree : ctx.children) {
@@ -19,7 +19,7 @@ public class BlockNode extends InnerNode {
     /**
      * Creates an empty block.
      */
-    public BlockNode (RenderVisitor visitor) {
+    public BlockNode (StandardVisitor visitor) {
         super (visitor);
     }
 

@@ -1,14 +1,14 @@
-package io.collap.bryg.compiler.loader;
+package io.collap.bryg.loader;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-public class FileTemplateLoader implements TemplateLoader {
+public class FileSourceLoader implements SourceLoader {
 
     private File templateDirectory;
     private String fileExtension = ".bryg";
 
-    public FileTemplateLoader (File templateDirectory) {
+    public FileSourceLoader (File templateDirectory) {
         if (!templateDirectory.exists () || !templateDirectory.isDirectory ()) {
             throw new IllegalArgumentException ("The template directory must be existing and qualified as a directory!");
         }
@@ -17,7 +17,9 @@ public class FileTemplateLoader implements TemplateLoader {
 
     @Override
     public String getTemplateSource (String name) {
-        File sourceFile = new File (templateDirectory, name + fileExtension);
+        String path = name.replace ('.', File.separatorChar) + fileExtension;
+
+        File sourceFile = new File (templateDirectory, path);
 
         String source = null;
         try {
