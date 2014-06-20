@@ -2,6 +2,8 @@ package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.parser.StandardVisitor;
 
+// TODO: Merge with StringLiteralExpression.
+
 public class TextCommandNode extends Node {
 
     private String text;

@@ -19,4 +19,9 @@ public class IntegerLiteralExpression extends Expression {
         // -> int
     }
 
+    @Override
+    public Object getConstantValue () {
+        return value;
+    }
+
 }

@@ -7,11 +7,13 @@ import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FunctionCallExpression extends Expression {
 
     private Function function;
-    // TODO: Argument list.
+    private List<ArgumentExpression> argumentExpressions = new ArrayList<> ();
     private Node statementOrBlock;
 
     public FunctionCallExpression (StandardVisitor visitor, BrygParser.FunctionCallContext ctx) {
@@ -31,6 +33,12 @@ public class FunctionCallExpression extends Expression {
         }else {
             statementOrBlock = new BlockNode (visitor);
         }
+
+        /* Arguments. */
+        List<BrygParser.ArgumentContext> argumentContexts = ctx.argument ();
+        for (BrygParser.ArgumentContext argumentContext : argumentContexts) {
+            argumentExpressions.add (new ArgumentExpression (visitor, argumentContext));
+        }
     }
 
     public FunctionCallExpression (StandardVisitor visitor, Function function) {
@@ -46,6 +54,10 @@ public class FunctionCallExpression extends Expression {
         function.compile (visitor, this);
     }
 
+    public List<ArgumentExpression> getArgumentExpressions () {
+        return argumentExpressions;
+    }
+
     public Node getStatementOrBlock () {
         return statementOrBlock;
     }
@@ -57,4 +69,5 @@ public class FunctionCallExpression extends Expression {
             statementOrBlock.print (out, depth + 1);
         }
     }
+
 }

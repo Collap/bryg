@@ -62,7 +62,7 @@ variable: Id | variableDeclaration ; // Note that it is possible for a recognize
 variableDeclaration: ('mut' | 'val') Id (':' Id)? ;
 
 functionCall: Id ( '(' (argument (',' argument)*)?  ')' )? statementOrBlock? ;
-argument: Id ':' expression ;
+argument: (Id ':')? expression ;
 
 literal:
     String                                            # stringLiteral

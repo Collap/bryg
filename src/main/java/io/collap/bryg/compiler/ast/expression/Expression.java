@@ -19,4 +19,11 @@ public abstract class Expression extends Node {
         this.type = type;
     }
 
+    /**
+     * @return If not null, the type of the value is guaranteed to be an instance of the type returned by {@link #getType()}.
+     */
+    public Object getConstantValue () {
+        return null;
+    }
+
 }

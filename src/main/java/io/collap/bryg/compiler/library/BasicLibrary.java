@@ -1,5 +1,7 @@
 package io.collap.bryg.compiler.library;
 
+import io.collap.bryg.compiler.library.html.HTMLFunctions;
+
 import java.util.HashMap;
 import java.util.Map;
 

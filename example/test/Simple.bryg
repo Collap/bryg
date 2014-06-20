@@ -10,6 +10,9 @@ html
       else
         `Hello Moon!`
   body
+    div (id: "header")
+      `This is in a div!`
+    img (src: "test.png")
     object.name
     test
     br
