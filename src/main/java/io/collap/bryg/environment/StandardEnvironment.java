@@ -11,34 +11,39 @@ import java.util.Map;
 
 public class StandardEnvironment implements Environment {
 
-    private io.collap.bryg.compiler.Compiler compiler;
     private Map<String, Template> templateMap = new HashMap<> ();
-    private Map<String, TemplateClassLoader> classLoaderMap = new HashMap<> (); // prefix -> SourceLoader
+    private ClassLoader templateClassLoader;
 
-    public StandardEnvironment () {
-        compiler = new StandardCompiler (new ClassResolver ());
+    public StandardEnvironment (SourceLoader sourceLoader) {
+        this (new TemplateClassLoader (new StandardCompiler (new ClassResolver ()), sourceLoader));
     }
 
-    public void registerSourceLoader (String prefix, SourceLoader sourceLoader) {
-        classLoaderMap.put (prefix, new TemplateClassLoader (compiler, sourceLoader));
+    public StandardEnvironment (ClassLoader templateClassLoader) {
+        this.templateClassLoader = templateClassLoader;
     }
 
     @Override
-    public Template getTemplate (String prefix, String name) {
-        String fullName = prefix + "." + name;
-        Template template = templateMap.get (fullName);
+    public Template getTemplate (String name) {
+        Template template = templateMap.get (name);
 
         if (template == null) {
-            TemplateClassLoader classLoader = classLoaderMap.get (prefix);
-            if (classLoader != null) {
-                try {
-                    Class<? extends Template> cl = (Class<? extends Template>) classLoader.loadClass (name);
-                    template = cl.newInstance ();
-                    templateMap.put (fullName, template);
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                    e.printStackTrace ();
-                }
-            }
+            template = loadTemplate (name);
+        }
+
+        return template;
+    }
+
+    /**
+     * Also adds the loaded template to the cache.
+     */
+    private synchronized Template loadTemplate (String name) {
+        Template template = null;
+        try {
+            Class<? extends Template> cl = (Class<? extends Template>) templateClassLoader.loadClass (name);
+            template = cl.newInstance ();
+            templateMap.put (name, template);
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            e.printStackTrace ();
         }
 
         return template;

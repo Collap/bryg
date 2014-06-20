@@ -1,5 +1,6 @@
 package io.collap.bryg;
 
+import io.collap.bryg.environment.Environment;
 import io.collap.bryg.environment.StandardEnvironment;
 import io.collap.bryg.loader.FileSourceLoader;
 import io.collap.bryg.model.BasicModel;
@@ -11,9 +12,8 @@ import java.io.*;
 public class Bryg {
 
     public static void main (String[] args) throws InvalidInputParameterException {
-        StandardEnvironment environment = new StandardEnvironment ();
-        environment.registerSourceLoader ("", new FileSourceLoader (new File ("example")));
-        Template template = environment.getTemplate ("", "test.Simple");
+        Environment environment = new StandardEnvironment (new FileSourceLoader (new File ("example")));
+        Template template = environment.getTemplate ("test.Simple");
         StringWriter stringWriter = null;
         final int renderIterations = 100000;
         long renderTime = System.nanoTime ();
