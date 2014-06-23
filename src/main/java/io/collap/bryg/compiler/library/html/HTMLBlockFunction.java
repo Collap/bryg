@@ -5,14 +5,18 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 
 public class HTMLBlockFunction extends HTMLFunction {
 
-    public HTMLBlockFunction (String tag, String[] acceptedArguments) {
-        super (tag, acceptedArguments);
+    public HTMLBlockFunction (String tag) {
+        super (tag);
+    }
+
+    public HTMLBlockFunction (String tag, String[] validAttributes) {
+        super (tag, validAttributes);
     }
 
     @Override
     public void enter (BrygMethodVisitor method, FunctionCallExpression call) {
         method.writeConstantString ("<" + tag);
-        new HTMLArgumentCompiler (method, call.getArgumentExpressions (), acceptedArguments).compile ();
+        new HTMLAttributeCompiler (method, call.getArgumentExpressions (), validAttributes).compile ();
         method.writeConstantString (">");
     }
 

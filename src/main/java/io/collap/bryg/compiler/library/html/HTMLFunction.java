@@ -8,14 +8,18 @@ import io.collap.bryg.compiler.parser.StandardVisitor;
 public abstract class HTMLFunction implements Function {
 
     protected String tag;
-    protected String[] acceptedArguments;
+    protected String[] validAttributes;
+
+    protected HTMLFunction (String tag) {
+        this (tag, new String[] { });
+    }
 
     /**
-     * @param acceptedArguments This list <b>must</b> be sorted alphabetically (A to Z).
+     * @param validAttributes These lists <b>must</b> be sorted alphabetically (A to Z).
      */
-    protected HTMLFunction (String tag, String[] acceptedArguments) {
+    protected HTMLFunction (String tag, String[] validAttributes) {
         this.tag = tag;
-        this.acceptedArguments = acceptedArguments;
+        this.validAttributes = validAttributes;
     }
 
     @Override
