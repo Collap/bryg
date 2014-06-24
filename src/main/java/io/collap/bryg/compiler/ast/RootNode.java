@@ -18,9 +18,9 @@ public class RootNode extends InnerNode {
             }
         }
 
-        List<BrygParser.StatementContext> statementContexts = ctx.statement ();
-        for (BrygParser.StatementContext sc : statementContexts) {
-            children.add (new StatementNode (visitor, sc));
+        List<BrygParser.StatementLineContext> statementLineContexts = ctx.statementLine ();
+        for (BrygParser.StatementLineContext sc : statementLineContexts) {
+            children.add (new StatementNode (visitor, sc.statement ()));
         }
     }
 

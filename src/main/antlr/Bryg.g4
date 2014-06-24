@@ -4,7 +4,7 @@ grammar Bryg;
   package io.collap.bryg.parser;
 }
 
-start: inDeclaration* statement* ;
+start: inDeclaration* statementLine* ;
 
 inDeclaration: 'in' Id ':' type '\n' ;
 statementLine: statement '\n' ;
