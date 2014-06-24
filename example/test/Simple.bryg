@@ -10,7 +10,7 @@ html
       else
         `Hello Moon!`
   body
-    div (id: "header")
+    div (id: "header", style: "test " + number, title: "Hello Title")
       `This is in a div!`
     img (src: "test.png")
     object.name + " "

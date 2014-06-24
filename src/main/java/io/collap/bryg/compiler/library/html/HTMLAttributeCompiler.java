@@ -4,9 +4,23 @@ import io.collap.bryg.compiler.ast.expression.ArgumentExpression;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class HTMLAttributeCompiler {
+
+    private class ArgumentComparator implements Comparator<ArgumentExpression> {
+
+        @Override
+        public int compare (ArgumentExpression o1, ArgumentExpression o2) {
+            int result = 0;
+            if (o1.getConstantValue () != null) result -= 1;
+            if (o2.getConstantValue () != null) result += 1;
+            return result;
+        }
+
+    }
 
     private BrygMethodVisitor method;
     private List<ArgumentExpression> arguments;
@@ -16,6 +30,9 @@ public class HTMLAttributeCompiler {
         this.method = method;
         this.arguments = arguments;
         this.validAttributes = validAttributes;
+
+        /* Sort arguments by constant and non-constant to minimize write calls. */
+        Collections.sort (arguments, new ArgumentComparator ());
     }
 
     public void compile () {
@@ -33,7 +50,6 @@ public class HTMLAttributeCompiler {
             Object constantValue = attribute.getConstantValue ();
             boolean isEmpty = constantValue != null && constantValue instanceof String
                                 && ((String) constantValue).isEmpty ();
-
 
             method.writeConstantString (" " + name);
 
