@@ -5,6 +5,8 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
 
+import java.io.PrintStream;
+
 public class BinaryAdditionExpression extends Expression {
 
     private Expression left;
@@ -31,6 +33,7 @@ public class BinaryAdditionExpression extends Expression {
         /* Build String. */
         if (type.equals (String.class)) {
             buildString ();
+            // -> String
         }
     }
 
@@ -39,9 +42,6 @@ public class BinaryAdditionExpression extends Expression {
 
         StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (visitor);
 
-        method.loadWriter ();
-        // -> Writer
-
         stringBuilder.compileNew ();
         stringBuilder.compileAppend (left);
         stringBuilder.compileAppend (right);
@@ -49,9 +49,13 @@ public class BinaryAdditionExpression extends Expression {
 
         stringBuilder.compileToString ();
         // StringBuilder -> String
+    }
 
-        method.writeString ();
-        // Writer, String ->
+    @Override
+    public void print (PrintStream out, int depth) {
+        super.print (out, depth);
+        left.print (out, depth + 1);
+        right.print (out, depth + 1);
     }
 
 }

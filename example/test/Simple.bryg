@@ -13,7 +13,7 @@ html
     div (id: "header")
       `This is in a div!`
     img (src: "test.png")
-    object.name
+    object.name + " "
     test
     br
     `Hello World!`
