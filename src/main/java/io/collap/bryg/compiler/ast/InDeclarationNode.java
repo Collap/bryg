@@ -91,19 +91,23 @@ public class InDeclarationNode extends Node {
     private void castAndStore () {
         Class<?> type = parameter.getType ();
         if (type.isPrimitive ()) {
-            if (type.equals (Integer.TYPE)) {
-                castAndStoreInt ();
+            if (type.equals (Boolean.TYPE)) {
+                castAndStorePrimitive (Boolean.class, Boolean.TYPE, "booleanValue", INTEGER);
+            }else if (type.equals (Character.TYPE)) {
+                castAndStorePrimitive (Character.class, Character.TYPE, "charValue", INTEGER);
+            }else if (type.equals (Byte.TYPE)) {
+                castAndStorePrimitive (Byte.class, Byte.TYPE, "byteValue", INTEGER);
+            }else if (type.equals (Short.TYPE)) {
+                castAndStorePrimitive (Short.class, Short.TYPE, "shortValue", INTEGER);
+            }else if (type.equals (Integer.TYPE)) {
+                castAndStorePrimitive (Integer.class, Integer.TYPE, "intValue", INTEGER);
+            }else if (type.equals (Long.TYPE)) {
+                castAndStorePrimitive (Long.class, Long.TYPE, "longValue", LONG);
+            }else if (type.equals (Float.TYPE)) {
+                castAndStorePrimitive (Float.class, Float.TYPE, "floatValue", FLOAT);
+            }else if (type.equals (Double.TYPE)) {
+                castAndStorePrimitive (Double.class, Double.TYPE, "doubleValue", DOUBLE);
             }
-            /* switch (type) {
-                // case _boolean:   castAndStoreBool (); break;
-                // case _char:      castAndStoreChar (); break;
-                // case _byte:      castAndStoreByte (); break;
-                // case _short:     castAndStoreShort (); break;
-                // case _int:       castAndStoreInt (); break;
-                // case _long:      castAndStoreLong (); break;
-                // case _float:     castAndStoreFloat (); break;
-                // case _double:    castAndStoreDouble (); break;
-            } */
         }else {
             castAndStoreObject ();
         }
@@ -121,24 +125,24 @@ public class InDeclarationNode extends Node {
         // T ->
     }
 
-    private void castAndStoreInt () {
+    private void castAndStorePrimitive (Class<?> objectClass, Class<?> primitiveClass, String valueMethodName, Integer frameType) {
         BrygMethodVisitor method = visitor.getMethod ();
-        String internalTypeName = Types.getAsmType (Integer.class).getInternalName ();
+        String internalTypeName = Types.getAsmType (objectClass).getInternalName ();
 
         method.visitTypeInsn (CHECKCAST, internalTypeName);
-        // Object -> Integer
+        // Object -> T
 
-        method.visitMethodInsn (INVOKEVIRTUAL, internalTypeName, "intValue",
+        method.visitMethodInsn (INVOKEVIRTUAL, internalTypeName, valueMethodName,
                 TypeHelper.generateMethodDesc (
                         null,
-                        Integer.TYPE
+                        primitiveClass
                 ),
                 false
         );
         // Integer -> int
 
-        method.visitVarInsn (ISTORE, parameter.getId ());
-        method.visitFrame (F_APPEND, 1, new Object[] { INTEGER }, 0, null);
+        method.visitVarInsn (Types.getAsmType (primitiveClass).getOpcode (ISTORE), parameter.getId ());
+        method.visitFrame (F_APPEND, 1, new Object[] { frameType }, 0, null);
     }
 
 }

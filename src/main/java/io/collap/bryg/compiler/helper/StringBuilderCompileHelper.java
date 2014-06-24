@@ -23,6 +23,11 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
             if (!argumentType.equals (String.class)) {
                 argumentType = Object.class;
             }
+        }else {
+            /* Byte and Short primitives need to be appended as integers. */
+            if (argumentType.equals (Byte.TYPE) || argumentType.equals (Short.TYPE)) {
+                argumentType = Integer.TYPE;
+            }
         }
 
         if (compileExpression) {
