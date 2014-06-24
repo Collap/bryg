@@ -25,8 +25,6 @@ public class StatementNode extends Node {
             if (child == null) {
                 throw new NullPointerException ("Expression in statement is null!");
             }
-        }else { /* TextCommand. */
-            child = visitor.visit (ctx.textCommand ());
         }
     }
 

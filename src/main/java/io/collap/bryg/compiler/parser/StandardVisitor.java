@@ -64,11 +64,6 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     }
 
     @Override
-    public TextCommandNode visitTextCommand (@NotNull BrygParser.TextCommandContext ctx) {
-        return new TextCommandNode (this, ctx.Text ().getText ());
-    }
-
-    @Override
     public AccessExpression visitAccessExpression (@NotNull BrygParser.AccessExpressionContext ctx) {
         try {
             return new AccessExpression (this, ctx);

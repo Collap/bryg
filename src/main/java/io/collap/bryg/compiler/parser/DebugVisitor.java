@@ -164,13 +164,6 @@ public class DebugVisitor extends BrygBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitTextCommand (@NotNull BrygParser.TextCommandContext ctx) {
-        visitAny (ctx, ctx.getText ());
-        super.visitTextCommand (ctx);
-        return 0;
-    }
-
-    @Override
     public Integer visitIfExpression (@NotNull BrygParser.IfExpressionContext ctx) {
         visitAny (ctx);
         super.visitIfExpression (ctx);

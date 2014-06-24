@@ -8,10 +8,7 @@ start: inDeclaration* statementLine* ;
 
 inDeclaration: 'in' Id ':' type '\n' ;
 statementLine: statement '\n' ;
-statement:
-    textCommand
-  | expression
-  ;
+statement: expression ;
 
 expression:
     literal                                           # literalExpression
@@ -73,11 +70,10 @@ Integer: Number+;
 
 type: Id ('<' type (',' type)* '>')? ;
 
-textCommand: Text ;
-
 Id: Letter (Letter | Number)* ;
-String: '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;
-Text: '`' ('\\`' | ~('`' | '\n' | '\r'))* '`' ;
+String: '"' ('\\"' | ~('"' | '\n' | '\r'))* '"'
+      | '`' ('\\`' | ~('`' | '\n' | '\r'))* '`'
+      ;
 Ws: [ \t\r]+ -> skip ;
 
 fragment Letter		    : (LetterUpper | LetterLower) ;

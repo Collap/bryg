@@ -7,11 +7,11 @@ in longValue: long
 in floatValue: float
 in doubleValue: double
 
-p "Boolean value: " + booleanValue
-p "Char value: " + charValue
-p "Byte value: " + byteValue
-p "Short value: " + shortValue
-p "Int value: " + intValue
-p "Long value: " + longValue
-p "Float value: " + floatValue
-p "Double value: " + doubleValue
+p `Boolean value: ` + booleanValue
+p `Char value: ` + charValue
+p `Byte value: ` + byteValue
+p `Short value: ` + shortValue
+p `Int value: ` + intValue
+p `Long value: ` + longValue
+p `Float value: ` + floatValue
+p `Double value: ` + doubleValue

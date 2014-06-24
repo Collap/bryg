@@ -13,13 +13,7 @@ public class StringLiteralExpression extends Expression {
 
         /* Trim quotes. */
         value = ctx.String ().getText ();
-        if (value.charAt (0) == '"') {
-            value = value.substring (1);
-        }
-        int lastCharIndex = value.length () - 1;
-        if (value.charAt (lastCharIndex) == '"') {
-            value = value.substring (0, lastCharIndex);
-        }
+        value = value.substring (1, value.length () - 1);
     }
 
     @Override

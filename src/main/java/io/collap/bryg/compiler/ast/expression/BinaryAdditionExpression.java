@@ -7,6 +7,8 @@ import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
 
+// TODO: Evaluate constant expressions more efficiently.
+
 public class BinaryAdditionExpression extends Expression {
 
     private Expression left;
