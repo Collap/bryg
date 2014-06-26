@@ -5,8 +5,8 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.ast.expression.VariableDeclarationExpression;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
-import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
@@ -34,8 +34,8 @@ public class StatementNode extends Node {
          * declaration is written automatically. */
         if (child instanceof Expression) {
             Expression expression = (Expression) child;
-            Class<?> type = expression.getType ();
-            if (type != Void.TYPE && !(expression instanceof VariableDeclarationExpression)) {
+            Type type = expression.getType ();
+            if (!type.equals (Void.TYPE) && !(expression instanceof VariableDeclarationExpression)) {
                 BrygMethodVisitor method = visitor.getMethod ();
 
                 // TODO: Does not work for double and long!
@@ -44,7 +44,7 @@ public class StatementNode extends Node {
                 // -> Writer
 
                 /* Stringify if necessary. */
-                if (type.isPrimitive ()) {
+                if (type.getJavaType ().isPrimitive ()) {
                     StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (visitor);
                     stringBuilder.compileNew ();
                     stringBuilder.compileAppend (expression); // Note: The expression is compiled here!
@@ -55,7 +55,7 @@ public class StatementNode extends Node {
                     // -> value
 
                     if (!type.equals (String.class)) {
-                        method.visitMethodInsn (INVOKEVIRTUAL, Types.getAsmType (type).getInternalName (), "toString",
+                        method.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
                                 TypeHelper.generateMethodDesc (null, Void.TYPE), false);
                         // T -> String
                     }

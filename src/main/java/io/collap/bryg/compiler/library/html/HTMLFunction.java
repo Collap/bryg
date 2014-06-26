@@ -4,6 +4,7 @@ import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.Type;
 
 public abstract class HTMLFunction implements Function {
 
@@ -34,8 +35,8 @@ public abstract class HTMLFunction implements Function {
     protected abstract void exit (BrygMethodVisitor method, FunctionCallExpression call);
 
     @Override
-    public Class<?> getReturnType () {
-        return Void.TYPE;
+    public Type getReturnType () {
+        return new Type (Void.TYPE);
     }
 
     public String getTag () {

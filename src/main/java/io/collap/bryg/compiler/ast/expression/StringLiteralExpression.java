@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
 
 public class StringLiteralExpression extends Expression {
@@ -9,7 +10,7 @@ public class StringLiteralExpression extends Expression {
 
     public StringLiteralExpression (StandardVisitor visitor, BrygParser.StringLiteralContext ctx) {
         super (visitor);
-        setType (String.class);
+        setType (new Type (String.class));
 
         /* Trim quotes. */
         value = ctx.String ().getText ();

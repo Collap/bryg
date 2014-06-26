@@ -3,7 +3,7 @@ package io.collap.bryg.compiler.helper;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
-import io.collap.bryg.compiler.type.Types;
+import io.collap.bryg.compiler.type.Type;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -12,9 +12,9 @@ import static org.objectweb.asm.Opcodes.*;
 
 public abstract class ObjectCompileHelper extends CompileHelper {
 
-    protected Class<?> type;
+    protected Type type;
 
-    public ObjectCompileHelper (StandardVisitor visitor, Class<?> type) {
+    public ObjectCompileHelper (StandardVisitor visitor, Type type) {
         super (visitor);
         this.type = type;
     }
@@ -31,7 +31,7 @@ public abstract class ObjectCompileHelper extends CompileHelper {
      */
     public void compileNew (String constructorDesc, @Nullable List<Node> arguments) {
         BrygMethodVisitor method = visitor.getMethod ();
-        String internalTypeName = Types.getAsmType (type).getInternalName ();
+        String internalTypeName = type.getAsmType ().getInternalName ();
 
         method.visitTypeInsn (NEW, internalTypeName);
         // -> Object
@@ -54,7 +54,7 @@ public abstract class ObjectCompileHelper extends CompileHelper {
 
         // TODO: Check if the method exists.
 
-        method.visitMethodInsn (INVOKEVIRTUAL, Types.getAsmType (type).getInternalName (), methodName, methodDesc, false);
+        method.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), methodName, methodDesc, false);
     }
 
 }

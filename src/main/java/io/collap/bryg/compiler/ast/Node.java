@@ -12,6 +12,10 @@ public abstract class Node {
         this.visitor = visitor;
     }
 
+    /**
+     * IMPORTANT NOTE: All (named) variables *must* be resolved in the Node constructors. Using any "current" Scope in the `compile`
+     * method yields undefined behaviour! The root scope can be used to allocate space for anonymous temporal variables.
+     */
     public abstract void compile ();
 
     public void print (PrintStream out, int depth) {

@@ -1,40 +1,44 @@
 package io.collap.bryg.compiler.expression;
 
+import io.collap.bryg.compiler.type.Type;
+
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Scope {
 
-    private int nextId = 0;
-    private Map<String, Variable> variables = new HashMap<> ();
+    protected Scope parent;
+    protected Map<String, Variable> variables = new HashMap<> ();
 
-    public Variable getVariable (String name) {
-        return variables.get (name);
+    public Scope (Scope parent) {
+        this.parent = parent;
     }
 
-    public Variable registerVariable (String name, Class<?> type) {
+    public Variable getVariable (String name) {
+        Variable variable = variables.get (name);
+        if (variable == null) {
+            variable = parent.getVariable (name);
+        }
+        return variable;
+    }
+
+    public Variable registerVariable (String name, Type type) {
         Variable variable = new Variable (type, name, calculateNextId (type));
         variables.put (name, variable);
         return variable;
     }
 
-    public int calculateNextId (@Nullable Class<?> type) {
-        int id = nextId;
+    public int calculateNextId (@Nullable Type type) {
+        return parent.calculateNextId (type);
+    }
 
-        /* Double and long use two variable slots. */
-        boolean isWide = false;
-        if (type != null && type.isPrimitive ()) {
-            isWide = type.equals (Long.TYPE) || type.equals (Double.TYPE);
-        }
+    public Scope createSubScope () {
+        return new Scope (this);
+    }
 
-        if (isWide) {
-            nextId += 2;
-        }else {
-            nextId += 1;
-        }
-
-        return id;
+    public Scope getParent () {
+        return parent;
     }
 
 }

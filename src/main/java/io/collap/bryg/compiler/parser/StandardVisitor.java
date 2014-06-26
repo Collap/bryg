@@ -10,6 +10,7 @@ import io.collap.bryg.compiler.ast.*;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygBaseVisitor;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.model.Model;
@@ -22,7 +23,8 @@ import java.io.Writer;
 public class StandardVisitor extends BrygBaseVisitor<Node> {
 
     private BrygMethodVisitor method;
-    private Scope scope = new Scope ();
+    private Scope rootScope = new RootScope ();
+    private Scope currentScope = rootScope; /* The current scope is the scope each node resides in at its creation. */
     private Library library;
     private ClassResolver classResolver;
 
@@ -32,9 +34,9 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
         this.classResolver = classResolver;
 
         /* Register parameters in the correct order. */
-        scope.registerVariable ("this", null); // TODO: Proper type.
-        scope.registerVariable ("writer", Writer.class);
-        scope.registerVariable ("model", Model.class);
+        rootScope.registerVariable ("this", null); // TODO: Proper type.
+        rootScope.registerVariable ("writer", new Type (Writer.class));
+        rootScope.registerVariable ("model", new Type (Model.class));
     }
 
     @Override
@@ -83,9 +85,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     public Expression visitVariable (@NotNull BrygParser.VariableContext ctx) {
         TerminalNode id = ctx.Id ();
         if (id != null) {
-            Variable variable = scope.getVariable (id.getText ());
-
-            System.out.println ("Id: " + id.getText ());
+            Variable variable = currentScope.getVariable (id.getText ());
 
             if (variable != null) {
                 return new VariableExpression (this, variable);
@@ -98,7 +98,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
 
             throw new RuntimeException ("Variable " + id.getText () + " not found!");
         }else { /* Variable declaration. */
-
+            // TODO: Implement.
         }
 
         return null;
@@ -140,6 +140,11 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitEachExpression (@NotNull BrygParser.EachExpressionContext ctx) {
+        return new EachExpression (this, ctx);
+    }
+
+    @Override
     public Expression visitIntegerLiteral (@NotNull BrygParser.IntegerLiteralContext ctx) {
         return new IntegerLiteralExpression (this, ctx);
     }
@@ -153,8 +158,12 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
         return method;
     }
 
-    public Scope getScope () {
-        return scope;
+    public Scope getCurrentScope () {
+        return currentScope;
+    }
+
+    public void setCurrentScope (Scope currentScope) {
+        this.currentScope = currentScope;
     }
 
     public Library getLibrary () {
@@ -165,4 +174,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
         return classResolver;
     }
 
+    public Scope getRootScope () {
+        return rootScope;
+    }
 }

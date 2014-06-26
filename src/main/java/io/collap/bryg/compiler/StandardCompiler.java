@@ -7,8 +7,9 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.DebugVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
+import io.collap.bryg.compiler.type.AsmTypes;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
-import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
@@ -73,8 +74,8 @@ public class StandardCompiler implements Compiler {
     }
 
     private void compile (ClassVisitor classVisitor, String name, BrygParser.StartContext startContext) {
-        classVisitor.visit (V1_7, ACC_PUBLIC, name.replace ('.', '/'), null, Types.getAsmType (Object.class).getInternalName (),
-                new String[] { Types.getAsmType (Template.class).getInternalName () });
+        classVisitor.visit (V1_7, ACC_PUBLIC, name.replace ('.', '/'), null, AsmTypes.getAsmType (Object.class).getInternalName (),
+                new String[] { AsmTypes.getAsmType (Template.class).getInternalName () });
         {
             createEmptyConstructor (classVisitor);
 
@@ -84,7 +85,7 @@ public class StandardCompiler implements Compiler {
                             Void.TYPE
                     ),
                     null,
-                    new String[] { Types.getAsmType (InvalidInputParameterException.class).getInternalName () });
+                    new String[] { AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName () });
             {
                 StandardVisitor visitor = new StandardVisitor (render, new BasicLibrary (), classResolver);
                 Node node = visitor.visit (startContext);
@@ -102,7 +103,7 @@ public class StandardCompiler implements Compiler {
     private void createEmptyConstructor (ClassVisitor classVisitor) {
         MethodVisitor constructor = classVisitor.visitMethod (ACC_PUBLIC, "<init>", "()V", null, null);
         constructor.visitVarInsn (ALOAD, 0);
-        constructor.visitMethodInsn (INVOKESPECIAL, Types.getAsmType (Object.class).getInternalName (), "<init>", "()V", false);
+        constructor.visitMethodInsn (INVOKESPECIAL, AsmTypes.getAsmType (Object.class).getInternalName (), "<init>", "()V", false);
         constructor.visitInsn (RETURN);
         constructor.visitMaxs (1, 1);
         constructor.visitEnd ();

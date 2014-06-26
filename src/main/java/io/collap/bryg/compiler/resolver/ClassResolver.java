@@ -18,6 +18,7 @@ public class ClassResolver {
 
         /* java.lang */
         rootPackageFilter.addSubpackageFilter ("java.lang");
+        rootPackageFilter.addSubpackageFilter ("java.util");
 
         resolveClassNames ();
 

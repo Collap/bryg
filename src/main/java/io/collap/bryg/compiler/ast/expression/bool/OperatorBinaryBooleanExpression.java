@@ -4,6 +4,7 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.expression.Operator;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -36,7 +37,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
 
         BrygMethodVisitor method = visitor.getMethod ();
 
-        Class<?> type = left.getType ();
+        Type type = left.getType ();
         if (type.equals (Integer.TYPE)) {
             switch (operator) {
                 case equality:

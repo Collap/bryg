@@ -1,18 +1,20 @@
 package io.collap.bryg.compiler.expression;
 
+import io.collap.bryg.compiler.type.Type;
+
 public class Variable {
 
-    private Class<?> type;
+    private Type type;
     private String name;
     private int id;
 
-    public Variable (Class<?> type, String name, int id) {
+    public Variable (Type type, String name, int id) {
         this.type = type;
         this.name = name;
         this.id = id;
     }
 
-    public Class<?> getType () {
+    public Type getType () {
         return type;
     }
 

@@ -18,7 +18,7 @@ expression:
   | 'if' '(' expression ')' statementOrBlock
     ('\n'? 'else' statementOrBlock)?                  # ifExpression
   | 'each' '(' Id 'in' expression ')'
-      (block | statement)                             # eachExpression
+    statementOrBlock                                  # eachExpression
   | functionCall                                      # functionCallExpression
   | '(' type ')' expression                           # castExpression
   | expression ('++' | '--')                          # unarySuffixExpression

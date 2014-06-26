@@ -2,8 +2,8 @@ package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
-import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 import java.lang.reflect.Field;
@@ -25,16 +25,16 @@ public class AccessExpression extends Expression {
 
         String fieldName = ctx.Id ().getText ();
         child = (Expression) visitor.visit (ctx.expression ());
-        Class<?> childType = child.getType ();
+        Type childType = child.getType ();
 
-        if (childType.isPrimitive ()) {
+        if (childType.getJavaType ().isPrimitive ()) {
             // TODO: Probably not the most appropriate Exception.
             throw new RuntimeException ("The expression that is accessed by an access expression must not be a primitive type!"
                 + " (" + childType + ")");
         }
 
-        field = childType.getDeclaredField (fieldName);
-        setType (field.getType ());
+        field = childType.getJavaType ().getDeclaredField (fieldName);
+        setType (new Type (field.getType ()));
 
         if (Modifier.isPublic (field.getModifiers ())) {
             getter = null;
@@ -44,7 +44,7 @@ public class AccessExpression extends Expression {
             String fieldNameCapitalized = fieldName.substring (0, 1).toUpperCase () + fieldName.substring (1); // TODO: Inefficient?
             try {
                 String getterName = "get" + fieldNameCapitalized;
-                Method localGetter = childType.getMethod (getterName);
+                Method localGetter = childType.getJavaType ().getMethod (getterName);
                 if (localGetter.getReturnType ().equals (field.getType ())) {
                     if (Modifier.isPublic (localGetter.getModifiers ())) {
                         getter = localGetter;
@@ -60,7 +60,7 @@ public class AccessExpression extends Expression {
 
             try {
                 String setterName = "set" + fieldNameCapitalized;
-                Method localSetter = childType.getMethod (setterName, type);
+                Method localSetter = childType.getJavaType ().getMethod (setterName, type.getJavaType ());
                 if (Modifier.isPublic (localSetter.getModifiers ())) {
                     setter = localSetter;
                 }else {
@@ -77,7 +77,7 @@ public class AccessExpression extends Expression {
         BrygMethodVisitor method = visitor.getMethod ();
 
         child.compile ();
-        String childInternalName = Types.getAsmType (child.getType ()).getInternalName ();
+        String childInternalName = child.getType ().getAsmType ().getInternalName ();
 
         /* The following code concerns getters. */
         if (getter != null) {
@@ -90,7 +90,7 @@ public class AccessExpression extends Expression {
         }else if (field != null) {
             /* Get the field directly. */
             method.visitFieldInsn (GETFIELD, childInternalName,
-                field.getName (), Types.getAsmType (type).getDescriptor ());
+                field.getName (), type.getAsmType ().getDescriptor ());
             // -> type
         }
 

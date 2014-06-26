@@ -2,12 +2,13 @@ package io.collap.bryg.compiler.helper;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 
 public class StringBuilderCompileHelper extends ObjectCompileHelper {
 
     public StringBuilderCompileHelper (StandardVisitor visitor) {
-        super (visitor, StringBuilder.class);
+        super (visitor, new Type (StringBuilder.class));
     }
 
     public void compileAppend (Expression expression) {
@@ -18,15 +19,15 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
      * StringBuilder -> StringBuilder
      */
     public void compileAppend (Expression expression, boolean compileExpression) {
-        Class<?> argumentType = expression.getType ();
-        if (!argumentType.isPrimitive ()) { /* All objects are supplied as either String or Object. */
+        Type argumentType = expression.getType ();
+        if (!argumentType.getJavaType ().isPrimitive ()) { /* All objects are supplied as either String or Object. */
             if (!argumentType.equals (String.class)) {
-                argumentType = Object.class;
+                argumentType = new Type (Object.class);
             }
         }else {
             /* Byte and Short primitives need to be appended as integers. */
             if (argumentType.equals (Byte.TYPE) || argumentType.equals (Short.TYPE)) {
-                argumentType = Integer.TYPE;
+                argumentType = new Type (Integer.TYPE);
             }
         }
 
@@ -36,7 +37,7 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
         }
 
         compileInvokeVirtual ("append", TypeHelper.generateMethodDesc (
-                new Class<?>[] { argumentType },
+                new Type[] { argumentType },
                 type
         ));
         // StringBuilder, T -> StringBuilder

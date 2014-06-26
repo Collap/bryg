@@ -3,6 +3,7 @@ package io.collap.bryg.compiler.ast.expression;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
@@ -23,10 +24,10 @@ public class BinaryAdditionExpression extends Expression {
             throw new NullPointerException ("Left or right is null: " + left + ", " + right);
         }
 
-        Class<?> leftType = left.getType ();
-        Class<?> rightType = right.getType ();
+        Type leftType = left.getType ();
+        Type rightType = right.getType ();
         if (leftType.equals (String.class) || rightType.equals (String.class)) {
-            setType (String.class);
+            setType (new Type (String.class));
         }
     }
 

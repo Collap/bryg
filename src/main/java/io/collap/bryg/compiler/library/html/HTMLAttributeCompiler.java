@@ -65,7 +65,7 @@ public class HTMLAttributeCompiler {
                     // -> value
 
                     // TODO: Accept all values and cast if necessary.
-                    if (attribute.getType () != String.class) {
+                    if (!attribute.getType ().equals (String.class)) {
                         throw new RuntimeException ("Currently only String values are accepted for HTML arguments!");
                     }
 

@@ -1,21 +1,30 @@
 package io.collap.bryg.compiler.type;
 
-import org.objectweb.asm.Type;
-
 import javax.annotation.Nullable;
 
 public class TypeHelper {
 
-    public static String generateMethodDesc (@Nullable Class<?>[] argumentTypes, Class<?> returnType) {
+    public static String generateMethodDesc (@Nullable Class<?>[] argumentClasses, Class<?> returnClass) {
+        Type[] types = null;
+        if (argumentClasses != null) {
+            types = new Type[argumentClasses.length];
+            for (int i = 0; i < argumentClasses.length; ++i) {
+                types[i] = new Type (argumentClasses[i]);
+            }
+        }
+        return generateMethodDesc (types, new Type (returnClass));
+    }
+
+    public static String generateMethodDesc (@Nullable Type[] argumentTypes, Type returnType) {
         StringBuilder builder = new StringBuilder (32);
         builder.append ('(');
         if (argumentTypes != null) {
-            for (Class<?> type : argumentTypes) {
-                builder.append (Type.getType (type).getDescriptor ());
+            for (Type type : argumentTypes) {
+                builder.append (type.getAsmType ().getDescriptor ());
             }
         }
         builder.append (')');
-        builder.append (Type.getType (returnType).getDescriptor ());
+        builder.append (returnType.getAsmType ().getDescriptor ());
         return builder.toString ();
     }
 
