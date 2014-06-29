@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import javax.annotation.Nullable;
 import java.io.Writer;
+import java.util.Map;
 
 public class StandardVisitor extends BrygBaseVisitor<Node> {
 
@@ -27,11 +28,13 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     private Scope currentScope = rootScope; /* The current scope is the scope each node resides in at its creation. */
     private Library library;
     private ClassResolver classResolver;
+    private Map<Integer, Integer> lineToSourceLineMap;
 
-    public StandardVisitor (BrygMethodVisitor method, Library library, ClassResolver classResolver) {
+    public StandardVisitor (BrygMethodVisitor method, Library library, ClassResolver classResolver, Map lineToSourceLineMap) {
         this.method = method;
         this.library = library;
         this.classResolver = classResolver;
+        this.lineToSourceLineMap = lineToSourceLineMap;
 
         /* Register parameters in the correct order. */
         rootScope.registerVariable ("this", null); // TODO: Proper type.
@@ -92,7 +95,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
             }else { /* The variable is probably a function. */
                 Function function = library.getFunction (id.getText ());
                 if (function != null) {
-                    return new FunctionCallExpression (this, function);
+                    return new FunctionCallExpression (this, function, ctx.getStart ().getLine ());
                 }
             }
 
@@ -180,4 +183,9 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     public Scope getRootScope () {
         return rootScope;
     }
+
+    public Map<Integer, Integer> getLineToSourceLineMap () {
+        return lineToSourceLineMap;
+    }
+
 }

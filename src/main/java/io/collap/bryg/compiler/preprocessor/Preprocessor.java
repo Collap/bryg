@@ -2,6 +2,8 @@ package io.collap.bryg.compiler.preprocessor;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 /**
@@ -12,14 +14,20 @@ public class Preprocessor {
 
     private final String source;
     private Writer writer;
-    private int index;
+    private int index = 0;
     private boolean prettyPrint;
+
+    /**
+     * A map that points from the preprocessed source line to the actual source line.
+     */
+    private Map<Integer, Integer> lineToSourceLineMap = new HashMap<> ();
+    private int prepLine = 1;
+    private int sourceLine = 1;
 
     public Preprocessor (String source, Writer writer, boolean prettyPrint) {
         this.source = source;
         this.writer = writer;
         this.prettyPrint = prettyPrint;
-        this.index = 0;
     }
 
     public void process () throws IOException {
@@ -40,18 +48,27 @@ public class Preprocessor {
                 indentationStack.push (new Indent (indentColumn));
                 if (prettyPrint) {
                     for (int ind = 0; ind < lastIndent.getColumn (); ++ind) {
-                        writer.write (" ");
+                        writer.write (' ');
                     }
-                    writer.write ("{\n");
-                }else {
-                    writer.write ("{");
                 }
+                writer.write ("{\n");
+                prepLine += 1;
             }else {
                 closeIndents (indentationStack, indentColumn);
             }
 
-            writer.write (source.substring (index, semanticLineEnd + 1));
+            int writeStartIndex;
+            if (prettyPrint) {
+                writeStartIndex = index;
+            }else {
+                writeStartIndex = indentColumnIndex;
+            }
+
+            writer.write (source.substring (writeStartIndex, semanticLineEnd + 1));
+            lineToSourceLineMap.put (prepLine, sourceLine);
+
             writer.write ("\n");
+            prepLine += 1;
         }
 
         closeIndents (indentationStack, 0);
@@ -59,6 +76,7 @@ public class Preprocessor {
 
     private void goToNextLine () {
         index = getLineEnd () + 2;
+        sourceLine += 1;
     }
 
     private void closeIndents (Stack<Indent> indentationStack, int currentIndent) throws IOException {
@@ -70,27 +88,10 @@ public class Preprocessor {
                 for (int ind = 0; ind < lastIndent.getColumn (); ++ind) {
                     writer.write (" ");
                 }
-                writer.write ("}\n");
-            }else {
-                writer.write ("}");
             }
+            writer.write ("}\n");
+            prepLine += 1;
         }
-    }
-
-    private boolean isLineEmpty () {
-        int indentColumn = countIndentColumn (index);
-        int firstChar = index + indentColumn;
-        int sourceLength = source.length ();
-        if (sourceLength > firstChar) {
-            /* Possible comment. */
-            if (sourceLength > firstChar + 1 && source.charAt (firstChar) == '/' && source.charAt (firstChar + 1) == '/') {
-                return true;
-            }else {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -127,16 +128,6 @@ public class Preprocessor {
         return nextNewline - 1;
     }
 
-    private int getIndentColumnOfNextLine () {
-        final int nextNewline = source.indexOf ('\n', index);
-        if (nextNewline >= 0) {
-            int lineStart = nextNewline + 1;
-            return countIndentColumn (lineStart);
-        }
-
-        return 0;
-    }
-
     /**
      * Counts the current indent column of the line.
      */
@@ -150,6 +141,10 @@ public class Preprocessor {
         }
 
         return nextNonWhitespace - lineStart;
+    }
+
+    public Map<Integer, Integer> getLineToSourceLineMap () {
+        return lineToSourceLineMap;
     }
 
 }

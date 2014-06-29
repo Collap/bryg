@@ -6,6 +6,7 @@ import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
@@ -22,12 +23,12 @@ public class StatementNode extends Node {
         if (ctx.expression () != null) {
             child = visitor.visit (ctx.expression ());
             if (child == null) {
-                throw new NullPointerException ("Expression in statement is expected but null!");
+                throw new BrygJitException ("Expression in statement is expected but null!", getLine ());
             }
         }else if (ctx.variableDeclaration () != null) {
             child = visitor.visit (ctx.variableDeclaration ());
             if (child == null) {
-                throw new NullPointerException ("Variable declaration in statement is expected but null!");
+                throw new BrygJitException ("Variable declaration in statement is expected but null!", getLine ());
             }
         }
     }

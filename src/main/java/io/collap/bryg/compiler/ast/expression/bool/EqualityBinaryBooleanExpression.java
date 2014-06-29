@@ -8,6 +8,7 @@ public class EqualityBinaryBooleanExpression extends OperatorBinaryBooleanExpres
 
     public EqualityBinaryBooleanExpression (StandardVisitor visitor, BrygParser.BinaryEqualityExpressionContext ctx) {
         super (visitor, ctx.expression (0), ctx.expression (1), Operators.fromString (ctx.getChild (1).getText ()));
+        setLine (ctx.getStart ().getLine ());
     }
 
 }

@@ -22,6 +22,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.*;
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -35,15 +36,16 @@ public class StandardCompiler implements Compiler {
 
     @Override
     public byte[] compile (String name, String source) {
+        boolean printPreprocessedSource = false; // TODO: Add as configuration option.
+
         StringWriter prepWriter = new StringWriter ();
-        Preprocessor preprocessor = new Preprocessor (source, prepWriter, true);
+        Preprocessor preprocessor = new Preprocessor (source, prepWriter, printPreprocessedSource);
         try {
             preprocessor.process ();
         } catch (IOException e) {
             e.printStackTrace (); // TODO: Handle.
         }
 
-        boolean printPreprocessedSource = true;
         if (printPreprocessedSource) {
             System.out.println (prepWriter.toString ());
         }
@@ -61,7 +63,7 @@ public class StandardCompiler implements Compiler {
 
         if (startContext == null) return null;
 
-        // TODO: Remove following debug.
+        // TODO: Add printParseTree as configuration option.
         /* DebugVisitor debugVisitor = new DebugVisitor ();
         debugVisitor.visit (startContext); */
 
@@ -74,11 +76,12 @@ public class StandardCompiler implements Compiler {
             parentVisitor = classWriter;
         }
         BrygClassVisitor brygClassVisitor = new BrygClassVisitor (parentVisitor);
-        compile (brygClassVisitor, name, startContext);
+        compile (brygClassVisitor, name, startContext, preprocessor.getLineToSourceLineMap ());
         return classWriter.toByteArray ();
     }
 
-    private void compile (ClassVisitor classVisitor, String name, BrygParser.StartContext startContext) {
+    private void compile (ClassVisitor classVisitor, String name, BrygParser.StartContext startContext,
+                          Map<Integer, Integer> lineToSourceLineMap) {
         classVisitor.visit (V1_7, ACC_PUBLIC, name.replace ('.', '/'), null, AsmTypes.getAsmType (Object.class).getInternalName (),
                 new String[] { AsmTypes.getAsmType (Template.class).getInternalName () });
         {
@@ -92,7 +95,7 @@ public class StandardCompiler implements Compiler {
                     null,
                     new String[] { AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName () });
             {
-                StandardVisitor visitor = new StandardVisitor (render, new BasicLibrary (), classResolver);
+                StandardVisitor visitor = new StandardVisitor (render, new BasicLibrary (), classResolver, lineToSourceLineMap);
                 Node node = visitor.visit (startContext);
 
                 boolean printAst = true; // TODO: Add as configuration option.

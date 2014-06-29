@@ -6,6 +6,7 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import static org.objectweb.asm.Opcodes.F_APPEND;
@@ -20,6 +21,7 @@ public class VariableDeclarationNode extends Node {
 
     public VariableDeclarationNode (StandardVisitor visitor, BrygParser.VariableDeclarationContext ctx) {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
 
         String name = ctx.Id ().getText ();
         Type expectedType = null;
@@ -35,7 +37,7 @@ public class VariableDeclarationNode extends Node {
         Type type = null;
         if (expectedType == null) {
             if (expression == null) {
-                throw new RuntimeException ("Could not infer type for variable " + name + "!");
+                throw new BrygJitException ("Could not infer type for variable " + name + "!", getLine ());
             }else{
                 type = expression.getType ();
             }
@@ -44,7 +46,8 @@ public class VariableDeclarationNode extends Node {
                 type = expectedType;
             }else {
                 if (!expression.getType ().equals (expectedType)) {
-                    throw new RuntimeException ("The expected type and inferred type do not match for the variable " + name + "!");
+                    throw new BrygJitException ("The expected type and inferred type do not match for the variable " + name + "!",
+                        getLine ());
                 }
             }
         }

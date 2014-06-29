@@ -11,6 +11,7 @@ public class VariableExpression extends Expression {
 
     public VariableExpression (StandardVisitor visitor, Variable variable) {
         super (visitor);
+
         this.variable = variable;
         setType (variable.getType ());
     }

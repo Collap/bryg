@@ -11,6 +11,7 @@ public class StringLiteralExpression extends Expression {
     public StringLiteralExpression (StandardVisitor visitor, BrygParser.StringLiteralContext ctx) {
         super (visitor);
         setType (new Type (String.class));
+        setLine (ctx.getStart ().getLine ());
 
         /* Trim quotes. */
         value = ctx.String ().getText ();

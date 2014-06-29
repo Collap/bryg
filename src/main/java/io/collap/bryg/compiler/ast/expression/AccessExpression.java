@@ -4,6 +4,7 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import java.lang.reflect.Field;
@@ -22,15 +23,15 @@ public class AccessExpression extends Expression {
 
     public AccessExpression (StandardVisitor visitor, BrygParser.AccessExpressionContext ctx) throws NoSuchFieldException {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
 
         String fieldName = ctx.Id ().getText ();
         child = (Expression) visitor.visit (ctx.expression ());
         Type childType = child.getType ();
 
         if (childType.getJavaType ().isPrimitive ()) {
-            // TODO: Probably not the most appropriate Exception.
-            throw new RuntimeException ("The expression that is accessed by an access expression must not be a primitive type!"
-                + " (" + childType + ")");
+            throw new BrygJitException ("The expression that is accessed by an access expression must not be a primitive type!"
+                + " (Type: " + childType + ")", getLine ());
         }
 
         field = childType.getJavaType ().getDeclaredField (fieldName);
@@ -41,7 +42,7 @@ public class AccessExpression extends Expression {
             setter = null;
         }else {
             /* Search for getter and setter. */
-            String fieldNameCapitalized = fieldName.substring (0, 1).toUpperCase () + fieldName.substring (1); // TODO: Inefficient?
+            String fieldNameCapitalized = fieldName.substring (0, 1).toUpperCase () + fieldName.substring (1);
             try {
                 String getterName = "get" + fieldNameCapitalized;
                 Method localGetter = childType.getJavaType ().getMethod (getterName);
@@ -92,6 +93,9 @@ public class AccessExpression extends Expression {
             method.visitFieldInsn (GETFIELD, childInternalName,
                 field.getName (), type.getAsmType ().getDescriptor ());
             // -> type
+        }else {
+            throw new BrygJitException ("The getter and field for object access are both inaccessible or non-existent!",
+                    getLine ());
         }
 
     }

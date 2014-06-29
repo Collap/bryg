@@ -4,6 +4,7 @@ import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.BlockNode;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.library.Function;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
@@ -18,11 +19,12 @@ public class FunctionCallExpression extends Expression {
 
     public FunctionCallExpression (StandardVisitor visitor, BrygParser.FunctionCallContext ctx) {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
 
         String name = ctx.Id ().getText ();
         function = visitor.getLibrary ().getFunction (name);
         if (function == null) {
-            throw new RuntimeException ("Function " + name + " not found!");
+            throw new BrygJitException ("Function " + name + " not found!", getLine ());
         }
 
         setType (function.getReturnType ());
@@ -41,8 +43,10 @@ public class FunctionCallExpression extends Expression {
         }
     }
 
-    public FunctionCallExpression (StandardVisitor visitor, Function function) {
+    public FunctionCallExpression (StandardVisitor visitor, Function function, int line) {
         super (visitor);
+        setLine (line);
+
         this.function = function;
         statementOrBlock = new BlockNode (visitor);
 

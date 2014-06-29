@@ -20,9 +20,8 @@ public class IfExpression extends Expression {
 
     public IfExpression (StandardVisitor visitor, BrygParser.IfExpressionContext ctx) {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
         setType (new Type (Void.TYPE)); // TODO: Implement if as a proper expression?
-
-        System.out.println ("If type: " + getType ());
 
         condition = (BooleanExpression) visitor.visit (ctx.expression ());
         ifStatementOrBlock = visitor.visitStatementOrBlock (ctx.statementOrBlock (0));

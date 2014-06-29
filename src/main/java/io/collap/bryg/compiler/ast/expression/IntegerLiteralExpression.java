@@ -11,6 +11,8 @@ public class IntegerLiteralExpression extends Expression {
     public IntegerLiteralExpression (StandardVisitor visitor, BrygParser.IntegerLiteralContext ctx) {
         super (visitor);
         setType (new Type (Integer.TYPE));
+        setLine (ctx.getStart ().getLine ());
+
         value = Integer.parseInt (ctx.Integer ().getText ());
     }
 

@@ -8,6 +8,7 @@ public class RelationalBinaryBooleanExpression extends OperatorBinaryBooleanExpr
 
     public RelationalBinaryBooleanExpression (StandardVisitor visitor, BrygParser.BinaryRelationalExpressionContext ctx) {
         super (visitor, ctx.expression (0), ctx.expression (1), Operators.fromString (ctx.getChild (1).getText ()));
+        setLine (ctx.getStart ().getLine ());
     }
 
 }

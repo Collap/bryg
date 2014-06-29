@@ -8,6 +8,7 @@ import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -28,6 +29,7 @@ public class EachExpression extends Expression {
     public EachExpression (StandardVisitor visitor, BrygParser.EachExpressionContext ctx) {
         super (visitor);
         setType (new Type (Void.TYPE)); // TODO: Implement each as a proper expression?
+        setLine (ctx.getStart ().getLine ());
 
         collectionExpression = (Expression) visitor.visit (ctx.expression ());
 
@@ -52,7 +54,7 @@ public class EachExpression extends Expression {
 
             /* Check for Iterable interface. */
             if (!Iterable.class.isAssignableFrom (collectionType.getJavaType ())) {
-                throw new RuntimeException ("The collection needs to implement the Iterable interface!");
+                throw new BrygJitException ("The collection needs to implement the Iterable interface!", getLine ());
             }
 
             /* Check for element type. */
@@ -66,10 +68,10 @@ public class EachExpression extends Expression {
             if (elementType == null) {
                 elementType = declaredElementType;
             }else if (!declaredElementType.equals (elementType)) {
-                throw new RuntimeException ("The inferred element type differs from the declared element type!");
+                throw new BrygJitException ("The inferred element type differs from the declared element type!", getLine ());
             }
         }else if (elementType == null) {
-            throw new RuntimeException ("The element type of the collection could not be inferred!");
+            throw new BrygJitException ("The element type of the collection could not be inferred!", getLine ());
         }
 
         /* Register variable(s). */

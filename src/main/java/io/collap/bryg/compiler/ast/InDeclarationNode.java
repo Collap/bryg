@@ -20,6 +20,7 @@ public class InDeclarationNode extends Node {
 
     public InDeclarationNode (StandardVisitor visitor, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
 
         String name = ctx.Id ().getText ();
 

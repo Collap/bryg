@@ -1,6 +1,5 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.expression.Scope;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 
 import java.io.PrintStream;

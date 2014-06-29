@@ -5,6 +5,7 @@ import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.expression.Operator;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -25,13 +26,13 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
     @Override
     public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
         if (left == null || right == null) {
-            throw new UnsupportedOperationException ("Left or right is null: " + left + ", " + right);
+            throw new BrygJitException ("Left or right is null: " + left + ", " + right, getLine ());
         }
 
         if (!areBinaryExpressionTypesValid (left, right)) {
             // TODO: Attempt coercion.
-            throw new UnsupportedOperationException ("Left and right have different types: " + left.getType ().getJavaType ()
-                + " " + right.getType ().getJavaType ());
+            throw new BrygJitException ("Left and right have different types: " + left.getType ().getJavaType ()
+                + " " + right.getType ().getJavaType (), getLine ());
         }
 
         left.compile ();
@@ -64,7 +65,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
                     break;
 
                 default:
-                    throw new UnsupportedOperationException ("Unexpected boolean operator!");
+                    throw new BrygJitException ("Unexpected boolean operator!", getLine ());
             }
         }
 

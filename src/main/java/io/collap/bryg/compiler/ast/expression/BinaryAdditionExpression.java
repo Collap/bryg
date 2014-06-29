@@ -4,6 +4,7 @@ import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
@@ -17,11 +18,12 @@ public class BinaryAdditionExpression extends Expression {
 
     public BinaryAdditionExpression (StandardVisitor visitor, BrygParser.BinaryAdditionExpressionContext ctx) {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
 
         left = (Expression) visitor.visit (ctx.expression (0));
         right = (Expression) visitor.visit (ctx.expression (1));
         if (left == null || right == null) {
-            throw new NullPointerException ("Left or right is null: " + left + ", " + right);
+            throw new BrygJitException ("Left or right is null: " + left + ", " + right, getLine ());
         }
 
         Type leftType = left.getType ();

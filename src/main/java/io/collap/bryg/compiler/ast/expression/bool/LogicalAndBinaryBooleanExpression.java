@@ -10,6 +10,7 @@ public class LogicalAndBinaryBooleanExpression extends BinaryBooleanExpression {
 
     public LogicalAndBinaryBooleanExpression (StandardVisitor visitor, BrygParser.BinaryLogicalAndExpressionContext ctx) {
         super (visitor, ctx.expression (0), ctx.expression (1));
+        setLine (ctx.getStart ().getLine ());
     }
 
     @Override
