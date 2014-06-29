@@ -6,7 +6,7 @@ import io.collap.bryg.model.Model;
 import java.io.Writer;
 
 /**
- * Implementations of the template class must be thread-safe, as only a single object is used to render all instances
+ * Implementations of the template interface must be thread-safe, as only a single object is used to render all instances
  * of the template.
  */
 public interface Template {

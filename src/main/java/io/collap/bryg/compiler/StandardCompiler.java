@@ -4,11 +4,9 @@ import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.library.BasicLibrary;
 import io.collap.bryg.compiler.parser.BrygClassVisitor;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.DebugVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
-import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygLexer;
@@ -45,7 +43,10 @@ public class StandardCompiler implements Compiler {
             e.printStackTrace (); // TODO: Handle.
         }
 
-        System.out.println (prepWriter.toString ());
+        boolean printPreprocessedSource = true;
+        if (printPreprocessedSource) {
+            System.out.println (prepWriter.toString ());
+        }
 
         BrygParser.StartContext startContext = null;
         InputStream stream = new ByteArrayInputStream (prepWriter.toString ().getBytes ());
@@ -61,14 +62,18 @@ public class StandardCompiler implements Compiler {
         if (startContext == null) return null;
 
         // TODO: Remove following debug.
-        DebugVisitor debugVisitor = new DebugVisitor ();
-        debugVisitor.visit (startContext);
+        /* DebugVisitor debugVisitor = new DebugVisitor ();
+        debugVisitor.visit (startContext); */
 
-        PrintWriter debugWriter = new PrintWriter (System.out);
-
-        ClassWriter classWriter = new ClassWriter (ClassWriter.COMPUTE_MAXS);
-        TraceClassVisitor traceClassVisitor = new TraceClassVisitor (classWriter, debugWriter);
-        BrygClassVisitor brygClassVisitor = new BrygClassVisitor (traceClassVisitor);
+        ClassWriter classWriter = new ClassWriter (ClassWriter.COMPUTE_FRAMES);
+        boolean printGeneratedBytecode = true; // TODO: Add as configuration option.
+        ClassVisitor parentVisitor;
+        if (printGeneratedBytecode) {
+            parentVisitor = new TraceClassVisitor (classWriter, new PrintWriter (System.out));
+        }else {
+            parentVisitor = classWriter;
+        }
+        BrygClassVisitor brygClassVisitor = new BrygClassVisitor (parentVisitor);
         compile (brygClassVisitor, name, startContext);
         return classWriter.toByteArray ();
     }
@@ -89,11 +94,17 @@ public class StandardCompiler implements Compiler {
             {
                 StandardVisitor visitor = new StandardVisitor (render, new BasicLibrary (), classResolver);
                 Node node = visitor.visit (startContext);
-                node.print (System.out, 0);
+
+                boolean printAst = true; // TODO: Add as configuration option.
+                if (printAst) {
+                    node.print (System.out, 0);
+                }
+
                 node.compile ();
 
                 render.voidReturn ();
-                render.visitMaxs (2, 3);
+                render.visitMaxs (0, 0); /* Note: This function is called so the maximum values are calculated by ASM.
+                                                  The arguments 0 and 0 have no special meaning. */
             }
             render.visitEnd ();
         }

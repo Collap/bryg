@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.library.html;
 
 import io.collap.bryg.compiler.ast.expression.ArgumentExpression;
+import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 
 import java.util.Arrays;
@@ -44,6 +45,7 @@ public class HTMLAttributeCompiler {
                     | Arrays.binarySearch (Attributes.validGlobalAttributes, name) >= 0;
 
             if (!valid) {
+                // TODO: Add notice for which tag said attribute is not defined.
                 System.out.println ("Warning: The attribute " + name + " is not a valid HTML5 attribute!");
             }
 
@@ -61,12 +63,16 @@ public class HTMLAttributeCompiler {
                     method.loadWriter ();
                     // -> Writer
 
-                    attribute.compile ();
-                    // -> value
-
                     // TODO: Accept all values and cast if necessary.
-                    if (!attribute.getType ().equals (String.class)) {
-                        throw new RuntimeException ("Currently only String values are accepted for HTML arguments!");
+                    if (attribute.getType ().equals (String.class)) {
+                        attribute.compile ();
+                        // -> value
+                    }else {
+                        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (method);
+                        stringBuilder.compileNew ();
+                        stringBuilder.compileAppend (attribute.getExpression ()); // Note: The expression is compiled here!
+                        stringBuilder.compileToString ();
+                        // -> String
                     }
 
                     method.writeString ();

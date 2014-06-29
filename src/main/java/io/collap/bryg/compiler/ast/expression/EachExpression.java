@@ -7,9 +7,11 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class EachExpression extends Expression {
 
     public EachExpression (StandardVisitor visitor, BrygParser.EachExpressionContext ctx) {
         super (visitor);
-        setType (new Type (Void.TYPE));
+        setType (new Type (Void.TYPE)); // TODO: Implement each as a proper expression?
 
         collectionExpression = (Expression) visitor.visit (ctx.expression ());
 
@@ -34,6 +36,11 @@ public class EachExpression extends Expression {
         visitor.setCurrentScope (scope);
 
         Type collectionType = collectionExpression.getType ();
+        BrygParser.TypeContext typeContext = ctx.type ();
+        Type declaredElementType = null;
+        if (typeContext != null) {
+            declaredElementType = new TypeInterpreter (visitor).interpretType (typeContext);
+        }
         Type elementType = null;
 
         Class<?> elementClass = collectionType.getJavaType ().getComponentType (); /* Assuming the collection is an array. */
@@ -44,25 +51,25 @@ public class EachExpression extends Expression {
             isArray = false;
 
             /* Check for Iterable interface. */
-            for (Class<?> itfClass : collectionType.getJavaType ().getInterfaces ()) {
-                System.out.println (itfClass);
-            }
-
             if (!Iterable.class.isAssignableFrom (collectionType.getJavaType ())) {
                 throw new RuntimeException ("The collection needs to implement the Iterable interface!");
             }
 
-            /* Check for generic type. */
+            /* Check for element type. */
             List<Type> genericTypes = collectionType.getGenericTypes ();
-            if (genericTypes.size () <= 0) {
-                throw new RuntimeException ("The element type of the collection could not be inferred!");
+            if (genericTypes.size () > 0) {
+                elementType = genericTypes.get (0);
             }
-
-            elementType = genericTypes.get (0);
         }
 
-        if (elementType == null) {
-            throw new RuntimeException ("The collection being iterated by the each expression is not a valid collection");
+        if (declaredElementType != null) {
+            if (elementType == null) {
+                elementType = declaredElementType;
+            }else if (!declaredElementType.equals (elementType)) {
+                throw new RuntimeException ("The inferred element type differs from the declared element type!");
+            }
+        }else if (elementType == null) {
+            throw new RuntimeException ("The element type of the collection could not be inferred!");
         }
 
         /* Register variable(s). */
@@ -136,6 +143,12 @@ public class EachExpression extends Expression {
 
             method.visitJumpInsn (IFNE, blockLabel); /* true: jump */
         }
+    }
+
+    @Override
+    public void print (PrintStream out, int depth) {
+        collectionExpression.print (out, depth + 1);
+        statementOrBlock.print (out, depth + 1);
     }
 
 }

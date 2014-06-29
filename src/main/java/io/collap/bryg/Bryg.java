@@ -2,6 +2,7 @@ package io.collap.bryg;
 
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.environment.StandardEnvironment;
+import io.collap.bryg.example.Post;
 import io.collap.bryg.loader.FileSourceLoader;
 import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.exception.InvalidInputParameterException;
@@ -50,6 +51,23 @@ public class Bryg {
             names.add ("Dany");
             names.add ("Tyrion");
             model.setVariable ("names", names);
+            benchmarkTemplate (template, model);
+        }
+
+        /* post.Edit */
+        {
+            Template template = environment.getTemplate ("post.Edit");
+            Model model = new BasicModel ();
+            Post post = new Post ();
+            post.setId (1);
+            post.setTitle ("Test Post");
+            post.setContent ("This is a test post!");
+
+            List<String> categories = post.getCategories ();
+            categories.add ("Test");
+            categories.add ("Discussion");
+            categories.add ("Computer Science");
+            model.setVariable ("post", post);
             benchmarkTemplate (template, model);
         }
     }

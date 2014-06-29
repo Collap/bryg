@@ -6,6 +6,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 public class BlockNode extends InnerNode {
 
+    // TODO: Add Scope semantics to each block! (And single statement, so merging blocks and single statements in the AST would be good)
+
     public BlockNode (StandardVisitor visitor, BrygParser.BlockContext ctx) {
         super (visitor);
 

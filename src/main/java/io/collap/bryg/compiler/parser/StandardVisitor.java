@@ -97,11 +97,14 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
             }
 
             throw new RuntimeException ("Variable " + id.getText () + " not found!");
-        }else { /* Variable declaration. */
-            // TODO: Implement.
         }
 
         return null;
+    }
+
+    @Override
+    public Node visitVariableDeclaration (@NotNull BrygParser.VariableDeclarationContext ctx) {
+        return new VariableDeclarationNode (this, ctx);
     }
 
     @Override

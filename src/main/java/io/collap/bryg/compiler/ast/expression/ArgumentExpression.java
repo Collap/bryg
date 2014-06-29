@@ -35,4 +35,8 @@ public class ArgumentExpression extends Expression {
         return expression.getConstantValue ();
     }
 
+    public Expression getExpression () {
+        return expression;
+    }
+
 }

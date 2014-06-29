@@ -14,8 +14,8 @@ public abstract class ObjectCompileHelper extends CompileHelper {
 
     protected Type type;
 
-    public ObjectCompileHelper (StandardVisitor visitor, Type type) {
-        super (visitor);
+    public ObjectCompileHelper (BrygMethodVisitor method, Type type) {
+        super (method);
         this.type = type;
     }
 
@@ -30,7 +30,6 @@ public abstract class ObjectCompileHelper extends CompileHelper {
      * -> Object
      */
     public void compileNew (String constructorDesc, @Nullable List<Node> arguments) {
-        BrygMethodVisitor method = visitor.getMethod ();
         String internalTypeName = type.getAsmType ().getInternalName ();
 
         method.visitTypeInsn (NEW, internalTypeName);
@@ -50,8 +49,6 @@ public abstract class ObjectCompileHelper extends CompileHelper {
     }
 
     public void compileInvokeVirtual (String methodName, String methodDesc) {
-        BrygMethodVisitor method = visitor.getMethod ();
-
         // TODO: Check if the method exists.
 
         method.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), methodName, methodDesc, false);

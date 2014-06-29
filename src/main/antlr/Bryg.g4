@@ -8,7 +8,9 @@ start: inDeclaration* statementLine* ;
 
 inDeclaration: 'in' Id ':' type '\n' ;
 statementLine: statement '\n' ;
-statement: expression ;
+statement: expression
+  | variableDeclaration
+  ;
 
 expression:
     literal                                           # literalExpression
@@ -17,7 +19,7 @@ expression:
   | expression '.' Id                                 # accessExpression
   | 'if' '(' expression ')' statementOrBlock
     ('\n'? 'else' statementOrBlock)?                  # ifExpression
-  | 'each' '(' Id 'in' expression ')'
+  | 'each' '(' Id (':' type)? 'in' expression ')'
     statementOrBlock                                  # eachExpression
   | functionCall                                      # functionCallExpression
   | '(' type ')' expression                           # castExpression
@@ -55,8 +57,8 @@ expression:
 block: '\n'? '{' '\n'? statementLine* '\n'? '}' '\n'? ;
 statementOrBlock: statement | block ;
 
-variable: Id | variableDeclaration ; // Note that it is possible for a recognized variable to be a trivial function.
-variableDeclaration: ('mut' | 'val') Id (':' Id)? ;
+variable: Id ; // Note that it is possible for a recognized variable to be a trivial function.
+variableDeclaration: ('mut' | 'val') Id (':' type)? ('=' expression)? ;
 
 functionCall: Id ( '(' (argument (',' argument)*)?  ')' )? statementOrBlock? ;
 argument: (Id ':')? expression ; // TODO: Allow dashes in HTML attributes.

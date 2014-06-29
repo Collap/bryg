@@ -41,9 +41,7 @@ public class BinaryAdditionExpression extends Expression {
     }
 
     private void buildString () {
-        BrygMethodVisitor method = visitor.getMethod ();
-
-        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (visitor);
+        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (visitor.getMethod ());
 
         stringBuilder.compileNew ();
         stringBuilder.compileAppend (left);

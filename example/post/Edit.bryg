@@ -2,23 +2,18 @@
 // May be empty (but not null) to allow creating new posts, in which case the id must be -1.
 in post: Post // io.collap has to be added as a search path and the class name must be unambiguous!
 
-// A list of categories associated with this post.
-in categories: List<Category>
-
 // Construct the categoryString
-//mut categoryString = ""
-//each (category in categories)
+mut categoryString = "Declaration test"
+each (categoryTest: String in post.categories) categoryTest
 //  if (categoryString != "") categoryString += ","
 //  categoryString += category.name
 
-val existent = post.id >= 0
-
 html
   head
-    if (existent) title `Edit #post.title`
+    if (post.id >= 0) title `Edit #post.title`
     else title `Create New Post`
   body
-    form (name: "edit this", action: "#basePath/post/edit", method: "post")
+    form (name: "edit", action: "#basePath/post/edit", method: "post")
       input (type: "hidden", name: "id", value: post.id)
 
       label (for: "title") `Title:`
@@ -28,6 +23,12 @@ html
 
       label (for: "categories") `Categories:`
       input (type: "text", name: "categories", value: categoryString)
+
+      section (id: "categories")
+        h3 `Categories`
+        ul
+          each (category: String in post.categories)
+            li category
 
       br
 

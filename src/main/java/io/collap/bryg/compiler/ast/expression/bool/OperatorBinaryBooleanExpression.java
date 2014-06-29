@@ -29,7 +29,9 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
         }
 
         if (!areBinaryExpressionTypesValid (left, right)) {
-            throw new UnsupportedOperationException ("Left and right have different types!");
+            // TODO: Attempt coercion.
+            throw new UnsupportedOperationException ("Left and right have different types: " + left.getType ().getJavaType ()
+                + " " + right.getType ().getJavaType ());
         }
 
         left.compile ();

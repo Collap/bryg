@@ -113,8 +113,11 @@ public class BrygMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitFrame (int type, int nLocal, Object[] local, int nStack, Object[] stack) {
+        // TODO: Remove visit frame calls instead.
+        /*
         flushStringBuilder ();
         super.visitFrame (type, nLocal, local, nStack, stack);
+        */
     }
 
     @Override

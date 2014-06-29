@@ -17,6 +17,8 @@ public class ClassNameFinder {
     public ClassNameFinder (ClassNameVisitor visitor) {
         this.visitor = visitor;
 
+        // TODO: Include the executed jar file.
+
         /* The *-wildcard signals that all jars in the directory ought to be included in the classpath. */
         addPath (System.getProperty ("java.home") + File.separator + "lib" + File.separator + "*");
 

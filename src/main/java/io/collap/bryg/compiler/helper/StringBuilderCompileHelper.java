@@ -1,14 +1,14 @@
 package io.collap.bryg.compiler.helper;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 
 public class StringBuilderCompileHelper extends ObjectCompileHelper {
 
-    public StringBuilderCompileHelper (StandardVisitor visitor) {
-        super (visitor, new Type (StringBuilder.class));
+    public StringBuilderCompileHelper (BrygMethodVisitor method) {
+        super (method, new Type (StringBuilder.class));
     }
 
     public void compileAppend (Expression expression) {
