@@ -1,7 +1,6 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.exception.BrygJitException;
@@ -10,6 +9,7 @@ import io.collap.bryg.parser.BrygParser;
 import java.io.PrintStream;
 
 // TODO: Evaluate constant expressions more efficiently.
+// TODO: Subtraction?
 
 public class BinaryAdditionExpression extends Expression {
 
@@ -26,6 +26,19 @@ public class BinaryAdditionExpression extends Expression {
             throw new BrygJitException ("Left or right is null: " + left + ", " + right, getLine ());
         }
 
+        setupType ();
+    }
+
+    public BinaryAdditionExpression (StandardVisitor visitor, Expression left, Expression right, int line) {
+        super (visitor);
+        this.left = left;
+        this.right = right;
+        setLine (line);
+
+        setupType ();
+    }
+
+    private void setupType () {
         Type leftType = left.getType ();
         Type rightType = right.getType ();
         if (leftType.equals (String.class) || rightType.equals (String.class)) {

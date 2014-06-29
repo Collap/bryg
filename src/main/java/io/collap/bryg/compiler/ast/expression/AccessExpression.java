@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast.expression;
 
+import io.collap.bryg.compiler.ast.AccessMode;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
@@ -15,14 +16,16 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class AccessExpression extends Expression {
 
+    private AccessMode mode;
+
     private Expression child;
 
     private Field field;
-    private Method getter;
-    private Method setter;
+    private Method getterOrSetter;
 
-    public AccessExpression (StandardVisitor visitor, BrygParser.AccessExpressionContext ctx) throws NoSuchFieldException {
+    public AccessExpression (StandardVisitor visitor, BrygParser.AccessExpressionContext ctx, AccessMode mode) throws NoSuchFieldException {
         super (visitor);
+        this.mode = mode;
         setLine (ctx.getStart ().getLine ());
 
         String fieldName = ctx.Id ().getText ();
@@ -38,37 +41,37 @@ public class AccessExpression extends Expression {
         setType (new Type (field.getType ()));
 
         if (Modifier.isPublic (field.getModifiers ())) {
-            getter = null;
-            setter = null;
+            getterOrSetter = null;
         }else {
-            /* Search for getter and setter. */
             String fieldNameCapitalized = fieldName.substring (0, 1).toUpperCase () + fieldName.substring (1);
-            try {
-                String getterName = "get" + fieldNameCapitalized;
-                Method localGetter = childType.getJavaType ().getMethod (getterName);
-                if (localGetter.getReturnType ().equals (field.getType ())) {
-                    if (Modifier.isPublic (localGetter.getModifiers ())) {
-                        getter = localGetter;
-                    }else {
-                        System.out.println ("The supposed getter " + getterName + " is not public.");
+            if (mode == AccessMode.get) {
+                try {
+                    String getterName = "get" + fieldNameCapitalized;
+                    Method localGetter = childType.getJavaType ().getMethod (getterName);
+                    if (localGetter.getReturnType ().equals (field.getType ())) {
+                        if (Modifier.isPublic (localGetter.getModifiers ())) {
+                            getterOrSetter = localGetter;
+                        } else {
+                            System.out.println ("The supposed getter " + getterName + " is not public.");
+                        }
+                    } else {
+                        System.out.println ("The return type of the supposed getter " + getterName + " does not match the field's type.");
                     }
-                }else {
-                    System.out.println ("The return type of the supposed getter " + getterName + " does not match the field's type.");
+                } catch (NoSuchMethodException e) {
+                    /* Expected. */
                 }
-            } catch (NoSuchMethodException e) {
-                /* Expected. */
-            }
-
-            try {
-                String setterName = "set" + fieldNameCapitalized;
-                Method localSetter = childType.getJavaType ().getMethod (setterName, type.getJavaType ());
-                if (Modifier.isPublic (localSetter.getModifiers ())) {
-                    setter = localSetter;
-                }else {
-                    System.out.println ("The supposed setter " + setterName + " is not public.");
+            }else if (mode == AccessMode.set) {
+                try {
+                    String setterName = "set" + fieldNameCapitalized;
+                    Method localSetter = childType.getJavaType ().getMethod (setterName, type.getJavaType ());
+                    if (Modifier.isPublic (localSetter.getModifiers ())) {
+                        getterOrSetter = localSetter;
+                    } else {
+                        System.out.println ("The supposed setter " + setterName + " is not public.");
+                    }
+                } catch (NoSuchMethodException e) {
+                    /* Expected. */
                 }
-            } catch (NoSuchMethodException e) {
-                /* Expected. */
             }
         }
     }
@@ -80,24 +83,26 @@ public class AccessExpression extends Expression {
         child.compile ();
         String childInternalName = child.getType ().getAsmType ().getInternalName ();
 
-        /* The following code concerns getters. */
-        if (getter != null) {
-            method.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
-                    getter.getName (), TypeHelper.generateMethodDesc (
-                            null,
-                            type
-                    ), false);
-            // -> type
-        }else if (field != null) {
+        if (mode == AccessMode.get) {
+            if (getterOrSetter != null) {
+                method.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
+                        getterOrSetter.getName (), TypeHelper.generateMethodDesc (
+                                null,
+                                type
+                        ), false);
+                // -> T
+            }else if (field != null) {
             /* Get the field directly. */
-            method.visitFieldInsn (GETFIELD, childInternalName,
-                field.getName (), type.getAsmType ().getDescriptor ());
-            // -> type
+                method.visitFieldInsn (GETFIELD, childInternalName,
+                        field.getName (), type.getAsmType ().getDescriptor ());
+                // -> T
+            }else {
+                throw new BrygJitException ("The getter and field for object access are both inaccessible or non-existent!",
+                        getLine ());
+            }
         }else {
-            throw new BrygJitException ("The getter and field for object access are both inaccessible or non-existent!",
-                    getLine ());
+            throw new UnsupportedOperationException ("Currently only the 'get' access mode is supported! (Line: " + getLine () + ")");
         }
-
     }
 
     // TODO: Handle setters.

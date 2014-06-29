@@ -1,10 +1,13 @@
 package io.collap.bryg.compiler.ast.expression;
 
+import io.collap.bryg.compiler.ast.expression.bool.ExpressionBooleanExpression;
+import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.expression.bool.BooleanExpression;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -23,7 +26,12 @@ public class IfExpression extends Expression {
         setLine (ctx.getStart ().getLine ());
         setType (new Type (Void.TYPE)); // TODO: Implement if as a proper expression?
 
-        condition = (BooleanExpression) visitor.visit (ctx.expression ());
+        Expression conditionOrExpression = (Expression) visitor.visit (ctx.expression ());
+        if (conditionOrExpression instanceof BooleanExpression) {
+            condition = (BooleanExpression) conditionOrExpression;
+        }else {
+            condition = new ExpressionBooleanExpression (visitor, conditionOrExpression);
+        }
         ifStatementOrBlock = visitor.visitStatementOrBlock (ctx.statementOrBlock (0));
 
         BrygParser.StatementOrBlockContext elseCtx = ctx.statementOrBlock (1);

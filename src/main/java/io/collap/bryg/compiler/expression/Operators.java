@@ -14,6 +14,7 @@ public class Operators {
         operators.put (">=", Operator.relational_greater_equal);
         operators.put ("<", Operator.relational_less_than);
         operators.put ("<=", Operator.relational_less_equal);
+        operators.put ("+", Operator.addition);
     }
 
     public static Operator fromString (String operatorString) {

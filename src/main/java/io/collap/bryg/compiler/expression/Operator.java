@@ -6,5 +6,6 @@ public enum Operator {
     relational_greater_than,    // >
     relational_greater_equal ,  // >=
     relational_less_than,       // <
-    relational_less_equal       // <=
+    relational_less_equal,      // <=
+    addition                    // +
 }

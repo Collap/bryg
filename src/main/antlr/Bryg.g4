@@ -11,7 +11,8 @@ start: inDeclaration* statementLine* ;
 
 inDeclaration: 'in' Id ':' type '\n' ;
 statementLine: statement '\n' ;
-statement: expression
+statement:
+    expression
   | variableDeclaration
   ;
 

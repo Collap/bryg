@@ -71,7 +71,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     @Override
     public AccessExpression visitAccessExpression (@NotNull BrygParser.AccessExpressionContext ctx) {
         try {
-            return new AccessExpression (this, ctx);
+            return new AccessExpression (this, ctx, AccessMode.get);
         } catch (NoSuchFieldException e) {
             e.printStackTrace ();
             return null;
@@ -91,7 +91,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
             Variable variable = currentScope.getVariable (id.getText ());
 
             if (variable != null) {
-                return new VariableExpression (this, variable);
+                return new VariableExpression (this, variable, AccessMode.get, ctx.getStart ().getLine ());
             }else { /* The variable is probably a function. */
                 Function function = library.getFunction (id.getText ());
                 if (function != null) {
@@ -113,6 +113,11 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     @Override
     public Expression visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
         return new FunctionCallExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitBinaryAssignmentExpression (@NotNull BrygParser.BinaryAssignmentExpressionContext ctx) {
+        return new BinaryAssignmentExpression (this, ctx);
     }
 
     @Override

@@ -1,16 +1,18 @@
 // The post that is edited.
 // May be empty (but not null) to allow creating new posts, in which case the id must be -1.
-in post: Post // io.collap has to be added as a search path and the class name must be unambiguous!
+in post: Post
 
 // Construct the categoryString
-mut categoryString = "Declaration test"
-each (categoryTest: String in post.categories) categoryTest
-//  if (categoryString != "") categoryString += ","
-//  categoryString += category.name
+mut categoryString = ""
+each (category: String in post.categories)
+  if (categoryString != "") categoryString += ","
+  categoryString += category
+
+val existent = post.id >= 0
 
 html
   head
-    if (post.id >= 0) title `Edit #post.title`
+    if (existent) title `Edit #post.title`
     else title `Create New Post`
   body
     form (name: "edit", action: "#basePath/post/edit", method: "post")

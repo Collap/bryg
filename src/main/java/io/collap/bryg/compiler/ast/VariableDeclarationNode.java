@@ -65,7 +65,7 @@ public class VariableDeclarationNode extends Node {
 
             org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
             method.visitVarInsn (asmType.getOpcode (ISTORE), variable.getId ());
-            method.visitFrame (F_APPEND, 1, new Object[] { asmType.getInternalName () }, 0, null);
+            // method.visitFrame (F_APPEND, 1, new Object[] { asmType.getInternalName () }, 0, null);
             // T ->
         }else {
             throw new UnsupportedOperationException ("Currently a variable must be declared with an expression, " +
