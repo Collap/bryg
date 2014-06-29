@@ -1,5 +1,8 @@
 grammar Bryg;
 
+// TODO: Allow newline characters in parentheses, arguments, etc.
+// Example: eachExpression
+
 @header {
   package io.collap.bryg.parser;
 }
@@ -19,7 +22,7 @@ expression:
   | expression '.' Id                                 # accessExpression
   | 'if' '(' expression ')' statementOrBlock
     ('\n'? 'else' statementOrBlock)?                  # ifExpression
-  | 'each' '(' Id (':' type)? 'in' expression ')'
+  | 'each' '(' '\n'* Id (':' type)? '\n'* 'in' '\n'* expression ')'
     statementOrBlock                                  # eachExpression
   | functionCall                                      # functionCallExpression
   | '(' type ')' expression                           # castExpression
