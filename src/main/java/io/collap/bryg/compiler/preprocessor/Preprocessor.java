@@ -102,14 +102,29 @@ public class Preprocessor {
      */
     private int getSemanticLineEnd () {
         int lineEnd = getLineEnd ();
-        for (int i = index; i <= lineEnd; ) {
-            i = source.indexOf ('/', i);
-            if (i == -1 || i >= lineEnd) {
+        boolean inString = false;
+        char stringChar = '\0';
+        char lastChar = '\0';
+        for (int i = index; i <= lineEnd; ++i) {
+            char currentChar = source.charAt (i);
+            if (lastChar != '\\' && (currentChar == '"' || currentChar == '`')) {
+                if (!inString) {
+                    inString = true;
+                    stringChar = currentChar;
+                }else if (currentChar == stringChar) {
+                    inString = false;
+                    stringChar = '\0';
+                }
+                System.out.println (inString + " " + currentChar + " {" + source.substring (0, i + 1));
+            }else if (!inString && currentChar == '/') {
+                if (source.charAt (i + 1) == '/') {
+                    return i - 1;
+                }
+            }else if (currentChar == '\n') {
                 return lineEnd;
-            }else if (source.charAt (i + 1) == '/') {
-                return i - 1;
             }
-            ++i;
+
+            lastChar = currentChar;
         }
 
         return lineEnd;

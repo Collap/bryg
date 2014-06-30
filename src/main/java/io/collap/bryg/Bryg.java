@@ -70,6 +70,14 @@ public class Bryg {
             model.setVariable ("post", post);
             benchmarkTemplate (template, model);
         }
+
+        /* test.Item */
+        {
+            Template template = environment.getTemplate ("test.Item");
+            Model model = new BasicModel ();
+            model.setVariable ("id", 12345);
+            benchmarkTemplate (template, model);
+        }
     }
 
     private static void benchmarkTemplate (Template template, Model model) throws InvalidInputParameterException {
