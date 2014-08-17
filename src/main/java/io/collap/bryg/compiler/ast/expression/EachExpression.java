@@ -83,7 +83,12 @@ public class EachExpression extends Expression {
         String variableName = ctx.Id ().getText ();
         element = scope.registerVariable (variableName, elementType);
 
-        statementOrBlock = visitor.visitStatementOrBlock (ctx.statementOrBlock ());
+        BrygParser.StatementOrBlockContext statementOrBlockCtx = ctx.statementOrBlock ();
+        if (statementOrBlockCtx != null)  {
+            statementOrBlock = visitor.visitStatementOrBlock (statementOrBlockCtx);
+        }else {
+            statementOrBlock = visitor.visitBlock (ctx.block ());
+        }
 
         /* Reset scope. */
         visitor.setCurrentScope (scope.getParent ());

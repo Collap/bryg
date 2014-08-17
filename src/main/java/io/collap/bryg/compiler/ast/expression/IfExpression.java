@@ -1,13 +1,11 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.expression.bool.ExpressionBooleanExpression;
-import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.expression.bool.BooleanExpression;
 import io.collap.bryg.compiler.type.Type;
-import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -32,7 +30,13 @@ public class IfExpression extends Expression {
         }else {
             condition = new ExpressionBooleanExpression (visitor, conditionOrExpression);
         }
-        ifStatementOrBlock = visitor.visitStatementOrBlock (ctx.statementOrBlock (0));
+
+        BrygParser.StatementOrBlockContext ifStatementOrBlockCtx = ctx.statementOrBlock (0);
+        if (ifStatementOrBlockCtx != null) {
+            ifStatementOrBlock = visitor.visitStatementOrBlock (ifStatementOrBlockCtx);
+        }else {
+            ifStatementOrBlock = visitor.visitBlock (ctx.block ());
+        }
 
         BrygParser.StatementOrBlockContext elseCtx = ctx.statementOrBlock (1);
         if (elseCtx != null) {

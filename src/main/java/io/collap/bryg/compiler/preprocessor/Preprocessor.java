@@ -8,14 +8,20 @@ import java.util.Stack;
 
 /**
  * The Preprocessor adds braces around indentation-specified blocks.
- * Note: The writer is not closed.
+ * Note: The writer is not closed. The Preprocessor can only be used to parse one source!
+ *
+ * TODO: Convert tabs to whitespace!
  */
 public class Preprocessor {
 
     private final String source;
     private Writer writer;
     private int index = 0;
+    private Stack<Indent> indentationStack = new Stack<> ();
     private boolean prettyPrint;
+
+    private boolean inBlockString = false;
+    private char lastLineLastChar = '\0';
 
     /**
      * A map that points from the preprocessed source line to the actual source line.
@@ -31,30 +37,46 @@ public class Preprocessor {
     }
 
     public void process () throws IOException {
-        Stack<Indent> indentationStack = new Stack<> ();
         indentationStack.add (new Indent (0));
 
         int sourceLength = source.length ();
         for (; index < sourceLength; goToNextLine ()) {
-            int semanticLineEnd = getSemanticLineEnd ();
             int indentColumn = countIndentColumn (index);
             int indentColumnIndex = index + indentColumn;
-            if (semanticLineEnd < indentColumnIndex) {
+
+            int actualLineEnd;
+            if (!inBlockString) {
+                actualLineEnd = getSemanticLineEnd ();
+            }else { /* Ignore comments in a block string. */
+                actualLineEnd = getLineEnd ();
+            }
+
+            /* Skip empty line. */
+            if (actualLineEnd < indentColumnIndex) {
                 continue;
             }
 
-            Indent lastIndent =  indentationStack.peek ();
+            Indent lastIndent = indentationStack.peek ();
             if (lastIndent.getColumn () < indentColumn) {
-                indentationStack.push (new Indent (indentColumn));
-                if (prettyPrint) {
-                    for (int ind = 0; ind < lastIndent.getColumn (); ++ind) {
-                        writer.write (' ');
+                if (!inBlockString) {
+                    if (lastLineLastChar == ':') { /* Beginning block string! */
+                        inBlockString = true;
                     }
+
+                    indentationStack.push (new Indent (indentColumn));
+                    if (prettyPrint) {
+                        for (int ind = 0; ind < lastIndent.getColumn (); ++ind) {
+                            writer.write (' ');
+                        }
+                    }
+                    writer.write ("\u29FC\n");
+                    prepLine += 1;
                 }
-                writer.write ("{\n");
-                prepLine += 1;
             }else {
                 closeIndents (indentationStack, indentColumn);
+                if (inBlockString) {
+                    inBlockString = false;
+                }
             }
 
             int writeStartIndex;
@@ -64,7 +86,20 @@ public class Preprocessor {
                 writeStartIndex = indentColumnIndex;
             }
 
-            writer.write (source.substring (writeStartIndex, semanticLineEnd + 1));
+            /* Find the last non-whitespace char in this line. */
+            if (!inBlockString) {
+                for (int i = actualLineEnd; i >= writeStartIndex; i--) {
+                    char c = source.charAt (i);
+                    if (c != ' ' && c != '\t' && c != '\r') {
+                        lastLineLastChar = c;
+                        break;
+                    }
+                }
+            }else {
+                lastLineLastChar = '\0';
+            }
+
+            writer.write (source.substring (writeStartIndex, actualLineEnd + 1));
             lineToSourceLineMap.put (prepLine, sourceLine);
 
             writer.write ("\n");
@@ -86,10 +121,10 @@ public class Preprocessor {
             lastIndent = indentationStack.peek ();
             if (prettyPrint) {
                 for (int ind = 0; ind < lastIndent.getColumn (); ++ind) {
-                    writer.write (" ");
+                    writer.write (' ');
                 }
             }
-            writer.write ("}\n");
+            writer.write ("\u29FD\n");
             prepLine += 1;
         }
     }
@@ -103,23 +138,18 @@ public class Preprocessor {
     private int getSemanticLineEnd () {
         int lineEnd = getLineEnd ();
         boolean inString = false;
-        char stringChar = '\0';
         char lastChar = '\0';
         for (int i = index; i <= lineEnd; ++i) {
             char currentChar = source.charAt (i);
-            if (lastChar != '\\' && (currentChar == '"' || currentChar == '`')) {
+            if (lastChar != '\\' && currentChar == '\'') {
                 if (!inString) {
                     inString = true;
-                    stringChar = currentChar;
-                }else if (currentChar == stringChar) {
+                } else {
                     inString = false;
-                    stringChar = '\0';
                 }
-                System.out.println (inString + " " + currentChar + " {" + source.substring (0, i + 1));
-            }else if (!inString && currentChar == '/') {
-                if (source.charAt (i + 1) == '/') {
-                    return i - 1;
-                }
+            }else if (!inString) {
+                if (currentChar == ';') return i - 1;
+                else if (currentChar == ':') return lineEnd;
             }else if (currentChar == '\n') {
                 return lineEnd;
             }

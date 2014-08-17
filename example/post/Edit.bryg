@@ -1,41 +1,42 @@
-// The post that is edited.
-// May be empty (but not null) to allow creating new posts, in which case the id must be -1.
-in post: Post
+; The post that is edited.
+; May be empty (but not null) to allow creating new posts, in which case the id must be -1.
+in Post post
+in String className
 
-// Construct the categoryString
-mut categoryString = ""
-each (category: String in post.categories)
-  if (categoryString != "") categoryString += ","
+; Construct the categoryString
+mut categoryString = ''
+each (String category in post.categories)
+  if categoryString != ''
+    categoryString += ','
   categoryString += category
 
 val existent = post.id >= 0
 
+
 html
   head
-    if (existent) title `Edit #post.title`
-    else title `Create New Post`
+    if (existent) title: Edit #post.title
+    else title: Create New Post
   body
-    form (name: "edit", action: "#basePath/post/edit", method: "post")
-      input (type: "hidden", name: "id", value: post.id)
+    form(name 'edit', action '#basePath/post/edit', method 'post')
+      input(type 'hidden', name 'id', value post.id)
 
-      label (for: "title") `Title:`
-      input (type: "text", name: "title", value: post.title)
-
-      br
-
-      label (for: "categories") `Categories:`
-      input (type: "text", name: "categories", value: categoryString)
-
-      section (id: "categories")
-        h3 `Categories`
-        ul
-          each (category: String in post.categories)
-            li category
+      label(for 'title'): Title:
+      input(type 'text', name 'title', value post.title)
 
       br
 
-      textarea (name: "content") post.content
+      label(for 'categories'): Categories:
+      input(type 'text', name 'categories', value categoryString)
+
+      section(id 'categories')
+        h3: Categories
+        ul each (String category in post.categories) li category
 
       br
 
-      input (type: "submit", value: "Post")
+      textarea(name 'content') post.content
+
+      br
+
+      input(type 'submit', value 'Post')

@@ -1,5 +1,5 @@
-in names: List<String>
+in List<String> names
 
 ul
-  each (name in names)
+  each name in names
     li name

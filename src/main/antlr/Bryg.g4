@@ -9,7 +9,7 @@ grammar Bryg;
 
 start: inDeclaration* statementLine* ;
 
-inDeclaration: 'in' Id ':' type '\n' ;
+inDeclaration: 'in' type Id '\n' ;
 statementLine: statement '\n' ;
 statement:
     expression
@@ -18,13 +18,14 @@ statement:
 
 expression:
     literal                                           # literalExpression
-  | variable                                          # variableExpression
   | '(' expression ')'                                # expressionPrecedenceOrder
   | expression '.' Id                                 # accessExpression
-  | 'if' '(' expression ')' statementOrBlock
+  | 'if' ('(' expression ')' statementOrBlock | expression block)
     ('\n'? 'else' statementOrBlock)?                  # ifExpression
-  | 'each' '(' '\n'* Id (':' type)? '\n'* 'in' '\n'* expression ')'
-    statementOrBlock                                  # eachExpression
+  | 'each'
+      ('(' '\n'* type? Id '\n'* 'in' '\n'* expression ')' statementOrBlock
+     | type? Id 'in' expression block)                # eachExpression
+  | variable                                          # variableExpression // Note: variable has to be placed before functionCall
   | functionCall                                      # functionCallExpression
   | '(' type ')' expression                           # castExpression
   | expression ('++' | '--')                          # unarySuffixExpression
@@ -58,14 +59,14 @@ expression:
     expression                                        # binaryAssignmentExpression
   ;
 
-block: '\n'? '{' '\n'? statementLine* '\n'? '}' '\n'? ;
+block: '\n'? '\u29FC' '\n'? statementLine* '\n'? '\u29FD' '\n'? ;
 statementOrBlock: statement | block ;
 
 variable: Id ; // Note that it is possible for a recognized variable to be a trivial function.
-variableDeclaration: ('mut' | 'val') Id (':' type)? ('=' expression)? ;
+variableDeclaration: ('mut' | 'val') type? Id ('=' expression)? ;
 
 functionCall: Id ( '(' (argument (',' argument)*)?  ')' )? statementOrBlock? ;
-argument: (Id ':')? expression ; // TODO: Allow dashes in HTML attributes.
+argument: Id? expression ; // TODO: Allow dashes in HTML attributes.
 
 literal:
     String                                            # stringLiteral
@@ -77,8 +78,9 @@ Integer: Number+;
 type: Id ('<' type (',' type)* '>')? ;
 
 Id: Letter (Letter | Number)* ;
-String: '"' ('\\"' | ~('"' | '\n' | '\r'))* '"'
-      | '`' ('\\`' | ~('`' | '\n' | '\r'))* '`'
+String: '\'' ('\\\'' | ~('\'' | '\n' | '\r'))* '\''
+      | ':' Ws? '\n'? Ws? '\u29FC' (~'\u29FD')* '\u29FD'
+      | ':' (~('\n' | '\r'))*
       ;
 Ws: [ \t\r]+ -> skip ;
 
