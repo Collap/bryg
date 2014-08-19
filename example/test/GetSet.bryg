@@ -1,0 +1,9 @@
+in Post post
+
+post.id = 42
+post.title = 'Hello Set'
+post.content = 'Hello Alice'
+
+div
+  h2: #post.title(\##post.id)
+  div post.content

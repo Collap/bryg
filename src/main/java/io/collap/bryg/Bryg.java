@@ -26,6 +26,7 @@ public class Bryg {
         environment.getTemplate ("post.Edit");
         environment.getTemplate ("test.Item");
         environment.getTemplate ("test.Stocks");
+        environment.getTemplate ("test.GetSet");
         System.gc ();
 
         /* test.Simple */
@@ -97,12 +98,26 @@ public class Bryg {
             model.setVariable ("items", Stock.dummyItems ());
             benchmarkTemplate (template, model);
         }
+
+        /* test.GetSet */
+        if (true) {
+            Template template = environment.getTemplate ("test.GetSet");
+            Model model = new BasicModel ();
+            Post post = new Post ();
+            post.setContent ("Hello Alice");
+            model.setVariable ("post", post);
+            benchmarkTemplate (template, model);
+        }
     }
 
     private static void benchmarkTemplate (Template template, Model model) throws InvalidInputParameterException {
+        benchmarkTemplate (template, model, 25000);
+    }
+
+    private static void benchmarkTemplate (Template template, Model model, int iterations) throws InvalidInputParameterException {
         StringWriter stringWriter = null;
-        final int warmUpLoops = 25000;
-        final int renderIterations = 25000;
+        final int warmUpLoops = iterations;
+        final int renderIterations = iterations;
         for (int i = 0; i < warmUpLoops; ++i) {
             stringWriter = new StringWriter ();
             template.render (stringWriter, model);

@@ -12,12 +12,19 @@ import io.collap.bryg.parser.BrygParser;
 
 public class BinaryAssignmentExpression extends Expression {
 
+    // TODO: Support -=, *=, etc.
+
     private Expression left;
     private Expression right;
 
+    /**
+     * The right expression does not need to be compiled if the left expression takes care of it.
+     */
+    private boolean compileRight;
+
     public BinaryAssignmentExpression (StandardVisitor visitor, BrygParser.BinaryAssignmentExpressionContext ctx) {
         super (visitor);
-        setType (new Type (Void.TYPE)); // TODO: Implement as proper expression.
+        setType (new Type (Void.TYPE)); // TODO: Implement as proper expression?
         setLine (ctx.getStart ().getLine ());
 
         /* Get operator. */
@@ -43,8 +50,20 @@ public class BinaryAssignmentExpression extends Expression {
             if (operator != null) {
                 leftGet = new VariableExpression (visitor, variable, AccessMode.get, variableLine);
             }
+
+            compileRight = true;
         }else if (leftCtx instanceof BrygParser.AccessExpressionContext) {
-            throw new UnsupportedOperationException ("Access expressions are not supported for the left hand expression yet!");
+            BrygParser.AccessExpressionContext accessCtx = (BrygParser.AccessExpressionContext) leftCtx;
+            try {
+                left = new AccessExpression (visitor, accessCtx, AccessMode.set);
+                if (operator != null) {
+                    leftGet = new AccessExpression (visitor, accessCtx, AccessMode.get);
+                }
+                compileRight = false;
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace (); // TODO: Log properly.
+                throw new BrygJitException ("The field to set either does not exist or is not visible!", getLine ());
+            }
         }else {
             throw new BrygJitException ("The assignment expression does not include a assignable left hand expression!", getLine ());
         }
@@ -53,18 +72,25 @@ public class BinaryAssignmentExpression extends Expression {
         if (operator != null) {
             switch (operator) {
                 case addition:
-                    right = new BinaryAdditionExpression (visitor, leftGet, right, ctx.expression (1).getStart ().getLine ());
+                    right = new BinaryAdditionExpression (visitor, leftGet, right, getLine ());
                     break;
                 default:
-                    throw new BrygJitException ("Operator " + operator + " is not supported!", getLine ());
+                    throw new BrygJitException ("Operator " + operator + " is currently not supported!", getLine ());
             }
+        }
+
+        /* In this case 'left' takes care of compiling 'right'. */
+        if (left instanceof AccessExpression) {
+            ((AccessExpression) left).setSetFieldExpression (right);
         }
     }
 
     @Override
     public void compile () {
-        right.compile ();
-        // -> value
+        if (compileRight) {
+            right.compile ();
+            // -> value
+        }
 
         left.compile ();
         // value ->
