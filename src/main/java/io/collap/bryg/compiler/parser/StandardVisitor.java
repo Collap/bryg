@@ -5,6 +5,10 @@ import io.collap.bryg.compiler.ast.expression.bool.EqualityBinaryBooleanExpressi
 import io.collap.bryg.compiler.ast.expression.bool.LogicalAndBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.LogicalOrBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.RelationalBinaryBooleanExpression;
+import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.literal.StringLiteralExpression;
 import io.collap.bryg.compiler.expression.*;
 import io.collap.bryg.compiler.ast.*;
 import io.collap.bryg.compiler.helper.IdHelper;
@@ -72,6 +76,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     @Override
     public AccessExpression visitAccessExpression (@NotNull BrygParser.AccessExpressionContext ctx) {
         try {
+            /* Note: This corresponds to the getter only, the setter scenario is handled by the assignment expression! */
             return new AccessExpression (this, ctx, AccessMode.get);
         } catch (NoSuchFieldException e) {
             e.printStackTrace ();
@@ -170,6 +175,11 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     @Override
     public Node visitDoubleLiteral (@NotNull BrygParser.DoubleLiteralContext ctx) {
         return new DoubleLiteralExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitFloatLiteral (@NotNull BrygParser.FloatLiteralContext ctx) {
+        return new FloatLiteralExpression (this, ctx);
     }
 
     @Override

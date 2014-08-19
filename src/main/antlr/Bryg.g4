@@ -137,6 +137,7 @@ literal
     : String    # stringLiteral
     | Integer   # integerLiteral
     | Double    # doubleLiteral
+    | Float     # floatLiteral
     ;
 
 type
@@ -186,6 +187,10 @@ DEDENT  : '\u29FD';
 Identifier
     :   Letter
         (Letter | Number)*
+    ;
+
+Float
+    :   Number+ ('.' Number+)? ('f' | 'F')
     ;
 
 Double

@@ -1,5 +1,6 @@
-package io.collap.bryg.compiler.ast.expression;
+package io.collap.bryg.compiler.ast.expression.literal;
 
+import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
@@ -20,6 +21,11 @@ public class DoubleLiteralExpression extends Expression {
     public void compile () {
         visitor.getMethod ().visitLdcInsn (value);
         // -> double
+    }
+
+    @Override
+    public Object getConstantValue () {
+        return value;
     }
 
 }
