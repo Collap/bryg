@@ -1,0 +1,59 @@
+; Idea taken from https://github.com/greenlaw110/template-engine-benchmarks
+
+in List<Stock> items
+
+html
+  head
+    title: Stock Prices
+    meta(http-equiv 'Content-Type', content 'text/html; charset=UTF-8')
+    meta(http-equiv 'Content-Style-Type', content 'text/css')
+    meta(http-equiv 'Content-Script-Type', content 'text/javascript')
+    link(rel 'shortcut icon', href '/images/favicon.ico')
+    link(rel 'stylesheet', type 'text/css', href '/css/style.css', media 'all')
+    script(type 'text/javascript', src '/js/util.js')
+    style(type 'text/css'):
+      body {
+          color: #333333;
+          line-height: 150%;
+      }
+
+      thead {
+          font-weight: bold;
+          background-color: #CCCCCC;
+      }
+
+      .odd {
+          background-color: #FFCCCC;
+      }
+
+      .even {
+          background-color: #CCCCFF;
+      }
+
+      .minus {
+          color: #FF0000;
+      }
+  body
+    h1: Stock Prices
+    table
+      thead
+        tr
+          th: \#
+          th: symbol
+          th: name
+          th: price
+          th: change
+          th: ratio
+      tbody
+        each item in items
+          tr(class 'odd', id 'mark:items')
+            td(style 'text-align: center', id 'mark:index') 1
+            td a(href '/stocks/' + item.symbol, id 'mark:symbol') item.symbol
+            td a(href item.url, id 'mark:url') item.name2
+            td strong(id 'mark:price') item.price
+            if (item.change < 0)
+              td(class 'minus', id 'mark:change') item.change
+              td(class 'minus', id 'mark:ratio') item.ratio
+            else
+              td item.change
+              td item.ratio

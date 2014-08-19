@@ -4,6 +4,7 @@ import io.collap.bryg.compiler.ast.AccessMode;
 import io.collap.bryg.compiler.expression.Operator;
 import io.collap.bryg.compiler.expression.Operators;
 import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.exception.BrygJitException;
@@ -31,7 +32,7 @@ public class BinaryAssignmentExpression extends Expression {
         Expression leftGet = null; /* Set when the operator is used. */
         if (leftCtx instanceof BrygParser.VariableExpressionContext) {
             BrygParser.VariableExpressionContext variableCtx = (BrygParser.VariableExpressionContext) leftCtx;
-            String variableName = variableCtx.variable ().Id ().getText ();
+            String variableName = IdHelper.idToString (variableCtx.variable ().id ());
             int variableLine = ctx.getStart ().getLine ();
             Variable variable = visitor.getCurrentScope ().getVariable (variableName);
             if (variable == null) {

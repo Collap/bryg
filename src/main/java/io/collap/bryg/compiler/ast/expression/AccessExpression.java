@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.AccessMode;
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
@@ -28,7 +29,7 @@ public class AccessExpression extends Expression {
         this.mode = mode;
         setLine (ctx.getStart ().getLine ());
 
-        String fieldName = ctx.Id ().getText ();
+        String fieldName = IdHelper.idToString (ctx.id ());
         child = (Expression) visitor.visit (ctx.expression ());
         Type childType = child.getType ();
 

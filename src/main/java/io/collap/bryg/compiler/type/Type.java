@@ -43,6 +43,18 @@ public class Type {
         return false;
     }
 
-    // TODO: Implement toString ().
+    public boolean isIntegralType () {
+        // Note: Ordered by suspected amount of occurrence.
+        return equals (Integer.TYPE) || equals (Long.TYPE) || equals (Byte.TYPE) || equals (Short.TYPE);
+    }
+
+    public boolean isFloatingPointType () {
+        return equals (Double.TYPE) || equals (Float.TYPE);
+    }
+
+    @Override
+    public String toString () {
+        return getJavaType ().toString ();
+    }
 
 }

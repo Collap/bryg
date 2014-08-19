@@ -74,9 +74,6 @@ public class Preprocessor {
                 }
             }else {
                 closeIndents (indentationStack, indentColumn);
-                if (inBlockString) {
-                    inBlockString = false;
-                }
             }
 
             int writeStartIndex;
@@ -117,6 +114,11 @@ public class Preprocessor {
     private void closeIndents (Stack<Indent> indentationStack, int currentIndent) throws IOException {
         Indent lastIndent = indentationStack.peek ();
         while (lastIndent.getColumn () > currentIndent) {
+            /* Only close inBlockString if the current block has been closed. */
+            if (inBlockString) {
+                inBlockString = false;
+            }
+
             indentationStack.pop ();
             lastIndent = indentationStack.peek ();
             if (prettyPrint) {
@@ -142,11 +144,7 @@ public class Preprocessor {
         for (int i = index; i <= lineEnd; ++i) {
             char currentChar = source.charAt (i);
             if (lastChar != '\\' && currentChar == '\'') {
-                if (!inString) {
-                    inString = true;
-                } else {
-                    inString = false;
-                }
+                inString = !inString;
             }else if (!inString) {
                 if (currentChar == ';') return i - 1;
                 else if (currentChar == ':') return lineEnd;

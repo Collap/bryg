@@ -2,7 +2,6 @@ package io.collap.bryg.compiler.helper;
 
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 
 import javax.annotation.Nullable;

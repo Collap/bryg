@@ -1,8 +1,8 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
+import io.collap.bryg.compiler.helper.CoercionHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
-import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.expression.Operator;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.Type;
@@ -31,22 +31,13 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
             throw new BrygJitException ("Left or right is null: " + left + ", " + right, getLine ());
         }
 
-        if (!areBinaryExpressionTypesValid (left, right)) {
-            // TODO: Attempt coercion.
-            throw new BrygJitException ("Left and right have incompatible types: "
-                + left.getType ().getJavaType ()
-                + " " + right.getType ().getJavaType (), getLine ());
-        }
-
-        left.compile ();
-        right.compile ();
-        // -> T1, T2
-
         BrygMethodVisitor method = visitor.getMethod ();
 
-        Type type = left.getType ();
-        if (type.getJavaType ().isPrimitive ()) {
-            if (type.equals (Integer.TYPE)) {
+        Type operandType = CoercionHelper.attemptBinaryCoercion (method, left, right);
+        // -> T, T
+
+        if (operandType.getJavaType ().isPrimitive ()) {
+            if (operandType.equals (Integer.TYPE)) {
                 switch (operator) {
                     case equality:
                         method.visitJumpInsn (IF_ICMPNE, nextFalse);
@@ -72,21 +63,63 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
                     default:
                         throw new BrygJitException ("Unexpected boolean operator!", getLine ());
                 }
+            }else {
+                if (operandType.equals (Double.TYPE)) {
+                    method.visitInsn (DCMPG);
+                    // d1, d2 -> int
+                }else if (operandType.equals (Float.TYPE)) {
+                    method.visitInsn (FCMPG);
+                    // f1, f2 -> int
+                }else if (operandType.equals (Long.TYPE)) {
+                    method.visitInsn (LCMP);
+                    // l1, l2 -> int
+                }else {
+                    throw new BrygJitException ("Unknown operand type " + operandType + " for relational operation.",
+                        getLine ());
+                }
+
+                switch (operator) {
+                    // dcmpg/fcmpg returns 0 if equal.
+                    case equality:
+                        method.visitJumpInsn (IFNE, nextFalse);
+                        break;
+                    case inequality:
+                        method.visitJumpInsn (IFEQ, nextFalse);
+                        break;
+
+                    // dcmpg/fcmpg returns -1 if d1 > d2, 1 if d1 < d2.
+                    case relational_greater_than:
+                        method.visitJumpInsn (IFLE, nextFalse);
+                        break;
+                    case relational_greater_equal:
+                        method.visitJumpInsn (IFLT, nextFalse);
+                        break;
+                    case relational_less_than:
+                        method.visitJumpInsn (IFGE, nextFalse);
+                        break;
+                    case relational_less_equal:
+                        method.visitJumpInsn (IFGT, nextFalse);
+                        break;
+
+                    default:
+                        throw new BrygJitException ("Unexpected boolean operator!", getLine ());
+                }
             }
         }else { /* Objects. */
+            // TODO: With the coercion model above, the types have to be exactly the same!
             method.visitMethodInsn (INVOKEVIRTUAL, AsmTypes.getAsmType (Object.class).getInternalName (),
-                "equals", TypeHelper.generateMethodDesc (
-                    new Class<?>[] { Object.class },
-                    Boolean.TYPE
-                ), false);
+                    "equals", TypeHelper.generateMethodDesc (
+                            new Class<?>[]{Object.class},
+                            Boolean.TYPE
+                    ), false);
             // Object, Object -> boolean
 
             switch (operator) {
                 case equality:
-                    method.visitJumpInsn (IFEQ, nextFalse); /* equality is false when the result equals 0. */
+                    method.visitJumpInsn (IFEQ, nextFalse); /* equality is false when the result equals 0 (false). */
                     break;
                 case inequality:
-                    method.visitJumpInsn (IFNE, nextFalse); /* inequality is false when the result does not equal 0. */
+                    method.visitJumpInsn (IFNE, nextFalse); /* inequality is false when the result does not equal 0 (true). */
                     break;
                 default:
                     throw new BrygJitException ("Unexpected boolean operator!", getLine ());
@@ -94,14 +127,6 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
         }
 
         super.compile (nextFalse, nextTrue, lastExpressionInChain);
-    }
-
-    private boolean areBinaryExpressionTypesValid (Expression left, Expression right) {
-        if (left.getType ().getJavaType ().isPrimitive () || right.getType ().getJavaType ().isPrimitive ()) {
-            return left.getType ().equals (right.getType ());
-        }else {
-            return true;
-        }
     }
 
 }

@@ -2,7 +2,6 @@ package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class ArgumentExpression extends Expression {
 
@@ -11,8 +10,9 @@ public class ArgumentExpression extends Expression {
 
     public ArgumentExpression (StandardVisitor visitor, BrygParser.ArgumentContext ctx) {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
 
-        TerminalNode id = ctx.Id ();
+        BrygParser.ArgumentIdContext id = ctx.argumentId ();
         if (id != null) {
             name = id.getText ();
         }

@@ -17,8 +17,6 @@ public class ClassNameFinder {
     public ClassNameFinder (ClassNameVisitor visitor) {
         this.visitor = visitor;
 
-        // TODO: Include the executed jar file.
-
         /* The *-wildcard signals that all jars in the directory ought to be included in the classpath. */
         addPath (System.getProperty ("java.home") + File.separator + "lib" + File.separator + "*");
 
@@ -54,9 +52,11 @@ public class ClassNameFinder {
 
             /* Crawl jar files. */
             File[] children = directory.listFiles ();
-            for (File child : children) {
-                if (child.getName ().endsWith (".jar")) {
-                    crawlJarFile (child);
+            if (children != null) {
+                for (File child : children) {
+                    if (child.getName ().endsWith (".jar")) {
+                        crawlJarFile (child);
+                    }
                 }
             }
         }else {
@@ -75,8 +75,11 @@ public class ClassNameFinder {
 
     private void crawlDirectory (File root, File file) {
         if (file.isDirectory ()) {
-            for (File child : file.listFiles ()) {
-                crawlDirectory (root, child);
+            File[] files = file.listFiles ();
+            if (files != null) {
+                for (File child : files) {
+                    crawlDirectory (root, child);
+                }
             }
         }else {
             if (file.getName ().endsWith (".class")) {
@@ -94,7 +97,7 @@ public class ClassNameFinder {
         for (File directory = file.getParentFile ();
                 directory != null && !directory.equals (root);
                 directory = directory.getParentFile ()) {
-            names.push (file.getName ());
+            names.push (directory.getName ());
         }
 
         /* Build the full class name. */

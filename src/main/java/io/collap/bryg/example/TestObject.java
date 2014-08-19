@@ -1,4 +1,4 @@
-package io.collap.bryg;
+package io.collap.bryg.example;
 
 public class TestObject {
 

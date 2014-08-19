@@ -4,6 +4,7 @@ import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.library.BasicLibrary;
 import io.collap.bryg.compiler.parser.BrygClassVisitor;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.parser.DebugVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
@@ -14,8 +15,9 @@ import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.compiler.preprocessor.Preprocessor;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.Template;
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -38,6 +40,8 @@ public class StandardCompiler implements Compiler {
     public byte[] compile (String name, String source) {
         boolean printPreprocessedSource = false; // TODO: Add as configuration option.
 
+        long prepStart = System.nanoTime ();
+
         StringWriter prepWriter = new StringWriter ();
         Preprocessor preprocessor = new Preprocessor (source, prepWriter, printPreprocessedSource);
         try {
@@ -46,17 +50,40 @@ public class StandardCompiler implements Compiler {
             e.printStackTrace (); // TODO: Handle.
         }
 
+        double prepTime = (System.nanoTime () - prepStart) / 1.0e9;
+
         if (printPreprocessedSource) {
             System.out.println (prepWriter.toString ());
         }
 
+        long parseStart = System.nanoTime ();
+
+        boolean usedSLL = false;
         BrygParser.StartContext startContext = null;
         InputStream stream = new ByteArrayInputStream (prepWriter.toString ().getBytes ());
         try {
             BrygLexer lexer = new BrygLexer (new ANTLRInputStream (stream));
             CommonTokenStream tokenStream = new CommonTokenStream (lexer);
+
+            /* Try with SLL(*). */
             BrygParser parser = new BrygParser (tokenStream);
-            startContext = parser.start ();
+            parser.getInterpreter ().setPredictionMode (PredictionMode.SLL);
+            parser.removeErrorListeners ();
+            parser.setErrorHandler (new BailErrorStrategy ());
+            try {
+                startContext = parser.start ();
+                usedSLL = true;
+            } catch (ParseCancellationException ex) {
+                if (ex.getCause () instanceof RecognitionException) {
+                    /* Try again with LL(*). */
+                    tokenStream.reset ();
+                    parser.addErrorListener (ConsoleErrorListener.INSTANCE);
+                    parser.addErrorListener (new DiagnosticErrorListener ());
+                    parser.setErrorHandler(new DefaultErrorStrategy());
+                    parser.getInterpreter ().setPredictionMode (PredictionMode.LL_EXACT_AMBIG_DETECTION);
+                    startContext = parser.start ();
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace (); // TODO: Handle.
         }
@@ -64,11 +91,18 @@ public class StandardCompiler implements Compiler {
         if (startContext == null) return null;
 
         // TODO: Add printParseTree as configuration option.
-        /* DebugVisitor debugVisitor = new DebugVisitor ();
-        debugVisitor.visit (startContext); */
+        boolean printParseTree = false;
+        if (printParseTree) {
+            DebugVisitor debugVisitor = new DebugVisitor ();
+            debugVisitor.visit (startContext);
+        }
+
+        double parseTime = (System.nanoTime () - parseStart) / 1.0e9;
+
+        long jitStart = System.nanoTime ();
 
         ClassWriter classWriter = new ClassWriter (ClassWriter.COMPUTE_FRAMES);
-        boolean printGeneratedBytecode = true; // TODO: Add as configuration option.
+        boolean printGeneratedBytecode = false; // TODO: Add as configuration option.
         ClassVisitor parentVisitor;
         if (printGeneratedBytecode) {
             parentVisitor = new TraceClassVisitor (classWriter, new PrintWriter (System.out));
@@ -77,6 +111,14 @@ public class StandardCompiler implements Compiler {
         }
         BrygClassVisitor brygClassVisitor = new BrygClassVisitor (parentVisitor);
         compile (brygClassVisitor, name, startContext, preprocessor.getLineToSourceLineMap ());
+
+        double jitTime = (System.nanoTime () - jitStart) / 1.0e9;
+
+        System.out.println ("Preprocessing took " + prepTime + "s.");
+        System.out.println ("Parsing with " + (usedSLL ? "SLL(*)" : "LL(*)") +
+                " took " + parseTime + "s.");
+        System.out.println ("The JIT took " + jitTime + "s.");
+
         return classWriter.toByteArray ();
     }
 
@@ -98,7 +140,7 @@ public class StandardCompiler implements Compiler {
                 StandardVisitor visitor = new StandardVisitor (render, new BasicLibrary (), classResolver, lineToSourceLineMap);
                 Node node = visitor.visit (startContext);
 
-                boolean printAst = true; // TODO: Add as configuration option.
+                boolean printAst = false; // TODO: Add as configuration option.
                 if (printAst) {
                     node.print (System.out, 0);
                 }

@@ -42,7 +42,7 @@ public abstract class Node {
         out.println (getClass ().getSimpleName ());
     }
 
-    protected int getLine () {
+    public int getLine () {
         return line;
     }
 

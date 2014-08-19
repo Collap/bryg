@@ -66,11 +66,7 @@ public class PackageFilter implements Filter {
             if (filter != null) {
                 String rest = name.substring (firstDot + 1);
                 int restFirstDot = rest.indexOf ('.');
-                if (filter.isValidEnd () && restFirstDot < 0) {
-                    return true;
-                } else {
-                    return filter.isAccepted (rest);
-                }
+                return (filter.isValidEnd () && restFirstDot < 0) || filter.isAccepted (rest);
             }
         }
         return false;

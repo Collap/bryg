@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast.expression;
 
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.BlockNode;
 import io.collap.bryg.compiler.ast.Node;
@@ -17,17 +18,11 @@ public class FunctionCallExpression extends Expression {
     private List<ArgumentExpression> argumentExpressions = new ArrayList<> ();
     private Node statementOrBlock;
 
-    public FunctionCallExpression (StandardVisitor visitor, BrygParser.FunctionCallContext ctx) {
+    public FunctionCallExpression (StandardVisitor visitor, BrygParser.BlockFunctionCallContext ctx) {
         super (visitor);
         setLine (ctx.getStart ().getLine ());
 
-        String name = ctx.Id ().getText ();
-        function = visitor.getLibrary ().getFunction (name);
-        if (function == null) {
-            throw new BrygJitException ("Function " + name + " not found!", getLine ());
-        }
-
-        setType (function.getReturnType ());
+        initFunction (IdHelper.idToString (ctx.id ()));
 
         BrygParser.StatementOrBlockContext blockCtx = ctx.statementOrBlock ();
         if (blockCtx != null) {
@@ -36,10 +31,33 @@ public class FunctionCallExpression extends Expression {
             statementOrBlock = new BlockNode (visitor);
         }
 
-        /* Arguments. */
-        List<BrygParser.ArgumentContext> argumentContexts = ctx.argument ();
-        for (BrygParser.ArgumentContext argumentContext : argumentContexts) {
-            argumentExpressions.add (new ArgumentExpression (visitor, argumentContext));
+        initArguments (ctx.argumentList ());
+    }
+
+    public FunctionCallExpression (StandardVisitor visitor, BrygParser.FunctionCallContext ctx) {
+        super (visitor);
+        setLine (ctx.getStart ().getLine ());
+
+        initFunction (IdHelper.idToString (ctx.id ()));
+        statementOrBlock = new BlockNode (visitor);
+        initArguments (ctx.argumentList ());
+    }
+
+    private void initFunction (String name) {
+        function = visitor.getLibrary ().getFunction (name);
+        if (function == null) {
+            throw new BrygJitException ("Function " + name + " not found!", getLine ());
+        }
+
+        setType (function.getReturnType ());
+    }
+
+    private void initArguments (BrygParser.ArgumentListContext argumentListCtx) {
+        if (argumentListCtx != null) {
+            List<BrygParser.ArgumentContext> argumentContexts = argumentListCtx.argument ();
+            for (BrygParser.ArgumentContext argumentContext : argumentContexts) {
+                argumentExpressions.add (new ArgumentExpression (visitor, argumentContext));
+            }
         }
     }
 

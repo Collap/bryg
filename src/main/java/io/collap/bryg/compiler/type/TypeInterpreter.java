@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.type;
 
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
 
@@ -39,7 +40,7 @@ public class TypeInterpreter {
 
     @Nullable
     public Type interpretType (BrygParser.TypeContext ctx) {
-        String typeName = ctx.Id ().getText ();
+        String typeName = IdHelper.idToString (ctx.id ());
 
         /* Possible primitive type. */
         if (ctx.children.size () == 1) { /* Only Id is present! */

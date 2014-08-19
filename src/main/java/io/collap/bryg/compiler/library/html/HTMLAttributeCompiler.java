@@ -46,7 +46,7 @@ public class HTMLAttributeCompiler {
 
             if (!valid) {
                 // TODO: Add notice for which tag said attribute is not defined.
-                System.out.println ("Warning: The attribute " + name + " is not a valid HTML5 attribute!");
+                System.out.println ("Warning: The attribute " + name + " is not a valid HTML5 attribute! Line: " + attribute.getLine ());
             }
 
             Object constantValue = attribute.getConstantValue ();

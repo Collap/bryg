@@ -18,7 +18,7 @@ public class IntegerLiteralExpression extends Expression {
 
     @Override
     public void compile () {
-        visitor.getMethod ().visitLdcInsn (new Integer (value));
+        visitor.getMethod ().visitLdcInsn (value);
         // -> int
     }
 

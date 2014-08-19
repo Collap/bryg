@@ -2,6 +2,7 @@ package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
@@ -9,7 +10,6 @@ import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
-import static org.objectweb.asm.Opcodes.F_APPEND;
 import static org.objectweb.asm.Opcodes.ISTORE;
 
 public class VariableDeclarationNode extends Node {
@@ -23,7 +23,7 @@ public class VariableDeclarationNode extends Node {
         super (visitor);
         setLine (ctx.getStart ().getLine ());
 
-        String name = ctx.Id ().getText ();
+        String name = IdHelper.idToString (ctx.id ());
         Type expectedType = null;
         if (ctx.type () != null) {
             expectedType = new TypeInterpreter (visitor).interpretType (ctx.type ());

@@ -1,10 +1,12 @@
 package io.collap.bryg.compiler.parser;
 
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.parser.BrygBaseVisitor;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.omg.CORBA.IDLTypeHelper;
 
 public class DebugVisitor extends BrygBaseVisitor<Integer> {
 
@@ -157,7 +159,7 @@ public class DebugVisitor extends BrygBaseVisitor<Integer> {
 
     @Override
     public Integer visitArgument (@NotNull BrygParser.ArgumentContext ctx) {
-        String name = ctx.getToken (BrygLexer.Id, 0).getSymbol ().getText ();
+        String name = ctx.argumentId ().getText ();
         visitAny (ctx, name);
         super.visitArgument (ctx);
         return 0;
@@ -221,7 +223,7 @@ public class DebugVisitor extends BrygBaseVisitor<Integer> {
 
     @Override
     public Integer visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
-        visitAny (ctx, ctx.getToken (BrygLexer.Id, 0).getSymbol ().getText ());
+        visitAny (ctx, IdHelper.idToString (ctx.id ()));
         super.visitFunctionCall (ctx);
         return 0;
     }

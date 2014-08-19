@@ -7,6 +7,7 @@ import io.collap.bryg.compiler.ast.expression.bool.LogicalOrBinaryBooleanExpress
 import io.collap.bryg.compiler.ast.expression.bool.RelationalBinaryBooleanExpression;
 import io.collap.bryg.compiler.expression.*;
 import io.collap.bryg.compiler.ast.*;
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
@@ -15,7 +16,6 @@ import io.collap.bryg.parser.BrygBaseVisitor;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.model.Model;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import javax.annotation.Nullable;
 import java.io.Writer;
@@ -30,7 +30,8 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     private ClassResolver classResolver;
     private Map<Integer, Integer> lineToSourceLineMap;
 
-    public StandardVisitor (BrygMethodVisitor method, Library library, ClassResolver classResolver, Map lineToSourceLineMap) {
+    public StandardVisitor (BrygMethodVisitor method, Library library,
+                            ClassResolver classResolver, Map<Integer, Integer> lineToSourceLineMap) {
         this.method = method;
         this.library = library;
         this.classResolver = classResolver;
@@ -86,20 +87,21 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     @Override
     @Nullable
     public Expression visitVariable (@NotNull BrygParser.VariableContext ctx) {
-        TerminalNode id = ctx.Id ();
+        String id = IdHelper.idToString (ctx.id ());
         if (id != null) {
-            Variable variable = currentScope.getVariable (id.getText ());
+            Variable variable = currentScope.getVariable (id);
 
             if (variable != null) {
                 return new VariableExpression (this, variable, AccessMode.get, ctx.getStart ().getLine ());
             }else { /* The variable is probably a function. */
-                Function function = library.getFunction (id.getText ());
+                Function function = library.getFunction (id);
                 if (function != null) {
                     return new FunctionCallExpression (this, function, ctx.getStart ().getLine ());
                 }
             }
 
-            throw new RuntimeException ("Variable " + id.getText () + " not found!");
+            throw new RuntimeException ("Variable " + id + " not found! " +
+                    "Line: " + getLineToSourceLineMap ().get (ctx.getStart ().getLine ()));
         }
 
         return null;
@@ -112,6 +114,11 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
 
     @Override
     public Expression visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
+        return new FunctionCallExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitBlockFunctionCall (@NotNull BrygParser.BlockFunctionCallContext ctx) {
         return new FunctionCallExpression (this, ctx);
     }
 
@@ -158,6 +165,11 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
     @Override
     public Expression visitIntegerLiteral (@NotNull BrygParser.IntegerLiteralContext ctx) {
         return new IntegerLiteralExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitDoubleLiteral (@NotNull BrygParser.DoubleLiteralContext ctx) {
+        return new DoubleLiteralExpression (this, ctx);
     }
 
     @Override

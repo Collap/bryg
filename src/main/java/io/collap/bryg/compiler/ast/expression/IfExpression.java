@@ -31,14 +31,14 @@ public class IfExpression extends Expression {
             condition = new ExpressionBooleanExpression (visitor, conditionOrExpression);
         }
 
-        BrygParser.StatementOrBlockContext ifStatementOrBlockCtx = ctx.statementOrBlock (0);
-        if (ifStatementOrBlockCtx != null) {
-            ifStatementOrBlock = visitor.visitStatementOrBlock (ifStatementOrBlockCtx);
+        BrygParser.StatementContext ifStatementCtx = ctx.statement ();
+        if (ifStatementCtx != null) {
+            ifStatementOrBlock = visitor.visitStatement (ifStatementCtx);
         }else {
             ifStatementOrBlock = visitor.visitBlock (ctx.block ());
         }
 
-        BrygParser.StatementOrBlockContext elseCtx = ctx.statementOrBlock (1);
+        BrygParser.StatementOrBlockContext elseCtx = ctx.statementOrBlock ();
         if (elseCtx != null) {
             elseStatementOrBlock = visitor.visitStatementOrBlock (elseCtx);
         }

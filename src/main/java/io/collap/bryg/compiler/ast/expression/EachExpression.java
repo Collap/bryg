@@ -3,6 +3,7 @@ package io.collap.bryg.compiler.ast.expression;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.expression.Scope;
 import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
@@ -31,14 +32,16 @@ public class EachExpression extends Expression {
         setType (new Type (Void.TYPE)); // TODO: Implement each as a proper expression?
         setLine (ctx.getStart ().getLine ());
 
-        collectionExpression = (Expression) visitor.visit (ctx.expression ());
+        BrygParser.EachHeadContext headCtx = ctx.eachHead ();
+
+        collectionExpression = (Expression) visitor.visit (headCtx.expression ());
 
         /* Open new scope. */
         Scope scope = visitor.getCurrentScope ().createSubScope ();
         visitor.setCurrentScope (scope);
 
         Type collectionType = collectionExpression.getType ();
-        BrygParser.TypeContext typeContext = ctx.type ();
+        BrygParser.TypeContext typeContext = headCtx.type ();
         Type declaredElementType = null;
         if (typeContext != null) {
             declaredElementType = new TypeInterpreter (visitor).interpretType (typeContext);
@@ -80,7 +83,7 @@ public class EachExpression extends Expression {
             iterator = new Variable (iteratorType, "", visitor.getRootScope ().calculateNextId (iteratorType));
         }
 
-        String variableName = ctx.Id ().getText ();
+        String variableName = IdHelper.idToString (headCtx.id ());
         element = scope.registerVariable (variableName, elementType);
 
         BrygParser.StatementOrBlockContext statementOrBlockCtx = ctx.statementOrBlock ();

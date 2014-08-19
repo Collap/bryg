@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.expression.*;
+import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.AsmTypes;
@@ -22,7 +23,7 @@ public class InDeclarationNode extends Node {
         super (visitor);
         setLine (ctx.getStart ().getLine ());
 
-        String name = ctx.Id ().getText ();
+        String name = IdHelper.idToString (ctx.id ());
 
         TypeInterpreter interpreter = new TypeInterpreter (visitor);
         parameter = visitor.getCurrentScope ().registerVariable (name, interpreter.interpretType (ctx.type ()));

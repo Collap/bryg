@@ -19,11 +19,9 @@ public class ClassResolver {
         /* java.lang */
         rootPackageFilter.addSubpackageFilter ("java.lang");
         rootPackageFilter.addSubpackageFilter ("java.util");
+        rootPackageFilter.addSubpackageFilter ("io.collap.bryg.example");
 
         resolveClassNames ();
-
-        setResolvedClass ("TestObject", "io.collap.bryg.TestObject");
-        setResolvedClass ("Post", "io.collap.bryg.example.Post");
 
         System.out.println ("Resolving all classes took " + (System.nanoTime () - time) + "ns.");
     }

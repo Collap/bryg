@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast;
 
+import io.collap.bryg.compiler.ast.expression.StringLiteralExpression;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
@@ -20,16 +21,9 @@ public class StatementNode extends Node {
     public StatementNode (StandardVisitor visitor, BrygParser.StatementContext ctx) {
         super (visitor);
 
-        if (ctx.expression () != null) {
-            child = visitor.visit (ctx.expression ());
-            if (child == null) {
-                throw new BrygJitException ("Expression in statement is expected but null!", getLine ());
-            }
-        }else if (ctx.variableDeclaration () != null) {
-            child = visitor.visit (ctx.variableDeclaration ());
-            if (child == null) {
-                throw new BrygJitException ("Variable declaration in statement is expected but null!", getLine ());
-            }
+        child = visitor.visit (ctx.getChild (0));
+        if (child == null) {
+            throw new BrygJitException ("Child of statement was expected but is null!", getLine ());
         }
     }
 
@@ -42,32 +36,37 @@ public class StatementNode extends Node {
             Type type = expression.getType ();
             if (!type.equals (Void.TYPE)) {
                 BrygMethodVisitor method = visitor.getMethod ();
-
-                // TODO: Does not work for double and long!
-
-                method.loadWriter ();
-                // -> Writer
-
-                /* Stringify if necessary. */
-                if (type.getJavaType ().isPrimitive ()) {
-                    StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (method);
-                    stringBuilder.compileNew ();
-                    stringBuilder.compileAppend (expression); // Note: The expression is compiled here!
-                    stringBuilder.compileToString ();
-                    // value -> String
+                if (expression instanceof StringLiteralExpression) {
+                    /* Append String constants to the constant string writer. */
+                    String text = (String) expression.getConstantValue ();
+                    method.writeConstantString (text);
                 }else {
-                    expression.compile ();
-                    // -> value
+                    // TODO: Does not work for double and long!
 
-                    if (!type.equals (String.class)) {
-                        method.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
-                                TypeHelper.generateMethodDesc (null, Void.TYPE), false);
-                        // T -> String
+                    method.loadWriter ();
+                    // -> Writer
+
+                    /* Stringify if necessary. */
+                    if (type.getJavaType ().isPrimitive ()) {
+                        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (method);
+                        stringBuilder.compileNew ();
+                        stringBuilder.compileAppend (expression); // Note: The expression is compiled here!
+                        stringBuilder.compileToString ();
+                        // value -> String
+                    } else {
+                        expression.compile ();
+                        // -> value
+
+                        if (!type.equals (String.class)) {
+                            method.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
+                                    TypeHelper.generateMethodDesc (null, Void.TYPE), false);
+                            // T -> String
+                        }
                     }
-                }
 
-                method.writeString ();
-                // Writer, value ->
+                    method.writeString ();
+                    // Writer, value ->
+                }
             }else {
                 child.compile ();
             }

@@ -3,6 +3,8 @@ package io.collap.bryg.compiler.library.html;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.library.Library;
 
+import java.util.Arrays;
+
 /**
  * The following HTML5 elements and attributes are valid according to this spec:
  *  http://www.w3.org/TR/html5
@@ -28,7 +30,7 @@ public class HTMLFunctionCollection {
             "href", "target"
         });
         addInlineFunction ("link", new String[] {
-            "crossorigin", "hreflang", "href", "media", "rel", "sizes", "type"
+            "crossorigin", "href", "hreflang", "media", "rel", "sizes", "type"
         });
         addInlineFunction ("meta", new String[] {
             "charset", "content", "http-equiv", "name"
@@ -79,7 +81,7 @@ public class HTMLFunctionCollection {
 
         /* Text-level semantics. */
         addBlockFunction ("a", new String[] {
-            "download", "hreflang", "href", "rel", "target", "type"
+            "download", "href", "hreflang", "rel", "target", "type"
         });
         addBlockFunction ("em");
         addBlockFunction ("strong");
@@ -258,6 +260,7 @@ public class HTMLFunctionCollection {
     private void addBlockFunction (String name, String[] validAttributes) {
         Function function;
         if (validAttributes != null) {
+            Arrays.sort (validAttributes); /* Note: Make sure that the arrays are sorted! */
             function = new HTMLBlockFunction (name, validAttributes);
         }else {
             function = new HTMLBlockFunction (name);
@@ -272,6 +275,7 @@ public class HTMLFunctionCollection {
     private void addInlineFunction (String name, String[] validAttributes) {
         Function function;
         if (validAttributes != null) {
+            Arrays.sort (validAttributes); /* Note: Make sure that the arrays are sorted! */
             function = new HTMLInlineFunction (name, validAttributes);
         }else {
             function = new HTMLInlineFunction (name);

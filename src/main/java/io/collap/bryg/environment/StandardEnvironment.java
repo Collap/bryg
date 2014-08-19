@@ -39,9 +39,14 @@ public class StandardEnvironment implements Environment {
     private synchronized Template loadTemplate (String name) {
         Template template = null;
         try {
+            System.out.println ();
+            System.out.println ("Template: " + name);
+            long start = System.nanoTime ();
             Class<? extends Template> cl = (Class<? extends Template>) templateClassLoader.loadClass (name);
             template = cl.newInstance ();
             templateMap.put (name, template);
+            System.out.println ("Loading took " + ((System.nanoTime () - start) / 1.0e9) + "s.");
+            System.out.println ();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             e.printStackTrace ();
         }
