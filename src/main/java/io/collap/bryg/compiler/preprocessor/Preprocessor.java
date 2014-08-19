@@ -77,7 +77,7 @@ public class Preprocessor {
             }
 
             int writeStartIndex;
-            if (prettyPrint) {
+            if (prettyPrint || inBlockString) {
                 writeStartIndex = index;
             }else {
                 writeStartIndex = indentColumnIndex;
