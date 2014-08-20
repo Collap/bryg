@@ -11,6 +11,9 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
         super (method, new Type (StringBuilder.class));
     }
 
+    /**
+     * Compiles the expression by default!
+     */
     public void compileAppend (Expression expression) {
         compileAppend (expression, true);
     }
