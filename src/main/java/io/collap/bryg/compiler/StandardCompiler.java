@@ -68,7 +68,10 @@ public class StandardCompiler implements Compiler {
                     parser.addErrorListener (ConsoleErrorListener.INSTANCE);
                     parser.addErrorListener (new DiagnosticErrorListener ());
                     parser.setErrorHandler(new DefaultErrorStrategy());
+
+                    // TODO: This mode might not be fit for production!
                     parser.getInterpreter ().setPredictionMode (PredictionMode.LL_EXACT_AMBIG_DETECTION);
+
                     startContext = parser.start ();
                 }
             }
