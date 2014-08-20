@@ -1,22 +1,30 @@
-grammar Bryg;
+parser grammar BrygParser;
 
 // TODO: Allow newline characters in parentheses, arguments, etc.
 // TODO: Merge preprocessor and lexer, like here: https://github.com/antlr/grammars-v4/blob/master/python3/Python3.g4
 // TODO: Find a way to do: if (...) a else b
 
+options {
+    tokenVocab = BrygLexer;
+}
+
 @header {
     package io.collap.bryg.parser;
 }
 
+
+
 start
-    :   inDeclaration* statementLine*
-        EOF // EOF is needed for SLL(*) parsing! Otherwise not exception is thrown.
+    :   (inDeclaration | NEWLINE)*
+        (statementLine | NEWLINE)*
+        EOF // EOF is needed for SLL(*) parsing! Otherwise no exception is thrown, which is needed to induce LL(*) parsing.
     ;
 
 inDeclaration
     :   IN type id
-        '\n'
+        NEWLINE
     ;
+
 
 statementLine
     :   statement
@@ -26,10 +34,10 @@ statement
     :   ifExpression
     |   eachExpression
     |   variableDeclaration
-        '\n'
+        NEWLINE
     |   blockFunctionCall
     |   expression
-        '\n'
+        NEWLINE
     ;
 
 expression
@@ -75,15 +83,15 @@ ifExpression
     :   IF
         (   '(' expression ')' statement    // This has to be statement, otherwise an ambiguity is created
                                             // in conjunction with normal parentheses in expressions!
-        |   expression block
+        |   expression NEWLINE block
         )
-        ('\n'? ELSE statementOrBlock)?
+        (ELSE statementOrBlock)?
     ;
 
 eachExpression
     :   EACH
         (   '(' eachHead ')' statementOrBlock
-        |   eachHead block
+        |   eachHead NEWLINE block
         )
     ;
 
@@ -92,13 +100,13 @@ eachHead
     ;
 
 block
-    :   '\n'? INDENT '\n'?
+    :   INDENT
         statementLine*
-        '\n'? DEDENT '\n'?
+        DEDENT
     ;
 
 statementOrBlock
-    :   block
+    :   NEWLINE block
     |   statement
     ;
 
@@ -160,75 +168,4 @@ id
         |   VAL
         )
         '`'
-    ;
-
-
-//
-//  Lexer Rules
-//
-
-//
-//  Keywords
-//
-
-NOT     : 'not';
-AND     : 'and';
-OR      : 'or';
-IN      : 'in';
-EACH    : 'each';
-ELSE    : 'else';
-IF      : 'if';
-MUT     : 'mut';
-VAL     : 'val';
-
-INDENT  : '\u29FC';
-DEDENT  : '\u29FD';
-
-Identifier
-    :   Letter
-        (Letter | Number)*
-    ;
-
-Float
-    :   Number+ ('.' Number+)? ('f' | 'F')
-    ;
-
-Double
-    :   Number+ '.' Number+
-    ;
-
-Integer
-    :   Number+
-    ;
-
-String
-    :   '\'' ('\\\'' | ~('\'' | '\n' | '\r'))* '\''
-    |   ':' Ws? '\n'? Ws? INDENT (~'\u29FD')* DEDENT
-    |   ':' (~('\n' | '\r'))*
-    ;
-
-Ws
-    :   [ \t\r]+ -> skip
-    ;
-
-fragment
-Letter
-    :   (   LetterUpper
-        |   LetterLower
-        )
-    ;
-
-fragment
-LetterUpper
-    :   [A-Z]
-    ;
-
-fragment
-LetterLower
-    :   [a-z]
-    ;
-
-fragment
-Number
-    :   [0-9]
     ;

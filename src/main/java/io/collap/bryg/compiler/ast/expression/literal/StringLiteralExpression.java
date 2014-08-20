@@ -16,32 +16,24 @@ public class StringLiteralExpression extends Expression {
 
         /* Trim quotes, "parentheses" or whatever. */
         value = ctx.String ().getText ();
-        int start = 1;
+        int start = 0;
         int end = value.length ();
+        boolean shouldTrim = false;
         if (value.charAt (0) == '\'') {
+            start = 1;
             end = value.length () - 1;
         }else if (value.charAt (0) == ':') {
-            boolean blockString = false;
-            int length = value.length ();
-            for (int i = 1; i < length; ++i) {
-                char c = value.charAt (i);
-                if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
-                    start = i;
-                    if (c == '\u29FC') {
-                        start += 1;
-                        blockString = true;
-                    }
-                    break;
-                }
-            }
-
-            end = length;
-            if (blockString) {
-                end -= 1;
-            }
+            start = 1;
+            shouldTrim = true;
         }
 
-        value = value.substring (start, end);
+        if (start > 0 || end < value.length ()) {
+            value = value.substring (start, end);
+        }
+
+        if (shouldTrim) {
+            value.trim ();
+        }
     }
 
     @Override

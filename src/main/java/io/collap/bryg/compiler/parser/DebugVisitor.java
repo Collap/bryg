@@ -1,14 +1,14 @@
 package io.collap.bryg.compiler.parser;
 
 import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.parser.BrygBaseVisitor;
+import io.collap.bryg.parser.BrygParserBaseVisitor;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.omg.CORBA.IDLTypeHelper;
 
-public class DebugVisitor extends BrygBaseVisitor<Integer> {
+public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
 
     @Override
     public Integer visitBinaryIsExpression (@NotNull BrygParser.BinaryIsExpressionContext ctx) {

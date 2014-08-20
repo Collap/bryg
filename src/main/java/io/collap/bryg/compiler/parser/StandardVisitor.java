@@ -16,30 +16,27 @@ import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.Type;
-import io.collap.bryg.parser.BrygBaseVisitor;
+import io.collap.bryg.exception.BrygJitException;
+import io.collap.bryg.parser.BrygParserBaseVisitor;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.model.Model;
 import org.antlr.v4.runtime.misc.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.Writer;
-import java.util.Map;
 
-public class StandardVisitor extends BrygBaseVisitor<Node> {
+public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     private BrygMethodVisitor method;
     private Scope rootScope = new RootScope ();
     private Scope currentScope = rootScope; /* The current scope is the scope each node resides in at its creation. */
     private Library library;
     private ClassResolver classResolver;
-    private Map<Integer, Integer> lineToSourceLineMap;
 
-    public StandardVisitor (BrygMethodVisitor method, Library library,
-                            ClassResolver classResolver, Map<Integer, Integer> lineToSourceLineMap) {
+    public StandardVisitor (BrygMethodVisitor method, Library library, ClassResolver classResolver) {
         this.method = method;
         this.library = library;
         this.classResolver = classResolver;
-        this.lineToSourceLineMap = lineToSourceLineMap;
 
         /* Register parameters in the correct order. */
         rootScope.registerVariable ("this", null); // TODO: Proper type.
@@ -105,8 +102,7 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
                 }
             }
 
-            throw new RuntimeException ("Variable " + id + " not found! " +
-                    "Line: " + getLineToSourceLineMap ().get (ctx.getStart ().getLine ()));
+            throw new BrygJitException ("Variable " + id + " not found.", ctx.getStart ().getLine ());
         }
 
         return null;
@@ -209,10 +205,6 @@ public class StandardVisitor extends BrygBaseVisitor<Node> {
 
     public Scope getRootScope () {
         return rootScope;
-    }
-
-    public Map<Integer, Integer> getLineToSourceLineMap () {
-        return lineToSourceLineMap;
     }
 
 }

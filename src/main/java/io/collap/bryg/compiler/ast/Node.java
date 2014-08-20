@@ -3,7 +3,6 @@ package io.collap.bryg.compiler.ast;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 
 import java.io.PrintStream;
-import java.util.Map;
 
 public abstract class Node {
 
@@ -47,13 +46,7 @@ public abstract class Node {
     }
 
     protected void setLine (int line) {
-        /* Convert prep line to source line. */
-        Map<Integer, Integer> lineToSourceLineMap = visitor.getLineToSourceLineMap ();
-        Integer sourceLine = lineToSourceLineMap.get (line);
-        if (sourceLine == null) {
-            sourceLine = 0;
-        }
-        this.line = sourceLine;
+        this.line = line;
     }
 
 }
