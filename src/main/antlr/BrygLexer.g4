@@ -183,7 +183,24 @@ Integer
 
 String
     :   '\'' ('\\\'' | ~('\'' | '\n' | '\r'))* '\''
-    |   ':' (' ')* (~('\n' | '\r' | ' ')) (~('\n' | '\r'))* ;
+    {
+        /* The block is needed so the namespace is not polluted. */
+        {
+            /* Remove single quotations. */
+            String string = getText ();
+            setText (string.substring (1, string.length () - 1));
+        }
+    }
+    |   ':' (' ')* (~('\n' | '\r' | ' ')) (~('\n' | '\r'))*
+    {
+        {
+            /* Remove colon and trim string. */
+            String string = getText ();
+            setText (string.substring (1).trim ());
+        }
+    }
+    ;
+
 
 BlockString
     :  ':' (NewlineChar SPACES?)+   // Newline and spaces can occur more than once to account for blank lines.
