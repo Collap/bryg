@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+// TODO: Add dynamic (runtime) attributes (currently, while attributes can have dynamic values, the attribute choice itself is fixed).
+
 public class HTMLAttributeCompiler {
 
     private class ArgumentComparator implements Comparator<ArgumentExpression> {
