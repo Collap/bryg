@@ -5,6 +5,8 @@ import io.collap.bryg.compiler.parser.BrygMethodVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.exception.BrygJitException;
 
+import javax.annotation.Nullable;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public class CoercionHelper {
@@ -14,44 +16,80 @@ public class CoercionHelper {
      * The expressions are guaranteed to be compiled when the method returns properly (i.e. without throwing an exception);
      * The results are placed on the stack in the following order: left, right
      *
-     * Important note: This method does not attempt to coerce object types, but accepts equal object types!
-     * @return The common type.
      * @throws io.collap.bryg.exception.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
-     *          hence the compilation should be stopped at that point.
+     *         hence the compilation should be stopped at that point.
      */
-    public static Type attemptBinaryCoercion (BrygMethodVisitor methodVisitor, Expression left, Expression right) {
+    public static void attemptBinaryCoercion (BrygMethodVisitor methodVisitor, Expression left, Expression right,
+                                              Type targetType) {
         Type leftType = left.getType ();
         Type rightType = right.getType ();
 
         if (leftType.equals (rightType)) {
             left.compile ();
             right.compile ();
+            return;
+        }
+
+        if (leftType.isIntegralType () && rightType.isIntegralType ()) {
+            /* This promotes all integers to longs. */
+            promoteType (methodVisitor, left, right, targetType);
+        }else if (leftType.isFloatingPointType () && rightType.isFloatingPointType ()) {
+            /* This promotes all floats to doubles. */
+            promoteType (methodVisitor, left, right, targetType);
+        }else if (leftType.isIntegralType () && rightType.isFloatingPointType ()) {
+            coerceIFP (methodVisitor, left, right, targetType, false);
+        }else if (leftType.isFloatingPointType () && rightType.isIntegralType ()) {
+            coerceIFP (methodVisitor, right, left, targetType, true);
+        }else {
+            throw new BrygJitException ("Coercion failed, but a target type was supplied.", left.getLine ());
+        }
+    }
+
+    /**
+     * This method does not attempt to coerce object types, but accepts equal object types!
+     *
+     * @throws io.collap.bryg.exception.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
+     *         hence the compilation should be stopped at that point.
+     */
+    public static Type getTargetType (Type leftType, Type rightType, int line) {
+        if (leftType.equals (rightType)) {
             return leftType;
         }
 
         if (!leftType.getJavaType ().isPrimitive () || !leftType.getJavaType ().isPrimitive ()) {
-            throw new BrygJitException ("Can not coerce Object types!", left.getLine ());
+            throw new BrygJitException ("Can not coerce Object types!", line);
         }
 
         if (leftType.isIntegralType () && rightType.isIntegralType ()) {
             /* This promotes all integers to longs. */
             // TODO: What about left: byte and right: int for example?
-            Type targetType = new Type (Long.TYPE);
-            promoteType (methodVisitor, left, right, targetType);
-            return targetType;
+            return new Type (Long.TYPE);
         }else if (leftType.isFloatingPointType () && rightType.isFloatingPointType ()) {
             /* This promotes all floats to doubles. */
-            Type targetType = new Type (Double.TYPE);
-            promoteType (methodVisitor, left, right, targetType);
-            return targetType;
+            return new Type (Double.TYPE);
         }else if (leftType.isIntegralType () && rightType.isFloatingPointType ()) {
-            return coerceIFP (methodVisitor, left, right, false);
+            return getTargetIFpType (leftType, rightType);
         }else if (leftType.isFloatingPointType () && rightType.isIntegralType ()) {
-            return coerceIFP (methodVisitor, right, left, true);
+            return getTargetIFpType (rightType, leftType);
         }
 
         throw new BrygJitException ("Could not coerce " + leftType + " and " + rightType + "as this " +
-                "combination is not currently supported!", left.getLine ());
+                "combination is not currently supported!", line);
+    }
+
+    @Nullable
+    private static Type getTargetIFpType (Type iType, Type fpType) {
+        Type targetType = null;
+        if (iType.equals (Integer.TYPE)) {
+            if (fpType.equals (Float.TYPE)) {
+                targetType = new Type (Float.TYPE);
+            }else {
+                targetType = new Type (Double.TYPE);
+            }
+        }else if (iType.equals (Long.TYPE)) {
+            targetType = new Type (Double.TYPE);
+        }
+        return targetType;
     }
 
     /**
@@ -59,18 +97,7 @@ public class CoercionHelper {
      *                     they are compiled to retain the correct order of expressions.
      */
     private static Type coerceIFP (BrygMethodVisitor methodVisitor, Expression iExpr, Expression fpExpr,
-                                   boolean orderSwapped) {
-        Type targetType = null;
-        if (iExpr.getType ().equals (Integer.TYPE)) {
-            if (fpExpr.getType ().equals (Float.TYPE)) {
-                targetType = new Type (Float.TYPE);
-            }else {
-                targetType = new Type (Double.TYPE);
-            }
-        }else if (iExpr.getType ().equals (Long.TYPE)) {
-            targetType = new Type (Double.TYPE);
-        }
-
+                                   Type targetType, boolean orderSwapped) {
         if (targetType == null) {
             throw new BrygJitException ("Could not coerce " + iExpr.getType () + " and " + fpExpr.getType (),
                     iExpr.getLine ());

@@ -23,14 +23,7 @@ public class FunctionCallExpression extends Expression {
         setLine (ctx.getStart ().getLine ());
 
         initFunction (IdHelper.idToString (ctx.id ()));
-
-        BrygParser.StatementOrBlockContext blockCtx = ctx.statementOrBlock ();
-        if (blockCtx != null) {
-            statementOrBlock = visitor.visitStatementOrBlock (blockCtx);
-        }else {
-            statementOrBlock = new BlockNode (visitor);
-        }
-
+        statementOrBlock = visitor.visitBlock (ctx.block ());
         initArguments (ctx.argumentList ());
     }
 
@@ -40,6 +33,15 @@ public class FunctionCallExpression extends Expression {
 
         initFunction (IdHelper.idToString (ctx.id ()));
         statementOrBlock = new BlockNode (visitor);
+        initArguments (ctx.argumentList ());
+    }
+
+    public FunctionCallExpression (StandardVisitor visitor, BrygParser.StatementFunctionCallContext ctx) {
+        super (visitor);
+        setLine (ctx.getStart ().getLine ());
+
+        initFunction (IdHelper.idToString (ctx.id ()));
+        statementOrBlock = visitor.visitStatement (ctx.statement ());
         initArguments (ctx.argumentList ());
     }
 

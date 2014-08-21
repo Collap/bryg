@@ -35,6 +35,9 @@ statement
     |   blockFunctionCall
     |   expression
         NEWLINE
+    |   statementFunctionCall   /* This rule has to be placed after expression, because otherwise an expression
+                                   like a - 7 would be interpreted as a statementFunctionCall with an arithmetic
+                                   negation (that leads to the number -7) instead of a binary subtraction. */
     ;
 
 /**
@@ -130,7 +133,12 @@ functionCall
 
 blockFunctionCall
     :   id argumentList?
-        statementOrBlock
+        NEWLINE block
+    ;
+
+statementFunctionCall
+    :   id argumentList?
+        statement
     ;
 
 argumentList

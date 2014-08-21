@@ -1,0 +1,11 @@
+in int a
+in int b
+
+div
+  p 5 + a
+  p b + 7
+  p a + b
+  p a + a + b
+  p a + 1.0f
+  p 1.0 + b
+  p a + 0.0 + b

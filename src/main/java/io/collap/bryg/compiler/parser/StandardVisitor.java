@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.parser;
 
 import io.collap.bryg.compiler.ast.expression.*;
+import io.collap.bryg.compiler.ast.expression.arithmetic.BinaryAdditionExpression;
 import io.collap.bryg.compiler.ast.expression.bool.EqualityBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.LogicalAndBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.LogicalOrBinaryBooleanExpression;
@@ -8,7 +9,6 @@ import io.collap.bryg.compiler.ast.expression.bool.RelationalBinaryBooleanExpres
 import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
-import io.collap.bryg.compiler.ast.expression.literal.StringLiteralExpression;
 import io.collap.bryg.compiler.expression.*;
 import io.collap.bryg.compiler.ast.*;
 import io.collap.bryg.compiler.helper.IdHelper;
@@ -126,6 +126,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public Node visitBlockFunctionCall (@NotNull BrygParser.BlockFunctionCallContext ctx) {
+        return new FunctionCallExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitStatementFunctionCall (@NotNull BrygParser.StatementFunctionCallContext ctx) {
         return new FunctionCallExpression (this, ctx);
     }
 

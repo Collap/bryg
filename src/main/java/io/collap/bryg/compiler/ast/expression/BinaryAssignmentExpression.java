@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.AccessMode;
+import io.collap.bryg.compiler.ast.expression.arithmetic.BinaryAdditionExpression;
 import io.collap.bryg.compiler.expression.Operator;
 import io.collap.bryg.compiler.expression.Operators;
 import io.collap.bryg.compiler.expression.Variable;

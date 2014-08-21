@@ -33,7 +33,9 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
 
         BrygMethodVisitor method = visitor.getMethod ();
 
-        Type operandType = CoercionHelper.attemptBinaryCoercion (method, left, right);
+        Type operandType = CoercionHelper.getTargetType (left.getType (), right.getType (), getLine ());
+        CoercionHelper.attemptBinaryCoercion (method, left, right, operandType);
+
         // -> T, T
 
         if (operandType.getJavaType ().isPrimitive ()) {
