@@ -42,16 +42,19 @@ public class StandardCompiler implements Compiler {
             BrygLexer lexer = new BrygLexer (new ANTLRInputStream (stream));
             CommonTokenStream tokenStream = new CommonTokenStream (lexer);
 
-//            while (true) {
-//                Token token = tokenStream.LT (1);
-//                if (token.getType () == -1 /* EOF */) break;
-//                else {
-//                    System.out.println (token);
-//                }
-//                tokenStream.consume ();
-//            }
-//
-//            tokenStream.reset ();
+            boolean printTokens = false;
+            if (printTokens) {
+                while (true) {
+                    Token token = tokenStream.LT (1);
+                    if (token.getType () == -1 /* EOF */) break;
+                    else {
+                        System.out.println (token);
+                    }
+                    tokenStream.consume ();
+                }
+
+                tokenStream.reset ();
+            }
 
             /* Try with SLL(*). */
             BrygParser parser = new BrygParser (tokenStream);
