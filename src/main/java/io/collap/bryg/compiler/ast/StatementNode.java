@@ -14,6 +14,8 @@ import java.io.PrintStream;
 
 import static org.objectweb.asm.Opcodes.*;
 
+// TODO: Open new scope.
+
 public class StatementNode extends Node {
 
     private Node child;
