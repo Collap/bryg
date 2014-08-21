@@ -27,7 +27,7 @@ public class VariableExpression extends Expression {
         if (mode == AccessMode.get) {
             method.visitVarInsn (type.getAsmType ().getOpcode (ILOAD), variable.getId ());
             // -> T
-        }else {
+        }else { /* AccessMode.set */
             method.visitVarInsn (type.getAsmType ().getOpcode (ISTORE), variable.getId ());
             // T ->
         }
