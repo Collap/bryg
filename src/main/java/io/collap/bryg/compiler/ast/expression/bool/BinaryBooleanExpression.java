@@ -4,6 +4,9 @@ import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.parser.BrygParser;
 
+/* This also would have to extend BinaryExpression, but multiple
+   inheritance is not permitted in Java. */
+
 public abstract class BinaryBooleanExpression extends BooleanExpression {
 
     protected Expression left;
