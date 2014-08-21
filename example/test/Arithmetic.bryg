@@ -13,6 +13,7 @@ html
         float: left;
         border: 1px solid black;
         margin-right: 10px;
+        margin-bottom: 10px;
       }
 
       .box p {
@@ -195,3 +196,56 @@ html
           tr
             td: a % 0.0 % b
             td  a % 0.0 % b
+
+      div(class 'box')
+        h1: Assignment
+        table
+          mut int value = 0
+          thead tr
+            th: term
+            th: result
+          tr
+            td: value
+            td  value
+          tr(class odd)
+            td: value += 5
+            td
+              value += 5
+              value
+          tr
+            td: value -= -8
+            td
+              value -= -8
+              value
+          tr(class odd)
+            td: value *= 16
+            td
+              value *= 16
+              value
+          tr
+            td: value = (int) (value / 0.5)
+            td
+              value = (int) (value / 0.5)
+              value
+          tr
+            td: value %= 4
+            td
+              value %= 4
+              value
+
+      div(class 'box')
+        h1: Miscellaneous
+        table
+          mut int value = 0
+          thead tr
+            th: term
+            th: result
+          tr
+            td: value
+            td value
+          tr(class odd)
+            td: ++value
+            td ++value
+          tr
+            td: value
+            td value

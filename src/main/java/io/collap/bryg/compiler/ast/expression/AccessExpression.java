@@ -2,7 +2,7 @@ package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.AccessMode;
 import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
@@ -149,6 +149,10 @@ public class AccessExpression extends Expression {
 
     public void setSetFieldExpression (Expression setFieldExpression) {
         this.setFieldExpression = setFieldExpression;
+    }
+
+    public Field getField () {
+        return field;
     }
 
 }

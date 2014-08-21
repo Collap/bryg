@@ -2,6 +2,7 @@ package io.collap.bryg.compiler.type;
 
 import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import javax.annotation.Nullable;
@@ -67,7 +68,7 @@ public class TypeInterpreter {
             e.printStackTrace ();
         }
 
-        return null;
+        throw new BrygJitException ("Could not interpret type '" + ctx.getText () + "'.", ctx.getStart ().getLine ());
     }
 
 }

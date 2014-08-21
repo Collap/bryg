@@ -2,7 +2,7 @@ package io.collap.bryg.compiler.library.html;
 
 import io.collap.bryg.compiler.ast.expression.ArgumentExpression;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 
 import java.util.Arrays;
 import java.util.Collections;

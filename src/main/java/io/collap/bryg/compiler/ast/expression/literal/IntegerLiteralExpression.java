@@ -17,6 +17,14 @@ public class IntegerLiteralExpression extends Expression {
         value = Integer.parseInt (ctx.Integer ().getText ());
     }
 
+    public IntegerLiteralExpression (StandardVisitor visitor, int value, int line) {
+        super (visitor);
+        setType (new Type (Integer.TYPE));
+        setLine (line);
+
+        this.value = value;
+    }
+
     @Override
     public void compile () {
         visitor.getMethod ().visitLdcInsn (value);

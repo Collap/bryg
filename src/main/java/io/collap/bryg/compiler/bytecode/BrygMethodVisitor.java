@@ -1,4 +1,4 @@
-package io.collap.bryg.compiler.parser;
+package io.collap.bryg.compiler.bytecode;
 
 import org.objectweb.asm.*;
 

@@ -4,7 +4,7 @@ import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.expression.Scope;
 import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;

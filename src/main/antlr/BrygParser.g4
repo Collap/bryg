@@ -56,7 +56,7 @@ expression
     |   variable                                            # variableExpression
     |   '(' type ')' expression                             # castExpression
     |   expression ('++' | '--')                            # unarySuffixExpression
-    |   ('+' | '-' | '++' | '--') expression                # unaryPrefixExpression
+    |   op=('+' | '-' | '++' | '--') expression             # unaryPrefixExpression
     |   ('~' | NOT) expression                              # unaryOperationExpression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
     |   expression op=('+' | '-') expression                # binaryAddSubExpression
@@ -70,6 +70,7 @@ expression
     |   expression AND expression                           # binaryLogicalAndExpression
     |   expression OR expression                            # binaryLogicalOrExpression
     |   <assoc=right> expression
+        op=
         ( '='
         | '+='
         | '-='

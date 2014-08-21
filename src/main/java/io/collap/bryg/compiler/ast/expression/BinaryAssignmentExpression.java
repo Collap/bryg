@@ -1,22 +1,21 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.AccessMode;
-import io.collap.bryg.compiler.ast.expression.arithmetic.BinaryAdditionExpression;
-import io.collap.bryg.compiler.expression.Operator;
-import io.collap.bryg.compiler.expression.Operators;
+import io.collap.bryg.compiler.ast.expression.arithmetic.*;
+import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.helper.CoercionHelper;
 import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.exception.BrygJitException;
+import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 
-public class BinaryAssignmentExpression extends Expression {
+public class BinaryAssignmentExpression extends BinaryExpression {
 
-    // TODO: Support -=, *=, etc.
-
-    private Expression left;
-    private Expression right;
+    // TODO: Allow the following: val byte b = 42
+    // TODO: Make the indication of casting easier for these scenarios: (int) (value / 0.5) ; Where value is an int.
 
     /**
      * The right expression does not need to be compiled if the left expression takes care of it.
@@ -24,18 +23,14 @@ public class BinaryAssignmentExpression extends Expression {
     private boolean compileRight;
 
     public BinaryAssignmentExpression (StandardVisitor visitor, BrygParser.BinaryAssignmentExpressionContext ctx) {
-        super (visitor);
+        super (visitor, ctx.getStart ().getLine ());
         setType (new Type (Void.TYPE)); // TODO: Implement as proper expression?
-        setLine (ctx.getStart ().getLine ());
 
         /* Get operator. */
-        Operator operator = null;
-        String operatorStr = ctx.getChild (1).getText ();
-        if (!operatorStr.equals ("=")) {
-            operator = Operators.fromString (operatorStr.substring (0, operatorStr.length () - 1));
-        }
+        int operator = ctx.op.getType ();
 
         /* Evaluate left. */
+        Type expectedType = null;
         BrygParser.ExpressionContext leftCtx = ctx.expression (0);
         Expression leftGet = null; /* Set when the operator is used. */
         if (leftCtx instanceof BrygParser.VariableExpressionContext) {
@@ -47,20 +42,21 @@ public class BinaryAssignmentExpression extends Expression {
                 throw new BrygJitException ("Variable " + variableName + " not found!", variableLine);
             }
             left = new VariableExpression (visitor, variable, AccessMode.set, variableLine);
+            expectedType = variable.getType ();
 
-            if (operator != null) {
+            if (operator != BrygLexer.ASSIGN) {
                 leftGet = new VariableExpression (visitor, variable, AccessMode.get, variableLine);
             }
-
-            compileRight = true;
         }else if (leftCtx instanceof BrygParser.AccessExpressionContext) {
             BrygParser.AccessExpressionContext accessCtx = (BrygParser.AccessExpressionContext) leftCtx;
             try {
-                left = new AccessExpression (visitor, accessCtx, AccessMode.set);
-                if (operator != null) {
+                AccessExpression accessExpression = new AccessExpression (visitor, accessCtx, AccessMode.set);
+                expectedType = new Type (accessExpression.getField ().getType ());
+                left = accessExpression;
+
+                if (operator != BrygLexer.ASSIGN) {
                     leftGet = new AccessExpression (visitor, accessCtx, AccessMode.get);
                 }
-                compileRight = false;
             } catch (NoSuchFieldException e) {
                 e.printStackTrace (); // TODO: Log properly.
                 throw new BrygJitException ("The field to set either does not exist or is not visible!", getLine ());
@@ -70,19 +66,49 @@ public class BinaryAssignmentExpression extends Expression {
         }
 
         right = (Expression) visitor.visit (ctx.expression (1));
-        if (operator != null) {
+
+        /* Handle +=, -=, etc. cases. */
+        if (operator != BrygLexer.ASSIGN) {
             switch (operator) {
-                case addition:
+                case BrygLexer.ADD_ASSIGN:
                     right = new BinaryAdditionExpression (visitor, leftGet, right, getLine ());
                     break;
+                case BrygLexer.SUB_ASSIGN:
+                    right = new BinarySubtractionExpression (visitor, leftGet, right, getLine ());
+                    break;
+                case BrygLexer.MUL_ASSIGN:
+                    right = new BinaryMultiplicationExpression (visitor, leftGet, right, getLine ());
+                    break;
+                case BrygLexer.DIV_ASSIGN:
+                    right = new BinaryDivisionExpression (visitor, leftGet, right, getLine ());
+                    break;
+                case BrygLexer.REM_ASSIGN:
+                    right = new BinaryRemainderExpression (visitor, leftGet, right, getLine ());
+                    break;
                 default:
-                    throw new BrygJitException ("Operator " + operator + " is currently not supported!", getLine ());
+                    throw new BrygJitException ("Operator " + BrygLexer.ruleNames[operator]
+                            + " is (currently) not supported!", getLine ());
             }
+        }
+
+        /* Possible coercion. */
+        if (!expectedType.equals (right.getType ())) {
+            Type targetType = CoercionHelper.getTargetType (expectedType, right.getType (), getLine ());
+            if (!expectedType.equals (targetType)) {
+                throw new BrygJitException ("Coercion for assignment failed, please cast manually from '" +
+                        targetType + "' to '" + expectedType + "'.", getLine ());
+            }
+
+            /* Add cast expression on top. */
+            right = new CastExpression (visitor, targetType, right, getLine ());
         }
 
         /* In this case 'left' takes care of compiling 'right'. */
         if (left instanceof AccessExpression) {
             ((AccessExpression) left).setSetFieldExpression (right);
+            compileRight = false;
+        }else {
+            compileRight = true;
         }
     }
 

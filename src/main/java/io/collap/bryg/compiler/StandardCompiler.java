@@ -1,6 +1,8 @@
 package io.collap.bryg.compiler;
 
 import io.collap.bryg.compiler.ast.Node;
+import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.library.BasicLibrary;
 import io.collap.bryg.compiler.parser.*;
 import io.collap.bryg.compiler.resolver.ClassResolver;

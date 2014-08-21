@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.AccessMode;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.expression.Variable;
 

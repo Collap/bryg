@@ -52,6 +52,10 @@ public class Type {
         return equals (Double.TYPE) || equals (Float.TYPE);
     }
 
+    public boolean isNumeric () {
+        return isIntegralType () || isFloatingPointType ();
+    }
+
     @Override
     public String toString () {
         return getJavaType ().toString ();

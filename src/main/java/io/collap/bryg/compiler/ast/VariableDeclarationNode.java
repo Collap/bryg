@@ -3,7 +3,7 @@ package io.collap.bryg.compiler.ast;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
@@ -37,7 +37,7 @@ public class VariableDeclarationNode extends Node {
         Type type = null;
         if (expectedType == null) {
             if (expression == null) {
-                throw new BrygJitException ("Could not infer type for variable " + name + "!", getLine ());
+                throw new BrygJitException ("Could not infer type for variable '" + name + "'.", getLine ());
             }else{
                 type = expression.getType ();
             }
@@ -46,10 +46,16 @@ public class VariableDeclarationNode extends Node {
                 type = expectedType;
             }else {
                 if (!expression.getType ().equals (expectedType)) {
-                    throw new BrygJitException ("The expected type and inferred type do not match for the variable " + name + "!",
+                    // TODO: Coercion?
+                    throw new BrygJitException ("The expected type and inferred type do not match for variable '" + name + "'.",
                         getLine ());
                 }
+                type = expectedType;
             }
+        }
+
+        if (type == null) {
+            throw new BrygJitException ("Could not get type for variable '" + name + "'.", getLine ());
         }
 
         variable = visitor.getCurrentScope ().registerVariable (name, type);

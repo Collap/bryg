@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.type.Type;

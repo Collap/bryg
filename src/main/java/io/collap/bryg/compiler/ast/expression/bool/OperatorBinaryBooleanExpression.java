@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
 import io.collap.bryg.compiler.helper.CoercionHelper;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.expression.Operator;
 import io.collap.bryg.compiler.type.AsmTypes;

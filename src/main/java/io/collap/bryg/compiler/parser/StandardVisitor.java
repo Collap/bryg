@@ -9,6 +9,9 @@ import io.collap.bryg.compiler.ast.expression.bool.RelationalBinaryBooleanExpres
 import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
+import io.collap.bryg.compiler.ast.expression.unary.NegationExpression;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.expression.*;
 import io.collap.bryg.compiler.ast.*;
 import io.collap.bryg.compiler.helper.IdHelper;
@@ -204,6 +207,40 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public Node visitEachExpression (@NotNull BrygParser.EachExpressionContext ctx) {
         return new EachExpression (this, ctx);
+    }
+
+
+    //
+    //  Unary
+    //
+
+    @Override
+    public Node visitCastExpression (@NotNull BrygParser.CastExpressionContext ctx) {
+        return new CastExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitUnaryPrefixExpression (@NotNull BrygParser.UnaryPrefixExpressionContext ctx) {
+        final int op = ctx.op.getType ();
+        final int line = ctx.getStart ().getLine ();
+        if (op == BrygLexer.MINUS) {
+            return new NegationExpression (this, (Expression) visit (ctx.expression ()), line);
+        }else if (op == BrygLexer.PLUS) {
+            return super.visitUnaryPrefixExpression (ctx); /* A unary plus does nothing, so let the
+                                                              visitor check the child. */
+        }else {
+            /* Increment or decrement. */
+            // TODO: Special case for integer variables (IINC).
+            int increment;
+            if (op == BrygLexer.INC) {
+                increment = 1;
+            }else { /* DEC */
+                increment = -1;
+            }
+
+            return new BinaryAdditionExpression (this, (Expression) visit (ctx.expression ()),
+                    new IntegerLiteralExpression (this, increment, line), line);
+        }
     }
 
 

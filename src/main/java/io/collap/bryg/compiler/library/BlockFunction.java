@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.library;
 
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
 

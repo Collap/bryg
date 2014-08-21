@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.helper;
 
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 
 public abstract class CompileHelper {
 

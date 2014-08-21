@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.library.html;
 
 import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 
 public class HTMLBlockFunction extends HTMLFunction {
 

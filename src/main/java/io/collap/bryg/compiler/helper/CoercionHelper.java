@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.helper;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.parser.BrygMethodVisitor;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.exception.BrygJitException;
 
@@ -52,11 +52,14 @@ public class CoercionHelper {
      *         hence the compilation should be stopped at that point.
      */
     public static Type getTargetType (Type leftType, Type rightType, int line) {
+        if (leftType == null) throw new BrygJitException ("Left type is null.", line);
+        if (rightType == null) throw new BrygJitException ("Right type is null.", line);
+
         if (leftType.equals (rightType)) {
             return leftType;
         }
 
-        if (!leftType.getJavaType ().isPrimitive () || !leftType.getJavaType ().isPrimitive ()) {
+        if (!leftType.getJavaType ().isPrimitive () || !rightType.getJavaType ().isPrimitive ()) {
             throw new BrygJitException ("Can not coerce Object types!", line);
         }
 
@@ -149,7 +152,7 @@ public class CoercionHelper {
      * Returns the conversion opcode for a number of primitive conversions.
      * @param line Used for error reporting.
      */
-    private static int getConversionOpcode (Type from, Type to, int line) {
+    public static int getConversionOpcode (Type from, Type to, int line) {
         if (from.equals (Integer.TYPE)) {
             if (to.equals (Long.TYPE)) return I2L;
             if (to.equals (Float.TYPE)) return I2F;
@@ -171,7 +174,7 @@ public class CoercionHelper {
             if (to.equals (Float.TYPE)) return D2F;
         }
 
-        throw new BrygJitException ("Could not convert from " + from + " to " + to, line);
+        throw new BrygJitException ("Conversion from " + from + " to " + to + " is not possible.", line);
     }
 
 }
