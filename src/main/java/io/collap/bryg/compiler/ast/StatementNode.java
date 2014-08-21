@@ -20,6 +20,7 @@ public class StatementNode extends Node {
 
     public StatementNode (StandardVisitor visitor, BrygParser.StatementContext ctx) {
         super (visitor);
+        setLine (ctx.getStart ().getLine ());
 
         child = visitor.visit (ctx.getChild (0));
         if (child == null) {
