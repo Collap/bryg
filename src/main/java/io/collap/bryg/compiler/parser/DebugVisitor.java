@@ -39,9 +39,9 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitBinaryAdditionExpression (@NotNull BrygParser.BinaryAdditionExpressionContext ctx) {
+    public Integer visitBinaryAddSubExpression (@NotNull BrygParser.BinaryAddSubExpressionContext ctx) {
         visitAny (ctx);
-        super.visitBinaryAdditionExpression (ctx);
+        super.visitBinaryAddSubExpression (ctx);
         return 0;
     }
 
@@ -95,9 +95,9 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitBinaryMultiplicationExpression (@NotNull BrygParser.BinaryMultiplicationExpressionContext ctx) {
+    public Integer visitBinaryMulDivRemExpression (@NotNull BrygParser.BinaryMulDivRemExpressionContext ctx) {
         visitAny (ctx);
-        super.visitBinaryMultiplicationExpression (ctx);
+        super.visitBinaryMulDivRemExpression (ctx);
         return 0;
     }
 

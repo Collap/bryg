@@ -1,11 +1,197 @@
+; This does of course not replace proper tests,
+; but it is a start for now!
+
 in int a
 in int b
 
-div
-  p 5 + a
-  p b + 7
-  p a + b
-  p a + a + b
-  p a + 1.0f
-  p 1.0 + b
-  p a + 0.0 + b
+html
+  head
+    style:
+      .box {
+        display: inline-block;
+        width: 200px;
+        float: left;
+        border: 1px solid black;
+        margin-right: 10px;
+      }
+
+      .box p {
+        padding: 5px;
+      }
+
+      .box h1 {
+        font-size: 20pt;
+        text-align: center;
+      }
+
+      .box table {
+        border-collapse: collapse;
+        border-spacing: 0px;
+      }
+
+      .box thead {
+        border-bottom: 1px solid black;
+        border-top: 1px solid black;
+      }
+
+      .box td {
+        width: 90px;
+        padding: 5px;
+      }
+
+      .box tr.odd {
+        background: #DFDFDF;
+      }
+  body
+    div
+      val odd = 'odd'
+
+      div(class 'box')
+        h1: Basis
+        p 'a = ' + a
+        p 'b = ' + b
+
+      ; The duplicate terms are inefficient and hard to maintain,
+      ; but I doubt that a template language should fix the problem
+      ; of printing the source code.
+      ; Once we introduce fragments and template calling/inclusion,
+      ; we can also omit the boilerplate table code.
+      div(class 'box')
+        h1: Addition
+        table
+          thead tr
+            th: term
+            th: result
+          tr
+            td: 5 + a
+            td  5 + a
+          tr(class odd)
+            td: b + 7
+            td  b + 7
+          tr
+            td: a + b
+            td  a + b
+          tr(class odd)
+            td: a + a + b
+            td  a + a + b
+          tr
+            td: a + 1.0f
+            td  a + 1.0f
+          tr(class odd)
+            td: 1.0 + b
+            td  1.0 + b
+          tr
+            td: a + 0.0 + b
+            td  a + 0.0 + b
+
+      div(class 'box')
+        h1: Subtraction
+        table
+          thead tr
+            th: term
+            th: result
+          tr
+            td: 5 - a
+            td  5 - a
+          tr(class odd)
+            td: b - 7
+            td  b - 7
+          tr
+            td: a - b
+            td  a - b
+          tr(class odd)
+            td: a - a - b
+            td  a - a - b
+          tr
+            td: a - 1.0f
+            td  a - 1.0f
+          tr(class odd)
+            td: 1.0 - b
+            td  1.0 - b
+          tr
+            td: a - 0.0 - b
+            td  a - 0.0 - b
+            
+      div(class 'box')
+        h1: Multiplication
+        table
+          thead tr
+            th: term
+            th: result
+          tr
+            td: 5 * a
+            td  5 * a
+          tr(class odd)
+            td: b * 7
+            td  b * 7
+          tr
+            td: a * b
+            td  a * b
+          tr(class odd)
+            td: a * a * b
+            td  a * a * b
+          tr
+            td: a * 1.0f
+            td  a * 1.0f
+          tr(class odd)
+            td: 1.0 * b
+            td  1.0 * b
+          tr
+            td: a * 0.0 * b
+            td  a * 0.0 * b
+            
+      div(class 'box')
+        h1: Division
+        table
+          thead tr
+            th: term
+            th: result
+          tr
+            td: 5 / a
+            td  5 / a
+          tr(class odd)
+            td: b / 7
+            td  b / 7
+          tr
+            td: a / b
+            td  a / b
+          tr(class odd)
+            td: a / a / b
+            td  a / a / b
+          tr
+            td: a / 1.0f
+            td  a / 1.0f
+          tr(class odd)
+            td: 1.0 / b
+            td  1.0 / b
+          tr
+            td: a / 0.0 / b
+            td  a / 0.0 / b
+            
+      div(class 'box')
+        h1: Remainder
+        table
+          thead tr
+            th: term
+            th: result
+          tr
+            td: 5 % a
+            td  5 % a
+          tr(class odd)
+            td: b % 7
+            td  b % 7
+          tr
+            td: a % b
+            td  a % b
+          tr(class odd)
+            td: a % a % b
+            td  a % a % b
+          tr
+            td: a % 1.0f
+            td  a % 1.0f
+          tr(class odd)
+            td: 1.0 % b
+            td  1.0 % b
+          tr
+            td: a % 0.0 % b
+            td  a % 0.0 % b

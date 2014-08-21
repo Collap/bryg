@@ -58,8 +58,8 @@ expression
     |   expression ('++' | '--')                            # unarySuffixExpression
     |   ('+' | '-' | '++' | '--') expression                # unaryPrefixExpression
     |   ('~' | NOT) expression                              # unaryOperationExpression
-    |   expression ('*' | '/' | '%') expression             # binaryMultiplicationExpression
-    |   expression ('+' | '-') expression                   # binaryAdditionExpression
+    |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
+    |   expression op=('+' | '-') expression                # binaryAddSubExpression
     |   expression ('<<' | '>>>' | '>>') expression         # binaryShiftExpression
     |   expression ('<=' | '>=' | '>' | '<') expression     # binaryRelationalExpression
     |   expression 'is' type                                # binaryIsExpression

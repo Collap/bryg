@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.parser;
 
 import io.collap.bryg.compiler.ast.expression.*;
-import io.collap.bryg.compiler.ast.expression.arithmetic.BinaryAdditionExpression;
+import io.collap.bryg.compiler.ast.expression.arithmetic.*;
 import io.collap.bryg.compiler.ast.expression.bool.EqualityBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.LogicalAndBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.LogicalOrBinaryBooleanExpression;
@@ -18,6 +18,7 @@ import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.exception.BrygJitException;
+import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParserBaseVisitor;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.model.Model;
@@ -46,7 +47,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitStart (@NotNull BrygParser.StartContext ctx) {
+    public RootNode visitStart (@NotNull BrygParser.StartContext ctx) {
         return new RootNode (this, ctx);
     }
 
@@ -67,13 +68,13 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitBlock (@NotNull BrygParser.BlockContext ctx) {
+    public BlockNode visitBlock (@NotNull BrygParser.BlockContext ctx) {
         return new BlockNode (this, ctx);
     }
 
     @Override
-    public Node visitInterpolation (@NotNull BrygParser.InterpolationContext ctx) {
-        return visit (ctx.expression ());
+    public Expression visitInterpolation (@NotNull BrygParser.InterpolationContext ctx) {
+        return (Expression) visit (ctx.expression ());
     }
 
     @Override
@@ -93,8 +94,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    @Nullable
-    public Expression visitVariable (@NotNull BrygParser.VariableContext ctx) {
+    public @Nullable Expression visitVariable (@NotNull BrygParser.VariableContext ctx) {
         String id = IdHelper.idToString (ctx.id ());
         if (id != null) {
             Variable variable = currentScope.getVariable (id);
@@ -115,22 +115,22 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitVariableDeclaration (@NotNull BrygParser.VariableDeclarationContext ctx) {
+    public VariableDeclarationNode visitVariableDeclaration (@NotNull BrygParser.VariableDeclarationContext ctx) {
         return new VariableDeclarationNode (this, ctx);
     }
 
     @Override
-    public Expression visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
+    public FunctionCallExpression visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
         return new FunctionCallExpression (this, ctx);
     }
 
     @Override
-    public Node visitBlockFunctionCall (@NotNull BrygParser.BlockFunctionCallContext ctx) {
+    public FunctionCallExpression visitBlockFunctionCall (@NotNull BrygParser.BlockFunctionCallContext ctx) {
         return new FunctionCallExpression (this, ctx);
     }
 
     @Override
-    public Node visitStatementFunctionCall (@NotNull BrygParser.StatementFunctionCallContext ctx) {
+    public FunctionCallExpression visitStatementFunctionCall (@NotNull BrygParser.StatementFunctionCallContext ctx) {
         return new FunctionCallExpression (this, ctx);
     }
 
@@ -139,10 +139,42 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         return new BinaryAssignmentExpression (this, ctx);
     }
 
+
+    //
+    //  Arithmetic
+    //
+
     @Override
-    public BinaryAdditionExpression visitBinaryAdditionExpression (@NotNull BrygParser.BinaryAdditionExpressionContext ctx) {
-        return new BinaryAdditionExpression (this, ctx);
+    public BinaryArithmeticExpression visitBinaryAddSubExpression (@NotNull BrygParser.BinaryAddSubExpressionContext ctx) {
+        BrygParser.ExpressionContext left = ctx.expression (0);
+        BrygParser.ExpressionContext right = ctx.expression (1);
+
+        if (ctx.op.getType () == BrygLexer.PLUS) {
+            return new BinaryAdditionExpression (this, left, right);
+        }else { /* MINUS */
+            return new BinarySubtractionExpression (this, left, right);
+        }
     }
+
+    @Override
+    public Node visitBinaryMulDivRemExpression (@NotNull BrygParser.BinaryMulDivRemExpressionContext ctx) {
+        BrygParser.ExpressionContext left = ctx.expression (0);
+        BrygParser.ExpressionContext right = ctx.expression (1);
+
+        int op = ctx.op.getType ();
+        if (op == BrygLexer.MUL) {
+            return new BinaryMultiplicationExpression (this, left, right);
+        }else if (op == BrygLexer.DIV) {
+            return new BinaryDivisionExpression (this, left, right);
+        }else { /* REM */
+            return new BinaryRemainderExpression (this, left, right);
+        }
+    }
+
+
+    //
+    //  Relational
+    //
 
     @Override
     public EqualityBinaryBooleanExpression visitBinaryEqualityExpression (@NotNull BrygParser.BinaryEqualityExpressionContext ctx) {
@@ -174,6 +206,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         return new EachExpression (this, ctx);
     }
 
+
+    //
+    //  Literals
+    //
+
     @Override
     public Expression visitIntegerLiteral (@NotNull BrygParser.IntegerLiteralContext ctx) {
         return new IntegerLiteralExpression (this, ctx);
@@ -195,6 +232,9 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         int line = ctx.getStart ().getLine ();
         return InterpolationHelper.compileString (this, text, line);
     }
+
+
+
 
     public BrygMethodVisitor getMethod () {
         return method;
