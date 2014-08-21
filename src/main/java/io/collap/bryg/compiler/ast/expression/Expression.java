@@ -6,6 +6,9 @@ import io.collap.bryg.compiler.type.Type;
 
 public abstract class Expression extends Node {
 
+    /**
+     * The type must be set up <b>in the constructor</b>.
+     */
     protected Type type;
 
     protected Expression (StandardVisitor visitor) {
