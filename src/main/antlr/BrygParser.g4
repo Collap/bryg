@@ -1,7 +1,5 @@
 parser grammar BrygParser;
 
-// TODO: Allow newline characters in parentheses, arguments, etc.
-// TODO: Merge preprocessor and lexer, like here: https://github.com/antlr/grammars-v4/blob/master/python3/Python3.g4
 // TODO: Find a way to do: if (...) a else b
 
 options {
@@ -11,7 +9,6 @@ options {
 @header {
     package io.collap.bryg.parser;
 }
-
 
 
 start
@@ -38,6 +35,13 @@ statement
     |   blockFunctionCall
     |   expression
         NEWLINE
+    ;
+
+/**
+ *  This rule is executed separately when the compiler finds an unescaped interpolation sequence (\{...}) in a string.
+ */
+interpolation
+    :   expression NEWLINE
     ;
 
 expression
@@ -142,10 +146,10 @@ argumentId
     ;
 
 literal
-    : String    # stringLiteral
-    | Integer   # integerLiteral
-    | Double    # doubleLiteral
-    | Float     # floatLiteral
+    :   String      # stringLiteral
+    |   Integer     # integerLiteral
+    |   Double      # doubleLiteral
+    |   Float       # floatLiteral
     ;
 
 type

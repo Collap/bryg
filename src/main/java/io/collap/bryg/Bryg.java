@@ -43,14 +43,14 @@ public class Bryg {
         if (true) {
             Template template = environment.getTemplate ("test.Parameters");
             Model model = new BasicModel ();
-            model.setVariable ("booleanValue", true);
-            model.setVariable ("charValue", 'H');
-            model.setVariable ("byteValue", (byte) 42);
-            model.setVariable ("shortValue", (short) 500);
-            model.setVariable ("intValue", 72000);
-            model.setVariable ("longValue", 10000000000L);
-            model.setVariable ("floatValue", 0.5656f);
-            model.setVariable ("doubleValue", 0.5656d);
+            model.setVariable ("z", true);
+            model.setVariable ("c", 'H');
+            model.setVariable ("b", (byte) 42);
+            model.setVariable ("s", (short) 500);
+            model.setVariable ("i", 72000);
+            model.setVariable ("l", 10000000000L);
+            model.setVariable ("f", 0.5656f);
+            model.setVariable ("d", 0.5656d);
             benchmarkTemplate (template, model);
         }
 
@@ -80,6 +80,7 @@ public class Bryg {
             categories.add ("Discussion");
             categories.add ("Computer Science");
             model.setVariable ("post", post);
+            model.setVariable ("basePath", ""); // TODO: basePath will be part of a global variable context!
             benchmarkTemplate (template, model);
         }
 

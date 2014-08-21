@@ -1,17 +1,17 @@
-in boolean booleanValue
-in char charValue
-in byte byteValue
-in short shortValue
-in int intValue
-in long longValue
-in float floatValue
-in double doubleValue
+in boolean z
+in char c
+in byte b
+in short s
+in int i
+in long l
+in float f
+in double d
 
-p 'Boolean value: ' + booleanValue
-p 'Char value: ' + charValue
-p 'Byte value: ' + byteValue
-p 'Short value: ' + shortValue
-p 'Int value: ' + intValue
-p 'Long value: ' + longValue
-p 'Float value: ' + floatValue
-p 'Double value: ' + doubleValue
+p: Boolean value: \{z}
+p: Char value: \{c}
+p: Byte value: \{b}
+p: Short value: \{s}
+p: Int value: \{i}
+p: Long value: \{l}
+p: Float value: \{f}
+p: Double value: \{d}

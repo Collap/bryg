@@ -12,6 +12,7 @@ import io.collap.bryg.compiler.ast.expression.literal.StringLiteralExpression;
 import io.collap.bryg.compiler.expression.*;
 import io.collap.bryg.compiler.ast.*;
 import io.collap.bryg.compiler.helper.IdHelper;
+import io.collap.bryg.compiler.helper.InterpolationHelper;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
@@ -68,6 +69,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public Node visitBlock (@NotNull BrygParser.BlockContext ctx) {
         return new BlockNode (this, ctx);
+    }
+
+    @Override
+    public Node visitInterpolation (@NotNull BrygParser.InterpolationContext ctx) {
+        return visit (ctx.expression ());
     }
 
     @Override
@@ -180,7 +186,9 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public Expression visitStringLiteral (@NotNull BrygParser.StringLiteralContext ctx) {
-        return new StringLiteralExpression (this, ctx);
+        String text = ctx.getText ();
+        int line = ctx.getStart ().getLine ();
+        return InterpolationHelper.compileString (this, text, line);
     }
 
     public BrygMethodVisitor getMethod () {

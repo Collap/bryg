@@ -8,7 +8,7 @@ html
       if (number == 42): Hello World!
       else: Hello Moon!
   body
-    div(id 'header', style 'test #number', title 'Hello Title')
+    div(id 'header', style 'test \{number}', title 'Hello Title')
       :This is in a div!
     img(src 'test.png')
     span object.name
