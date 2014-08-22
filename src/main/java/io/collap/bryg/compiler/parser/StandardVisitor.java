@@ -10,6 +10,7 @@ import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
+import io.collap.bryg.compiler.ast.expression.unary.IncDecExpression;
 import io.collap.bryg.compiler.ast.expression.unary.NegationExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.expression.*;
@@ -220,6 +221,13 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitUnaryPostfixExpression (@NotNull BrygParser.UnaryPostfixExpressionContext ctx) {
+        final int op = ctx.op.getType ();
+        final int line = ctx.getStart ().getLine ();
+        return new IncDecExpression (this, ctx.expression (), op == BrygLexer.INC, false, line);
+    }
+
+    @Override
     public Node visitUnaryPrefixExpression (@NotNull BrygParser.UnaryPrefixExpressionContext ctx) {
         final int op = ctx.op.getType ();
         final int line = ctx.getStart ().getLine ();
@@ -229,19 +237,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
             return super.visitUnaryPrefixExpression (ctx); /* A unary plus does nothing, so let the
                                                               visitor check the child. */
         }else {
-            /* Increment or decrement. */
-            // TODO: Special case for integer variables (IINC).
-            int increment;
-            if (op == BrygLexer.INC) {
-                increment = 1;
-            }else { /* DEC */
-                increment = -1;
-            }
-
-            return new BinaryAdditionExpression (this, (Expression) visit (ctx.expression ()),
-                    new IntegerLiteralExpression (this, increment, line), line);
+            return new IncDecExpression (this, ctx.expression (), op == BrygLexer.INC, true, line);
         }
     }
+
+
 
 
     //

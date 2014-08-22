@@ -56,6 +56,10 @@ public class Type {
         return isIntegralType () || isFloatingPointType ();
     }
 
+    public boolean is64Bit () {
+        return asmType.getSize () == 2;
+    }
+
     @Override
     public String toString () {
         return getJavaType ().toString ();

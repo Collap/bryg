@@ -247,5 +247,14 @@ html
             td: ++value
             td ++value
           tr
+            td: value++
+            td value++
+          tr(class odd)
+            td: --value
+            td --value
+          tr
+            td: value--
+            td value--
+          tr
             td: value
             td value

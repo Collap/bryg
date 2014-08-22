@@ -18,9 +18,9 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitUnarySuffixExpression (@NotNull BrygParser.UnarySuffixExpressionContext ctx) {
+    public Integer visitUnaryPostfixExpression (@NotNull BrygParser.UnaryPostfixExpressionContext ctx) {
         visitAny (ctx);
-        super.visitUnarySuffixExpression (ctx);
+        super.visitUnaryPostfixExpression (ctx);
         return 0;
     }
 

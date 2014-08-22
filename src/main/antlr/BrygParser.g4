@@ -55,7 +55,7 @@ expression
     |   functionCall                                        # functionCallExpression
     |   variable                                            # variableExpression
     |   '(' type ')' expression                             # castExpression
-    |   expression ('++' | '--')                            # unarySuffixExpression
+    |   expression op=('++' | '--')                         # unaryPostfixExpression
     |   op=('+' | '-' | '++' | '--') expression             # unaryPrefixExpression
     |   ('~' | NOT) expression                              # unaryOperationExpression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression

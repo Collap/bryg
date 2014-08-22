@@ -34,6 +34,7 @@ public class BinaryAssignmentExpression extends BinaryExpression {
         BrygParser.ExpressionContext leftCtx = ctx.expression (0);
         Expression leftGet = null; /* Set when the operator is used. */
         if (leftCtx instanceof BrygParser.VariableExpressionContext) {
+            // TODO: Use new variable constructor!
             BrygParser.VariableExpressionContext variableCtx = (BrygParser.VariableExpressionContext) leftCtx;
             String variableName = IdHelper.idToString (variableCtx.variable ().id ());
             int variableLine = ctx.getStart ().getLine ();

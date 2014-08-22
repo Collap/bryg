@@ -12,7 +12,6 @@ import io.collap.bryg.parser.BrygParser;
 
 public abstract class BinaryArithmeticExpression extends BinaryExpression {
 
-
     protected BinaryArithmeticExpression (StandardVisitor visitor, BrygParser.ExpressionContext leftCtx,
                                           BrygParser.ExpressionContext rightCtx) {
         super (visitor, leftCtx, rightCtx);
