@@ -6,7 +6,6 @@ import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.exception.BrygJitException;
-import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 
 import static org.objectweb.asm.Opcodes.*;

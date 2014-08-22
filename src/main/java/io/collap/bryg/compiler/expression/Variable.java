@@ -4,6 +4,8 @@ import io.collap.bryg.compiler.type.Type;
 
 public class Variable {
 
+    // TODO: Handle mutability.
+
     private Type type;
     private String name;
     private int id;

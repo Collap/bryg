@@ -27,7 +27,7 @@ public class Bryg {
         environment.getTemplate ("test.Item");
         environment.getTemplate ("test.Stocks");
         environment.getTemplate ("test.GetSet");
-        environment.getTemplate ("test.Arithmetic");
+        environment.getTemplate ("test.Operations");
         System.gc ();
 
         /* test.Simple */
@@ -113,7 +113,7 @@ public class Bryg {
 
         /* test.Arithmetic */
         if (true) {
-            Template template = environment.getTemplate ("test.Arithmetic");
+            Template template = environment.getTemplate ("test.Operations");
             Model model = new BasicModel ();
             model.setVariable ("a", 15);
             model.setVariable ("b", -5);

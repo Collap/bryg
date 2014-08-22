@@ -198,6 +198,55 @@ html
             td  a % 0.0 % b
 
       div(class 'box')
+        h1: Increment and Decrement
+        table
+          mut int value = 0
+          thead tr
+            th: term
+            th: result
+          tr
+            td: value
+            td value
+          tr(class odd)
+            td: ++value
+            td ++value
+          tr
+            td: value++
+            td value++
+          tr(class odd)
+            td: --value
+            td --value
+          tr
+            td: value--
+            td value--
+          tr(class odd)
+            td: value
+            td value
+
+      ; TODO: Print integers in binary form (requires static function calls to be allowed).
+      div(class 'box')
+        h1: Bitwise
+        table
+          thead tr
+            th: term
+            th: result
+          tr
+            td: a
+            td a
+          tr(class odd)
+            td: ~a
+            td ~a
+          tr
+            td: a & b
+            td a & b
+          tr(class odd)
+            td: a ^ b
+            td a ^ b
+          tr
+            td: a | b
+            td a | b
+
+      div(class 'box')
         h1: Assignment
         table
           mut int value = 0
@@ -227,34 +276,23 @@ html
             td
               value = (int) (value / 0.5)
               value
-          tr
+          tr(class odd)
             td: value %= 4
             td
               value %= 4
               value
-
-      div(class 'box')
-        h1: Miscellaneous
-        table
-          mut int value = 0
-          thead tr
-            th: term
-            th: result
           tr
-            td: value
-            td value
+            td: value &= 15
+            td
+                value &= 15
+                value
           tr(class odd)
-            td: ++value
-            td ++value
+            td: value ^= 16
+            td
+                value ^= 16
+                value
           tr
-            td: value++
-            td value++
-          tr(class odd)
-            td: --value
-            td --value
-          tr
-            td: value--
-            td value--
-          tr
-            td: value
-            td value
+            td: value |= 15
+            td
+                value |= 15
+                value

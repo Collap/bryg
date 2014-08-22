@@ -2,6 +2,9 @@ package io.collap.bryg.compiler.parser;
 
 import io.collap.bryg.compiler.ast.expression.*;
 import io.collap.bryg.compiler.ast.expression.arithmetic.*;
+import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseAndExpression;
+import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseOrExpression;
+import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseXorExpression;
 import io.collap.bryg.compiler.ast.expression.bool.EqualityBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.LogicalAndBinaryBooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.LogicalOrBinaryBooleanExpression;
@@ -9,6 +12,7 @@ import io.collap.bryg.compiler.ast.expression.bool.RelationalBinaryBooleanExpres
 import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.bitwise.BitwiseNotExpression;
 import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.ast.expression.unary.IncDecExpression;
 import io.collap.bryg.compiler.ast.expression.unary.NegationExpression;
@@ -241,7 +245,36 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         }
     }
 
+    @Override
+    public Node visitUnaryOperationExpression (@NotNull BrygParser.UnaryOperationExpressionContext ctx) {
+        final int op = ctx.op.getType ();
+        if (op == BrygLexer.BNOT) {
+            return new BitwiseNotExpression (this, ctx.expression ());
+        }else { /* NOT */
+            // TODO: Implement
+            return super.visitUnaryOperationExpression (ctx);
+        }
+    }
 
+
+    //
+    //  Binary Bitwise
+    //
+
+    @Override
+    public Node visitBinaryBitwiseAndExpression (@NotNull BrygParser.BinaryBitwiseAndExpressionContext ctx) {
+        return new BinaryBitwiseAndExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitBinaryBitwiseXorExpression (@NotNull BrygParser.BinaryBitwiseXorExpressionContext ctx) {
+        return new BinaryBitwiseXorExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitBinaryBitwiseOrExpression (@NotNull BrygParser.BinaryBitwiseOrExpressionContext ctx) {
+        return new BinaryBitwiseOrExpression (this, ctx);
+    }
 
 
     //

@@ -51,18 +51,18 @@ expression
     :   literal                                             # literalExpression
     |   '(' expression ')'                                  # expressionPrecedenceOrder
     |   expression '.' id                                   # accessExpression
-    |   expression '.' functionCall                         # functionCallAccessExpression
+    |   expression '.' functionCall                         # functionCallAccessExpression      // TODO: Implement
     |   functionCall                                        # functionCallExpression
     |   variable                                            # variableExpression
     |   '(' type ')' expression                             # castExpression
     |   expression op=('++' | '--')                         # unaryPostfixExpression
     |   op=('+' | '-' | '++' | '--') expression             # unaryPrefixExpression
-    |   ('~' | NOT) expression                              # unaryOperationExpression
+    |   op=('~' | NOT) expression                           # unaryOperationExpression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
     |   expression op=('+' | '-') expression                # binaryAddSubExpression
-    |   expression ('<<' | '>>>' | '>>') expression         # binaryShiftExpression
+    |   expression ('<<' | '>>>' | '>>') expression         # binaryShiftExpression             // TODO: Implement
     |   expression ('<=' | '>=' | '>' | '<') expression     # binaryRelationalExpression
-    |   expression 'is' type                                # binaryIsExpression
+    |   expression 'is' type                                # binaryIsExpression                // TODO: Implement
     |   expression ('==' | '!=') expression                 # binaryEqualityExpression
     |   expression '&' expression                           # binaryBitwiseAndExpression
     |   expression '^' expression                           # binaryBitwiseXorExpression
@@ -76,13 +76,13 @@ expression
         | '-='
         | '*='
         | '/='
+        | '%='
         | '&='
         | '|='
         | '^='
-        | '>>='
-        | '>>>='
-        | '<<='
-        | '%='
+        | '>>='     // TODO: Implement
+        | '>>>='    // TODO: Implement
+        | '<<='     // TODO: Implement
         )
         expression                                          # binaryAssignmentExpression
     ;
