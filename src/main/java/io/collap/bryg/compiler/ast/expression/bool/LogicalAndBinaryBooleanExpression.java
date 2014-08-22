@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 
 public class LogicalAndBinaryBooleanExpression extends BinaryBooleanExpression {
 
+    // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression.
+
     public LogicalAndBinaryBooleanExpression (StandardVisitor visitor, BrygParser.BinaryLogicalAndExpressionContext ctx) {
         super (visitor, ctx.expression (0), ctx.expression (1));
         setLine (ctx.getStart ().getLine ());

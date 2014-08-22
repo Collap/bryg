@@ -143,7 +143,8 @@ public class Bryg {
                 stringWriter = new StringWriter ();
                 template.render (stringWriter, model);
             }
-            System.out.println ("Rendering took " + ((System.nanoTime () - renderTime) / renderIterations) + "ns on average.");
+            System.out.println ("Rendering " + template.getClass ().getName ()
+                    + " took " + ((System.nanoTime () - renderTime) / renderIterations) + "ns on average.");
             System.out.println ("That are " + (System.currentTimeMillis () - timeMillis) + "ms in total.");
 
             writer.write (stringWriter.toString ());

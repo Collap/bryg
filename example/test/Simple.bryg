@@ -18,7 +18,7 @@ html
     br
     :A new line.
     br
-    if (0 == 1): This should not be displayed!
+    if (not (1 == 1)): This should not be displayed!
     else if (2 == 2)
       :Hi
       br

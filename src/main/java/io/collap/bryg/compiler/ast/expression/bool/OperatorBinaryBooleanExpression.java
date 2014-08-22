@@ -108,7 +108,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
                 }
             }
         }else { /* Objects. */
-            // TODO: With the coercion model above, the types have to be exactly the same!
+            // TODO: With the coercion model above, the object types have to be exactly the same!
             method.visitMethodInsn (INVOKEVIRTUAL, AsmTypes.getAsmType (Object.class).getInternalName (),
                     "equals", TypeHelper.generateMethodDesc (
                             new Class<?>[]{Object.class},

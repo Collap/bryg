@@ -5,10 +5,7 @@ import io.collap.bryg.compiler.ast.expression.arithmetic.*;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseAndExpression;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseOrExpression;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseXorExpression;
-import io.collap.bryg.compiler.ast.expression.bool.EqualityBinaryBooleanExpression;
-import io.collap.bryg.compiler.ast.expression.bool.LogicalAndBinaryBooleanExpression;
-import io.collap.bryg.compiler.ast.expression.bool.LogicalOrBinaryBooleanExpression;
-import io.collap.bryg.compiler.ast.expression.bool.RelationalBinaryBooleanExpression;
+import io.collap.bryg.compiler.ast.expression.bool.*;
 import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
@@ -252,7 +249,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
             return new BitwiseNotExpression (this, ctx.expression ());
         }else { /* NOT */
             // TODO: Implement
-            return super.visitUnaryOperationExpression (ctx);
+            return new LogicalNotBooleanExpression (this, ctx.expression ());
         }
     }
 
