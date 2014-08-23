@@ -76,7 +76,7 @@ public class CoercionHelper {
             return getTargetIFpType (rightType, leftType);
         }
 
-        throw new BrygJitException ("Could not coerce " + leftType + " and " + rightType + "as this " +
+        throw new BrygJitException ("Could not coerce " + leftType + " and " + rightType + " as this " +
                 "combination is not currently supported!", line);
     }
 
