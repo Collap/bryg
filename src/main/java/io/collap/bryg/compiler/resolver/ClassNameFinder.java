@@ -8,6 +8,10 @@ import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+// TODO: Add the options to skip files and folders. Or do the opposite, so the user must allow specific files and folders.
+// This improvement will reduce the cost of finding the classes by a huge margin (Currently, big libraries might take
+// the class name finder up to a second to complete).
+
 public class ClassNameFinder {
 
     private List<String> paths = new ArrayList<> ();
