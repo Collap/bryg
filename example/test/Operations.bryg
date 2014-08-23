@@ -247,6 +247,31 @@ html
             td a | b
 
       div(class 'box')
+        h1: Shift
+        table
+          thead tr
+            th: term
+            th: result
+          tr
+            td: 1 << 3
+            td 1 << 3
+          tr(class odd)
+            td: 16 >> 2
+            td 16 >> 2
+          tr
+            td: -16 >> 2
+            td              ; We need to qualify td as a proper block function call, because
+              -16 >> 2      ; the compiler prefers subtraction and trivial function calls
+                            ; over statement function calls in this context.
+          tr(class odd)
+            td: 16 >>> 2
+            td 16 >>> 2
+          tr
+            td: -16 >>> 2
+            td
+              -16 >>> 2
+
+      div(class 'box')
         h1: Assignment
         table
           mut int value = 0
@@ -272,27 +297,47 @@ html
               value *= 16
               value
           tr
-            td: value = (int) (value / 0.5)
+            td: value = (int) (value / 0.25)
             td
-              value = (int) (value / 0.5)
+              value = (int) (value / 0.25)
               value
           tr(class odd)
+            td: value /= 2
+            td
+              value /= 2
+              value
+          tr
             td: value %= 4
             td
               value %= 4
               value
-          tr
+          tr(class odd)
             td: value &= 15
             td
                 value &= 15
                 value
-          tr(class odd)
+          tr
             td: value ^= 16
             td
                 value ^= 16
                 value
-          tr
+          tr(class odd)
             td: value |= 15
             td
                 value |= 15
                 value
+          tr
+            td: value >>= 4
+            td
+              value >>= 4
+              value
+          tr(class odd)
+            td: value <<= 3
+            td
+              value <<= 3
+              value
+          tr
+            td: value >>>= 1
+            td
+              value >>>= 1
+              value

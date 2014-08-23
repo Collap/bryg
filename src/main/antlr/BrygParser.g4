@@ -60,7 +60,7 @@ expression
     |   op=('~' | NOT) expression                           # unaryOperationExpression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
     |   expression op=('+' | '-') expression                # binaryAddSubExpression
-    |   expression ('<<' | '>>>' | '>>') expression         # binaryShiftExpression             // TODO: Implement
+    |   expression op=('<<' | '>>>' | '>>') expression      # binaryShiftExpression
     |   expression ('<=' | '>=' | '>' | '<') expression     # binaryRelationalExpression
     |   expression 'is' type                                # binaryIsExpression                // TODO: Implement
     |   expression ('==' | '!=') expression                 # binaryEqualityExpression
@@ -80,9 +80,9 @@ expression
         | '&='
         | '|='
         | '^='
-        | '>>='     // TODO: Implement
-        | '>>>='    // TODO: Implement
-        | '<<='     // TODO: Implement
+        | '>>='
+        | '>>>='
+        | '<<='
         )
         expression                                          # binaryAssignmentExpression
     ;

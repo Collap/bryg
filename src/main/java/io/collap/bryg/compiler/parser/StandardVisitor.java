@@ -10,6 +10,9 @@ import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.bitwise.BitwiseNotExpression;
+import io.collap.bryg.compiler.ast.expression.shift.BinarySignedLeftShiftExpression;
+import io.collap.bryg.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
+import io.collap.bryg.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
 import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.ast.expression.unary.IncDecExpression;
 import io.collap.bryg.compiler.ast.expression.unary.NegationExpression;
@@ -271,6 +274,23 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public Node visitBinaryBitwiseOrExpression (@NotNull BrygParser.BinaryBitwiseOrExpressionContext ctx) {
         return new BinaryBitwiseOrExpression (this, ctx);
+    }
+
+
+    //
+    //  Shift
+    //
+
+    @Override
+    public Node visitBinaryShiftExpression (@NotNull BrygParser.BinaryShiftExpressionContext ctx) {
+        int op = ctx.op.getType ();
+        if (op == BrygLexer.SIG_LSHIFT) {
+            return new BinarySignedLeftShiftExpression (this, ctx);
+        }else if (op == BrygLexer.SIG_RSHIFT) {
+            return new BinarySignedRightShiftExpression (this, ctx);
+        }else { /* UNSIG_RSHIFT */
+            return new BinaryUnsignedRightShiftExpression (this, ctx);
+        }
     }
 
 

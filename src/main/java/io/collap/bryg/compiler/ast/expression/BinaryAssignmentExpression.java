@@ -5,6 +5,9 @@ import io.collap.bryg.compiler.ast.expression.arithmetic.*;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseAndExpression;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseOrExpression;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseXorExpression;
+import io.collap.bryg.compiler.ast.expression.shift.BinarySignedLeftShiftExpression;
+import io.collap.bryg.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
+import io.collap.bryg.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
 import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.helper.CoercionHelper;
@@ -98,8 +101,17 @@ public class BinaryAssignmentExpression extends BinaryExpression {
                 case BrygLexer.BOR_ASSIGN:
                     right = new BinaryBitwiseOrExpression (visitor, leftGet, right, getLine ());
                     break;
+                case BrygLexer.SIG_LSHIFT_ASSIGN:
+                    right = new BinarySignedLeftShiftExpression (visitor, leftGet, right, getLine ());
+                    break;
+                case BrygLexer.SIG_RSHIFT_ASSIGN:
+                    right = new BinarySignedRightShiftExpression (visitor, leftGet, right, getLine ());
+                    break;
+                case BrygLexer.UNSIG_RSHIFT_ASSIGN:
+                    right = new BinaryUnsignedRightShiftExpression (visitor, leftGet, right, getLine ());
+                    break;
                 default:
-                    throw new BrygJitException ("Operator " + operator + " is (currently) not supported!", getLine ());
+                    throw new BrygJitException ("Operator " + operator + " is not supported in assignments!", getLine ());
             }
         }
 
