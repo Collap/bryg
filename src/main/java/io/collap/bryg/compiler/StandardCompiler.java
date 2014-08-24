@@ -6,6 +6,7 @@ import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.library.BasicLibrary;
+import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.parser.DebugVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
@@ -29,10 +30,12 @@ import static org.objectweb.asm.Opcodes.*;
 public class StandardCompiler implements Compiler {
 
     private Configuration configuration;
+    private Library library;
     private ClassResolver classResolver;
 
-    public StandardCompiler (Configuration configuration, ClassResolver classResolver) {
+    public StandardCompiler (Configuration configuration, Library library, ClassResolver classResolver) {
         this.configuration = configuration;
+        this.library = library;
         this.classResolver = classResolver;
     }
 
@@ -130,7 +133,7 @@ public class StandardCompiler implements Compiler {
                     null,
                     new String[] { AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName () });
             {
-                Context context = new Context (render, new BasicLibrary (), classResolver);
+                Context context = new Context (render, library, classResolver);
                 Node node = context.getParseTreeVisitor ().visit (startContext);
 
                 if (configuration.shouldPrintAst ()) {

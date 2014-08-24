@@ -2,6 +2,8 @@ package io.collap.bryg;
 
 import io.collap.bryg.compiler.Configuration;
 import io.collap.bryg.compiler.StandardCompiler;
+import io.collap.bryg.compiler.library.BasicLibrary;
+import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.environment.StandardEnvironment;
@@ -30,7 +32,8 @@ public class Bryg {
         ClassResolver classResolver = new ClassResolver ();
         classResolver.getRootPackageFilter ().addSubpackageFilter ("io.collap.bryg.example");
         classResolver.resolveClassNames ();
-        io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, classResolver);
+        Library library = new BasicLibrary ();
+        io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, library, classResolver);
         Environment environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader));
 
         /* Pre-compile templates. */
