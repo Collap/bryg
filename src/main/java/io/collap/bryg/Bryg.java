@@ -27,7 +27,10 @@ public class Bryg {
     public static void main (String[] args) throws InvalidInputParameterException {
         Configuration configuration = new Configuration ();
         SourceLoader sourceLoader = new FileSourceLoader (new File ("example"));
-        io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, new ClassResolver ());
+        ClassResolver classResolver = new ClassResolver ();
+        classResolver.getRootPackageFilter ().addSubpackageFilter ("io.collap.bryg.example");
+        classResolver.resolveClassNames ();
+        io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, classResolver);
         Environment environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader));
 
         /* Pre-compile templates. */

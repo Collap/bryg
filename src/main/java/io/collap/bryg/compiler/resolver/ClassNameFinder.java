@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.resolver;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -8,9 +8,7 @@ import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-// TODO: Add the options to skip files and folders. Or do the opposite, so the user must allow specific files and folders.
-// This improvement will reduce the cost of finding the classes by a huge margin (Currently, big libraries might take
-// the class name finder up to a second to complete).
+// TODO: Cache rt.jar class names in a file, so that the crawling does not take 200ms.
 
 public class ClassNameFinder {
 
@@ -18,8 +16,11 @@ public class ClassNameFinder {
 
     private ClassNameVisitor visitor;
 
-    public ClassNameFinder (ClassNameVisitor visitor) {
+    private List<String> includedJarFiles;
+
+    public ClassNameFinder (ClassNameVisitor visitor, List<String> includedJarFiles) {
         this.visitor = visitor;
+        this.includedJarFiles = includedJarFiles;
 
         /* The *-wildcard signals that all jars in the directory ought to be included in the classpath. */
         addPath (System.getProperty ("java.home") + File.separator + "lib" + File.separator + "*");
@@ -117,6 +118,11 @@ public class ClassNameFinder {
     }
 
     public void crawlJarFile (File jarFile) {
+        if (!includedJarFiles.contains (jarFile.getName ())) {
+            System.out.println ("The JAR " + jarFile.getName () + " is not included in the class name search.");
+            return;
+        }
+
         JarFile jar;
         try {
             jar = new JarFile (jarFile);

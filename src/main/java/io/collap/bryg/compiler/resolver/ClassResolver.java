@@ -7,32 +7,57 @@ import java.util.Map;
 
 public class ClassResolver {
 
+    /**
+     * The parent class resolver allows to, for example, have multiple class resolvers that
+     * scan different packages, but have one parent that handles the rt.jar classes.
+     */
+    private ClassResolver parent;
+
     private Map<String, String> classNames = new HashMap<> ();
 
     /** Does not save all classes referenced in classNames. All classes cached in here are lazily loaded. */
     private Map<String, Class<?>> classes = new HashMap<> ();
 
-    private List<Filter> filters = new ArrayList<> ();
     private PackageFilter rootPackageFilter = new PackageFilter (false);
+    private List<Filter> filters = new ArrayList<Filter> () {{ add (rootPackageFilter); }};
+    private List<String> includedJarFiles = new ArrayList<> ();
 
+    /**
+     * This constructor adds package filters for:
+     *   - java.lang
+     *   - java.util
+     * And includes the jar file <i>rt.jar</i>.
+     */
     public ClassResolver () {
-        long time = System.nanoTime ();
-        filters.add (rootPackageFilter);
-
         /* java.lang */
         rootPackageFilter.addSubpackageFilter ("java.lang");
         rootPackageFilter.addSubpackageFilter ("java.util");
-        rootPackageFilter.addSubpackageFilter ("io.collap.bryg.example");
 
-        resolveClassNames ();
-
-        System.out.println ("Resolving all classes took " + (System.nanoTime () - time) + "ns.");
+        /* Include Java runtime in the jar files. */
+        includedJarFiles.add ("rt.jar");
     }
 
+    /**
+     * This constructor does not add any filters, neither does it include jar files.
+     */
+    public ClassResolver (ClassResolver parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * Searches for the resolved class referenced by the simple name.
+     * If the class is not found and the class resolver has a parent,
+     * the getResolvedClass method of that parent is called.
+     * Otherwise, a ClassNotFoundException is thrown.
+     */
     public synchronized Class<?> getResolvedClass (String simpleName) throws ClassNotFoundException {
         String name = classNames.get (simpleName);
         if (name == null) {
-            throw new ClassNotFoundException ("Class with the simple name " + simpleName + " not found!");
+            if (parent != null) {
+                return parent.getResolvedClass (simpleName);
+            }else {
+                throw new ClassNotFoundException ("Class with the simple name " + simpleName + " not found!");
+            }
         }
 
         Class<?> cl = classes.get (name);
@@ -65,6 +90,8 @@ public class ClassResolver {
     }
 
     public void resolveClassNames () {
+        long time = System.nanoTime ();
+
         ClassNameFinder finder = new ClassNameFinder (new ClassNameVisitor () {
             @Override
             public void visit (String fullName) {
@@ -79,8 +106,10 @@ public class ClassResolver {
                     setResolvedClass (simpleName, fullName);
                 }
             }
-        });
+        }, includedJarFiles);
         finder.crawl ();
+
+        System.out.println ("Resolving all classes took " + ((System.nanoTime () - time) / 1.0e9) + "s.");
     }
 
     private boolean isClassImported (String name) {
@@ -91,6 +120,22 @@ public class ClassResolver {
         }
 
         return false;
+    }
+
+    public ClassResolver getParent () {
+        return parent;
+    }
+
+    public List<Filter> getFilters () {
+        return filters;
+    }
+
+    public PackageFilter getRootPackageFilter () {
+        return rootPackageFilter;
+    }
+
+    public List<String> getIncludedJarFiles () {
+        return includedJarFiles;
     }
 
 }
