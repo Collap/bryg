@@ -1,6 +1,7 @@
 parser grammar BrygParser;
 
 // TODO: Find a way to do: if (...) a else b
+// TODO: Rename ifExpression and eachExpression to *Statement, because they aren't expressions.
 
 options {
     tokenVocab = BrygLexer;
@@ -30,6 +31,7 @@ statementLine
 statement
     :   ifExpression
     |   eachExpression
+    |   whileStatement
     |   variableDeclaration
         NEWLINE
     |   blockFunctionCall
@@ -105,6 +107,13 @@ eachExpression
 
 eachHead
     :   type? element=id (',' index=id)? IN expression
+    ;
+
+whileStatement
+    :   WHILE
+        (   '(' condition=expression ')' statement
+        |   condition=expression NEWLINE block
+        )
     ;
 
 block

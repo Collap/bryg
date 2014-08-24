@@ -149,6 +149,26 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
 
     //
+    //  Control Flow
+    //
+
+    @Override
+    public IfExpression visitIfExpression (@NotNull BrygParser.IfExpressionContext ctx) {
+        return new IfExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitEachExpression (@NotNull BrygParser.EachExpressionContext ctx) {
+        return new EachExpression (this, ctx);
+    }
+
+    @Override
+    public Node visitWhileStatement (@NotNull BrygParser.WhileStatementContext ctx) {
+        return new WhileStatement (this, ctx);
+    }
+
+
+    //
     //  Arithmetic
     //
 
@@ -202,16 +222,6 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public Node visitBinaryLogicalOrExpression (@NotNull BrygParser.BinaryLogicalOrExpressionContext ctx) {
         return new LogicalOrBinaryBooleanExpression (this, ctx);
-    }
-
-    @Override
-    public IfExpression visitIfExpression (@NotNull BrygParser.IfExpressionContext ctx) {
-        return new IfExpression (this, ctx);
-    }
-
-    @Override
-    public Node visitEachExpression (@NotNull BrygParser.EachExpressionContext ctx) {
-        return new EachExpression (this, ctx);
     }
 
 

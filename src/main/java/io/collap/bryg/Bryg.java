@@ -28,7 +28,8 @@ public class Bryg {
         environment.getTemplate ("test.Stocks");
         environment.getTemplate ("test.GetSet");
         environment.getTemplate ("test.Operations");
-        System.gc ();
+        environment.getTemplate ("test.While");
+        System.gc (); /* Attempt to clear the heap for less impact on the benchmarks. */
 
         /* test.Simple */
         if (true) {
@@ -117,6 +118,14 @@ public class Bryg {
             Model model = new BasicModel ();
             model.setVariable ("a", 15);
             model.setVariable ("b", -5);
+            benchmarkTemplate (template, model);
+        }
+
+        /* test.While */
+        if (true) {
+            Template template = environment.getTemplate ("test.While");
+            Model model = new BasicModel ();
+            model.setVariable ("iterations", 10);
             benchmarkTemplate (template, model);
         }
     }

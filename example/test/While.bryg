@@ -1,0 +1,7 @@
+in int iterations
+
+ul
+  mut i = 0
+  while i < iterations
+    li: Iteration number \{i}!
+    i += 1  ; Currently, ++i does not work here, because the result is written to the output.

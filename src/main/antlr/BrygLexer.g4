@@ -152,6 +152,7 @@ OR                  : 'or';
 IN                  : 'in';
 IS                  : 'is';
 EACH                : 'each';
+WHILE               : 'while';
 ELSE                : 'else';
 IF                  : 'if';
 MUT                 : 'mut';
