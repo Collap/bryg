@@ -1,11 +1,11 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.AccessMode;
-import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
@@ -30,20 +30,20 @@ public class AccessExpression extends Expression {
      */
     private Expression setFieldExpression;
 
-    public AccessExpression (StandardVisitor visitor, BrygParser.AccessExpressionContext ctx,
+    public AccessExpression (Context context, BrygParser.AccessExpressionContext ctx,
                              AccessMode mode) throws NoSuchFieldException {
-        this (visitor, ctx, mode, null);
+        this (context, ctx, mode, null);
     }
 
-    public AccessExpression (StandardVisitor visitor, BrygParser.AccessExpressionContext ctx,
+    public AccessExpression (Context context, BrygParser.AccessExpressionContext ctx,
                              AccessMode mode, Expression setFieldExpression) throws NoSuchFieldException {
-        super (visitor);
+        super (context);
         this.mode = mode;
         this.setFieldExpression = setFieldExpression;
         setLine (ctx.getStart ().getLine ());
 
-        String fieldName = IdHelper.idToString (ctx.id ());
-        child = (Expression) visitor.visit (ctx.expression ());
+        String fieldName = IdUtil.idToString (ctx.id ());
+        child = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
         Type childType = child.getType ();
 
         if (childType.getJavaType ().isPrimitive ()) {
@@ -98,14 +98,14 @@ public class AccessExpression extends Expression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
         child.compile ();
         String childInternalName = child.getType ().getAsmType ().getInternalName ();
 
         if (mode == AccessMode.get) {
             if (getterOrSetter != null) {
-                method.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
+                mv.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
                         getterOrSetter.getName (), TypeHelper.generateMethodDesc (
                                 null,
                                 type
@@ -113,7 +113,7 @@ public class AccessExpression extends Expression {
                 // -> T
             }else if (field != null && Modifier.isPublic (field.getModifiers ())) {
                 /* Get the field directly. */
-                method.visitFieldInsn (GETFIELD, childInternalName,
+                mv.visitFieldInsn (GETFIELD, childInternalName,
                         field.getName (), type.getAsmType ().getDescriptor ());
                 // -> T
             }else {
@@ -129,15 +129,15 @@ public class AccessExpression extends Expression {
 
             Type fieldType = new Type (field.getType ());
             if (getterOrSetter != null) {
-                method.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
+                mv.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
                         getterOrSetter.getName (), TypeHelper.generateMethodDesc (
-                                new Type[] { fieldType },
+                                new Type[]{fieldType},
                                 new Type (Void.TYPE)
                         ), false);
                 // T ->
             }else if (field != null) {
                 /* Set the field directly. */
-                method.visitFieldInsn (PUTFIELD, childInternalName,
+                mv.visitFieldInsn (PUTFIELD, childInternalName,
                         field.getName (), fieldType.getAsmType ().getDescriptor ());
                 // T ->
             }else {

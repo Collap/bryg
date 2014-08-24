@@ -2,26 +2,27 @@ package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.ast.AccessMode;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.ISTORE;
 
 public class VariableExpression extends Expression {
 
     private Variable variable;
     private AccessMode mode;
 
-    public VariableExpression (StandardVisitor visitor, BrygParser.VariableExpressionContext ctx, AccessMode mode) {
-        super (visitor);
+    public VariableExpression (Context context, BrygParser.VariableExpressionContext ctx, AccessMode mode) {
+        super (context);
         this.mode = mode;
         setLine (ctx.getStart ().getLine ());
 
-        String variableName = IdHelper.idToString (ctx.variable ().id ());
-        variable = visitor.getCurrentScope ().getVariable (variableName);
+        String variableName = IdUtil.idToString (ctx.variable ().id ());
+        variable = context.getCurrentScope ().getVariable (variableName);
         if (variable == null) {
             throw new BrygJitException ("Variable " + variableName + " not found!", getLine ());
         }
@@ -29,8 +30,8 @@ public class VariableExpression extends Expression {
         setType (variable.getType ());
     }
 
-    public VariableExpression (StandardVisitor visitor, Variable variable, AccessMode mode, int line) {
-        super (visitor);
+    public VariableExpression (Context context, Variable variable, AccessMode mode, int line) {
+        super (context);
         this.mode = mode;
         setLine (line);
 
@@ -40,12 +41,12 @@ public class VariableExpression extends Expression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
         if (mode == AccessMode.get) {
-            method.visitVarInsn (type.getAsmType ().getOpcode (ILOAD), variable.getId ());
+            mv.visitVarInsn (type.getAsmType ().getOpcode (ILOAD), variable.getId ());
             // -> T
         }else { /* AccessMode.set */
-            method.visitVarInsn (type.getAsmType ().getOpcode (ISTORE), variable.getId ());
+            mv.visitVarInsn (type.getAsmType ().getOpcode (ISTORE), variable.getId ());
             // T ->
         }
     }

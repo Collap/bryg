@@ -1,23 +1,34 @@
 package io.collap.bryg;
 
+import io.collap.bryg.compiler.Configuration;
+import io.collap.bryg.compiler.StandardCompiler;
+import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.environment.StandardEnvironment;
 import io.collap.bryg.example.Post;
 import io.collap.bryg.example.Stock;
 import io.collap.bryg.example.TestObject;
-import io.collap.bryg.loader.FileSourceLoader;
-import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.exception.InvalidInputParameterException;
+import io.collap.bryg.loader.FileSourceLoader;
+import io.collap.bryg.loader.SourceLoader;
+import io.collap.bryg.loader.TemplateClassLoader;
+import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.model.Model;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Bryg {
 
     public static void main (String[] args) throws InvalidInputParameterException {
-        Environment environment = new StandardEnvironment (new FileSourceLoader (new File ("example")));
+        Configuration configuration = new Configuration ();
+        SourceLoader sourceLoader = new FileSourceLoader (new File ("example"));
+        io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, new ClassResolver ());
+        Environment environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader));
 
         /* Pre-compile templates. */
         environment.getTemplate ("test.Simple");
@@ -27,8 +38,8 @@ public class Bryg {
         environment.getTemplate ("test.Item");
         environment.getTemplate ("test.Stocks");
         environment.getTemplate ("test.GetSet");
-        environment.getTemplate ("test.Operations");
         environment.getTemplate ("test.While");
+        environment.getTemplate ("test.Operations");
         System.gc (); /* Attempt to clear the heap for less impact on the benchmarks. */
 
         /* test.Simple */
@@ -112,20 +123,20 @@ public class Bryg {
             benchmarkTemplate (template, model);
         }
 
-        /* test.Arithmetic */
-        if (true) {
-            Template template = environment.getTemplate ("test.Operations");
-            Model model = new BasicModel ();
-            model.setVariable ("a", 15);
-            model.setVariable ("b", -5);
-            benchmarkTemplate (template, model);
-        }
-
         /* test.While */
         if (true) {
             Template template = environment.getTemplate ("test.While");
             Model model = new BasicModel ();
             model.setVariable ("iterations", 10);
+            benchmarkTemplate (template, model);
+        }
+
+        /* test.Operations */
+        if (true) {
+            Template template = environment.getTemplate ("test.Operations");
+            Model model = new BasicModel ();
+            model.setVariable ("a", 15);
+            model.setVariable ("b", -5);
             benchmarkTemplate (template, model);
         }
     }

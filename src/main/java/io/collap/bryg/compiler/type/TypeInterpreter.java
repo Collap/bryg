@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.type;
 
-import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.resolver.ClassResolver;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
@@ -33,15 +33,15 @@ public class TypeInterpreter {
         return typeNameToPrimitiveType.get (typeName);
     }
 
-    private StandardVisitor visitor;
+    private ClassResolver classResolver;
 
-    public TypeInterpreter (StandardVisitor visitor) {
-        this.visitor = visitor;
+    public TypeInterpreter (ClassResolver classResolver) {
+        this.classResolver = classResolver;
     }
 
     @Nullable
     public Type interpretType (BrygParser.TypeContext ctx) {
-        String typeName = IdHelper.idToString (ctx.id ());
+        String typeName = IdUtil.idToString (ctx.id ());
 
         /* Possible primitive type. */
         if (ctx.children.size () == 1) { /* Only Id is present! */
@@ -53,7 +53,7 @@ public class TypeInterpreter {
 
         /* Possible class type. */
         try {
-            Type type = new Type (visitor.getClassResolver ().getResolvedClass (typeName));
+            Type type = new Type (classResolver.getResolvedClass (typeName));
 
             /* Resolve generics. */
             List<BrygParser.TypeContext> genericTypeContexts = ctx.type ();

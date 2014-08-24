@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.bytecode;
 
+import io.collap.bryg.compiler.context.Context;
 import org.objectweb.asm.*;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -8,10 +9,10 @@ import static org.objectweb.asm.Opcodes.*;
  * This class assumes the following parameters to the method:
  *      1   Writer
  *      2   Model
- * TODO: Adapt to current architecture.
  */
 public class BrygMethodVisitor extends MethodVisitor {
 
+    private Context context;
     private StringBuilder builder;
 
     public BrygMethodVisitor (MethodVisitor visitor) {
@@ -19,21 +20,28 @@ public class BrygMethodVisitor extends MethodVisitor {
         builder = new StringBuilder ();
     }
 
-
-
     public void writeConstantString (String string) {
-        builder.append (string);
+        if (!context.shouldDiscardPrintOutput ()) {
+            builder.append (string);
+        }
+    }
+
+    public void setContext (Context context) {
+        this.context = context;
     }
 
     /**
-     * This method HAS to access the child method visitor to not trigger a string builder flush on every write.
-     *
      * Stack: -
      */
     private void flushStringBuilder () {
         if (builder.length () > 0) {
             String string = builder.toString ();
             builder.setLength (0); /* Empty builder. */
+
+            /* We have to access the parent method visitor to not trigger a string builder flush on every write,
+               which would possibly result in infinite recursion (Not currently, because the length of the
+               StringBuilder is set to 0 before this comment is reached, but this can be accidentally
+               changed without this constraint in mind). */
             mv.visitVarInsn (ALOAD, 1);     // Writer
             mv.visitLdcInsn (string);       // string
             mv.visitMethodInsn (INVOKEVIRTUAL, "java/io/Writer", "write", "(Ljava/lang/String;)V", false);
@@ -45,14 +53,6 @@ public class BrygMethodVisitor extends MethodVisitor {
      */
     public void loadWriter () {
         visitVarInsn (ALOAD, 1);
-    }
-
-    /**
-     * Stack: -
-     */
-    public void visitLabelInSameFrame (Label label) {
-        visitLabel (label);
-        visitFrame (F_SAME, 0, null, 0, null);
     }
 
     /**
@@ -114,10 +114,7 @@ public class BrygMethodVisitor extends MethodVisitor {
     @Override
     public void visitFrame (int type, int nLocal, Object[] local, int nStack, Object[] stack) {
         // TODO: Remove visit frame calls instead.
-        /*
-        flushStringBuilder ();
-        super.visitFrame (type, nLocal, local, nStack, stack);
-        */
+        throw new UnsupportedOperationException ("Frames are automatically generated!");
     }
 
     @Override

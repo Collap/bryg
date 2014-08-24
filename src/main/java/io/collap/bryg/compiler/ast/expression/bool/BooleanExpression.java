@@ -1,8 +1,8 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
-import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import org.objectweb.asm.Label;
 
@@ -12,8 +12,8 @@ import static org.objectweb.asm.Opcodes.GOTO;
 
 public abstract class BooleanExpression extends Expression {
 
-    protected BooleanExpression (StandardVisitor visitor) {
-        super (visitor);
+    protected BooleanExpression (Context context) {
+        super (context);
         setType (new Type (Boolean.TYPE));
     }
 
@@ -22,22 +22,22 @@ public abstract class BooleanExpression extends Expression {
      */
     @Override
     public void compile () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
         Label nextFalse = new Label ();
         Label skipFalse = new Label ();
 
         compile (nextFalse, null, true);
 
-        method.visitLdcInsn (1); /* true */
+        mv.visitLdcInsn (1); /* true */
         // -> I
-        method.visitJumpInsn (GOTO, skipFalse);
+        mv.visitJumpInsn (GOTO, skipFalse);
 
-        method.visitLabelInSameFrame (nextFalse);
-        method.visitLdcInsn (0); /* false */
+        mv.visitLabel (nextFalse);
+        mv.visitLdcInsn (0); /* false */
         // -> I
 
-        method.visitLabelInSameFrame (skipFalse);
+        mv.visitLabel (skipFalse);
     }
 
     /**
@@ -53,7 +53,7 @@ public abstract class BooleanExpression extends Expression {
     public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
         /* At this point the expression is supposed to be true. */
         if (nextTrue != null && !lastExpressionInChain) {
-            visitor.getMethod ().visitJumpInsn (GOTO, nextTrue);
+            context.getMethodVisitor ().visitJumpInsn (GOTO, nextTrue);
         }
     }
 

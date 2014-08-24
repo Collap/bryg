@@ -1,8 +1,8 @@
-package io.collap.bryg.compiler.helper;
+package io.collap.bryg.compiler.util;
 
 import io.collap.bryg.parser.BrygParser;
 
-public class IdHelper {
+public class IdUtil {
 
     public static String idToString (BrygParser.IdContext ctx) {
         if (ctx == null) return null;

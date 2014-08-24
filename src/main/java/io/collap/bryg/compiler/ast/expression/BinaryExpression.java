@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast.expression;
 
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -16,12 +17,14 @@ public abstract class BinaryExpression extends Expression {
      * Sets the line.
      * Visits and sets the left and right expressions.
      */
-    protected BinaryExpression (StandardVisitor visitor, BrygParser.ExpressionContext leftCtx,
+    protected BinaryExpression (Context context, BrygParser.ExpressionContext leftCtx,
                                 BrygParser.ExpressionContext rightCtx) {
-        super (visitor);
+        super (context);
         setLine (leftCtx.getStart ().getLine ());
-        left = (Expression) visitor.visit (leftCtx);
-        right = (Expression) visitor.visit (rightCtx);
+
+        StandardVisitor ptv = context.getParseTreeVisitor ();
+        left = (Expression) ptv.visit (leftCtx);
+        right = (Expression) ptv.visit (rightCtx);
         if (left == null || right == null) {
             throw new BrygJitException ("Left or right is null: " + left + ", " + right, getLine ());
         }
@@ -30,16 +33,16 @@ public abstract class BinaryExpression extends Expression {
     /**
      * This constructor <b>only</b> sets the line.
      */
-    protected BinaryExpression (StandardVisitor visitor, int line) {
-        super (visitor);
+    protected BinaryExpression (Context context, int line) {
+        super (context);
         setLine (line);
     }
 
     /**
      * Does <b>not</b> set the type.
      */
-    protected BinaryExpression (StandardVisitor visitor, Expression left, Expression right, int line) {
-        super (visitor);
+    protected BinaryExpression (Context context, Expression left, Expression right, int line) {
+        super (context);
         setLine (line);
         this.left = left;
         this.right = right;

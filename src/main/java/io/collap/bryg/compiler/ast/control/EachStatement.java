@@ -1,14 +1,16 @@
-package io.collap.bryg.compiler.ast.expression;
+package io.collap.bryg.compiler.ast.control;
 
 import io.collap.bryg.compiler.ast.Node;
+import io.collap.bryg.compiler.ast.expression.Expression;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.expression.Scope;
 import io.collap.bryg.compiler.expression.Variable;
-import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
@@ -19,7 +21,7 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class EachExpression extends Expression {
+public class EachStatement extends Node {
 
     private boolean isArray;
     private Variable iterator;
@@ -28,24 +30,25 @@ public class EachExpression extends Expression {
     private Expression collectionExpression;
     private Node statementOrBlock;
 
-    public EachExpression (StandardVisitor visitor, BrygParser.EachExpressionContext ctx) {
-        super (visitor);
-        setType (new Type (Void.TYPE)); // TODO: Implement each as a proper expression?
+    public EachStatement (Context context, BrygParser.EachStatementContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
+
+        StandardVisitor ptv = context.getParseTreeVisitor ();
 
         BrygParser.EachHeadContext headCtx = ctx.eachHead ();
 
-        collectionExpression = (Expression) visitor.visit (headCtx.expression ());
+        collectionExpression = (Expression) ptv.visit (headCtx.expression ());
 
         /* Open new scope. */
-        Scope scope = visitor.getCurrentScope ().createSubScope ();
-        visitor.setCurrentScope (scope);
+        Scope scope = context.getCurrentScope ().createSubScope ();
+        context.setCurrentScope (scope);
 
         Type collectionType = collectionExpression.getType ();
         BrygParser.TypeContext typeContext = headCtx.type ();
         Type declaredElementType = null;
         if (typeContext != null) {
-            declaredElementType = new TypeInterpreter (visitor).interpretType (typeContext);
+            declaredElementType = new TypeInterpreter (context.getClassResolver ()).interpretType (typeContext);
         }
         Type elementType = null;
 
@@ -81,32 +84,32 @@ public class EachExpression extends Expression {
         /* Register variable(s). */
         if (!isArray) {
             Type iteratorType = new Type (Iterator.class);
-            iterator = new Variable (iteratorType, "", visitor.getRootScope ().calculateNextId (iteratorType));
+            iterator = new Variable (iteratorType, "", context.getRootScope ().calculateNextId (iteratorType));
         }
 
-        String variableName = IdHelper.idToString (headCtx.element);
+        String variableName = IdUtil.idToString (headCtx.element);
         element = scope.registerVariable (variableName, elementType);
 
         BrygParser.IdContext indexCtx = headCtx.index;
         if (indexCtx != null) {
-            String indexName = IdHelper.idToString (indexCtx);
+            String indexName = IdUtil.idToString (indexCtx);
             index = scope.registerVariable (indexName, new Type (Integer.TYPE));
         }
 
         BrygParser.StatementOrBlockContext statementOrBlockCtx = ctx.statementOrBlock ();
         if (statementOrBlockCtx != null)  {
-            statementOrBlock = visitor.visitStatementOrBlock (statementOrBlockCtx);
+            statementOrBlock = ptv.visitStatementOrBlock (statementOrBlockCtx);
         }else {
-            statementOrBlock = visitor.visitBlock (ctx.block ());
+            statementOrBlock = ptv.visitBlock (ctx.block ());
         }
 
         /* Reset scope. */
-        visitor.setCurrentScope (scope.getParent ());
+        context.setCurrentScope (scope.getParent ());
     }
 
     @Override
     public void compile () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
         if (isArray) {
             // TODO: Implement
@@ -119,63 +122,59 @@ public class EachExpression extends Expression {
             collectionExpression.compile ();
             // -> Iterable
 
-            method.visitMethodInsn (INVOKEINTERFACE, collectionExpression.getType ().getAsmType ().getInternalName (),
+            mv.visitMethodInsn (INVOKEINTERFACE, collectionExpression.getType ().getAsmType ().getInternalName (),
                     "iterator", TypeHelper.generateMethodDesc (null, Iterator.class), true);
             // Iterable -> Iterator
 
-            method.visitVarInsn (ASTORE, iterator.getId ());
-            method.visitFrame (F_APPEND, 1, new Object[] { iterator.getType ().getAsmType ().getInternalName () }, 0, null);
+            mv.visitVarInsn (ASTORE, iterator.getId ());
             // Iterator ->
 
             /* Init index variable (if needed). */
             if (index != null) {
                 // TODO: Do we need to set it to zero? Check the JVM spec!
-                method.visitLdcInsn (0);
+                mv.visitLdcInsn (0);
                 // -> 0
 
-                method.visitVarInsn (ISTORE, index.getId ());
+                mv.visitVarInsn (ISTORE, index.getId ());
                 // 0 ->
             }
 
             /* Jump to the condition. */
-            method.visitJumpInsn (GOTO, conditionLabel);
+            mv.visitJumpInsn (GOTO, conditionLabel);
 
             /* Block. */
-            method.visitLabelInSameFrame (blockLabel);
-            method.visitVarInsn (ALOAD, iterator.getId ());
+            mv.visitLabel (blockLabel);
+            mv.visitVarInsn (ALOAD, iterator.getId ());
             // -> Iterator
 
-            method.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getAsmType ().getInternalName (),
+            mv.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getAsmType ().getInternalName (),
                     "next", TypeHelper.generateMethodDesc (null, Object.class), true);
             // Iterator -> Object
 
-            method.visitTypeInsn (CHECKCAST, element.getType ().getAsmType ().getInternalName ());
+            mv.visitTypeInsn (CHECKCAST, element.getType ().getAsmType ().getInternalName ());
             // Object -> String
 
-            method.visitVarInsn (ASTORE, element.getId ());
-            method.visitFrame (F_APPEND, 1, new Object[] { element.getType ().getAsmType ().getInternalName () }, 0, null); /* Add local. */
+            mv.visitVarInsn (ASTORE, element.getId ());
             // T ->
 
             statementOrBlock.compile (); /* Use local. */
 
             /* Increment index. */
             if (index != null) {
-                method.visitIincInsn (index.getId (), 1);
+                mv.visitIincInsn (index.getId (), 1);
                 // int -> int
             }
 
-            method.visitFrame (F_CHOP, 1, null, 0, null); /* Remove local. */
-
             /* Condition. */
-            method.visitLabelInSameFrame (conditionLabel);
-            method.visitVarInsn (ALOAD, iterator.getId ());
+            mv.visitLabel (conditionLabel);
+            mv.visitVarInsn (ALOAD, iterator.getId ());
             // -> Iterator
 
-            method.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getAsmType ().getInternalName (),
+            mv.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getAsmType ().getInternalName (),
                     "hasNext", TypeHelper.generateMethodDesc (null, new Type (Boolean.TYPE)), true);
             // Iterator -> int
 
-            method.visitJumpInsn (IFNE, blockLabel); /* true: jump */
+            mv.visitJumpInsn (IFNE, blockLabel); /* true: jump */
         }
     }
 

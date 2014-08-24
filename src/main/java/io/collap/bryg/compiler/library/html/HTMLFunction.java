@@ -1,9 +1,9 @@
 package io.collap.bryg.compiler.library.html;
 
 import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
-import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.type.Type;
 
 public abstract class HTMLFunction implements Function {
@@ -24,11 +24,11 @@ public abstract class HTMLFunction implements Function {
     }
 
     @Override
-    public final void compile (StandardVisitor visitor, FunctionCallExpression call) {
-        BrygMethodVisitor method = visitor.getMethod ();
-        enter (method, call);
+    public final void compile (Context context, FunctionCallExpression call) {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+        enter (mv, call);
         call.getStatementOrBlock ().compile ();
-        exit (method, call);
+        exit (mv, call);
     }
 
     protected abstract void enter (BrygMethodVisitor method, FunctionCallExpression call);

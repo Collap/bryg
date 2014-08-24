@@ -29,8 +29,8 @@ statementLine
     ;
 
 statement
-    :   ifExpression
-    |   eachExpression
+    :   ifStatement
+    |   eachStatement
     |   whileStatement
     |   variableDeclaration
         NEWLINE
@@ -89,7 +89,7 @@ expression
         expression                                          # binaryAssignmentExpression
     ;
 
-ifExpression
+ifStatement
     :   IF
         (   '(' expression ')' statement    // This has to be statement, otherwise an ambiguity is created
                                             // in conjunction with normal parentheses in expressions!
@@ -98,7 +98,7 @@ ifExpression
         (ELSE statementOrBlock)?
     ;
 
-eachExpression
+eachStatement
     :   EACH
         (   '(' eachHead ')' statementOrBlock
         |   eachHead NEWLINE block

@@ -6,9 +6,9 @@ import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.compiler.ast.expression.arithmetic.BinaryAdditionExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.expression.Variable;
-import io.collap.bryg.compiler.helper.OperationHelper;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.util.OperationUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
@@ -21,21 +21,21 @@ public class IncDecExpression extends Expression {
     private Expression set;
     private Expression action;
 
-    public IncDecExpression (StandardVisitor visitor, BrygParser.ExpressionContext childCtx,
+    public IncDecExpression (Context context, BrygParser.ExpressionContext childCtx,
                              boolean isIncrement, boolean isPrefix, int line) {
-        super (visitor);
+        super (context);
         this.isIncrement = isIncrement;
         this.isPrefix = isPrefix;
         setLine (line);
 
         if (childCtx instanceof BrygParser.VariableExpressionContext) {
-            VariableExpression getExpr = new VariableExpression (visitor,
+            VariableExpression getExpr = new VariableExpression (context,
                     (BrygParser.VariableExpressionContext) childCtx, AccessMode.get);
             Variable variable = getExpr.getVariable ();
             setType (variable.getType ());
 
             get = getExpr;
-            set = new VariableExpression (visitor, variable, AccessMode.set, getLine ());
+            set = new VariableExpression (context, variable, AccessMode.set, getLine ());
 
             // TODO: Special case for integer variables (IINC).
             int amount;
@@ -45,9 +45,9 @@ public class IncDecExpression extends Expression {
                 amount = -1;
             }
 
-            action = new BinaryAdditionExpression (visitor,
-                    new DummyExpression (visitor, type, getLine ()), /* The get expression is already compiled before! */
-                    new IntegerLiteralExpression (visitor, amount, getLine ()),
+            action = new BinaryAdditionExpression (context,
+                    new DummyExpression (context, type, getLine ()), /* The get expression is already compiled before! */
+                    new IntegerLiteralExpression (context, amount, getLine ()),
                     getLine ());
         }else {
             throw new BrygJitException ("Increment and decrement expressions are currently only supported for " +
@@ -76,7 +76,7 @@ public class IncDecExpression extends Expression {
     }
 
     private void compileDuplicate () {
-        OperationHelper.compileDup (visitor.getMethod (), type);
+        OperationUtil.compileDup (context.getMethodVisitor (), type);
     }
 
 }

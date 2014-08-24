@@ -2,11 +2,11 @@ package io.collap.bryg.compiler.ast.expression.bitwise;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.IXOR;
 
 // TODO: Promote byte and short?
 
@@ -14,10 +14,10 @@ public class BitwiseNotExpression extends Expression {
 
     private Expression child;
 
-    public BitwiseNotExpression (StandardVisitor visitor, BrygParser.ExpressionContext childCtx) {
-        super (visitor);
+    public BitwiseNotExpression (Context context, BrygParser.ExpressionContext childCtx) {
+        super (context);
         setLine (childCtx.getStart ().getLine ());
-        child = (Expression) visitor.visit (childCtx);
+        child = (Expression) context.getParseTreeVisitor ().visit (childCtx);
         if (!child.getType ().isIntegralType ()) {
             throw new BrygJitException ("The bitwise not expression (~) can only be used on integral types!", getLine ());
         }
@@ -26,7 +26,7 @@ public class BitwiseNotExpression extends Expression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
         /*
             ~i is the same as i ^ -1:

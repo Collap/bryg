@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.ast.expression.unary;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import org.objectweb.asm.Opcodes;
 
@@ -9,8 +9,8 @@ public class NegationExpression extends Expression {
 
     private Expression child;
 
-    public NegationExpression (StandardVisitor visitor, Expression child, int line) {
-        super (visitor);
+    public NegationExpression (Context context, Expression child, int line) {
+        super (context);
         this.child = child;
         setLine (line);
 
@@ -28,7 +28,7 @@ public class NegationExpression extends Expression {
 
         /* Negate the value. */
         int op = type.getAsmType ().getOpcode (Opcodes.INEG);
-        visitor.getMethod ().visitInsn (op);
+        context.getMethodVisitor ().visitInsn (op);
         // T -> T
     }
 

@@ -1,11 +1,12 @@
-package io.collap.bryg.compiler.ast.expression;
+package io.collap.bryg.compiler.ast.control;
 
+import io.collap.bryg.compiler.ast.Node;
+import io.collap.bryg.compiler.ast.expression.Expression;
+import io.collap.bryg.compiler.ast.expression.bool.BooleanExpression;
 import io.collap.bryg.compiler.ast.expression.bool.ExpressionBooleanExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.parser.StandardVisitor;
-import io.collap.bryg.compiler.ast.Node;
-import io.collap.bryg.compiler.ast.expression.bool.BooleanExpression;
-import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -13,40 +14,41 @@ import java.io.PrintStream;
 
 import static org.objectweb.asm.Opcodes.GOTO;
 
-public class IfExpression extends Expression {
+public class IfStatement extends Node {
 
     private BooleanExpression condition;
     private Node ifStatementOrBlock;
     private Node elseStatementOrBlock;
 
-    public IfExpression (StandardVisitor visitor, BrygParser.IfExpressionContext ctx) {
-        super (visitor);
+    public IfStatement (Context context, BrygParser.IfStatementContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
-        setType (new Type (Void.TYPE)); // TODO: Implement if as a proper expression?
 
-        Expression conditionOrExpression = (Expression) visitor.visit (ctx.expression ());
+        StandardVisitor ptv = context.getParseTreeVisitor ();
+
+        Expression conditionOrExpression = (Expression) ptv.visit (ctx.expression ());
         if (conditionOrExpression instanceof BooleanExpression) {
             condition = (BooleanExpression) conditionOrExpression;
         }else {
-            condition = new ExpressionBooleanExpression (visitor, conditionOrExpression);
+            condition = new ExpressionBooleanExpression (context, conditionOrExpression);
         }
 
         BrygParser.StatementContext ifStatementCtx = ctx.statement ();
         if (ifStatementCtx != null) {
-            ifStatementOrBlock = visitor.visitStatement (ifStatementCtx);
+            ifStatementOrBlock = ptv.visitStatement (ifStatementCtx);
         }else {
-            ifStatementOrBlock = visitor.visitBlock (ctx.block ());
+            ifStatementOrBlock = ptv.visitBlock (ctx.block ());
         }
 
         BrygParser.StatementOrBlockContext elseCtx = ctx.statementOrBlock ();
         if (elseCtx != null) {
-            elseStatementOrBlock = visitor.visitStatementOrBlock (elseCtx);
+            elseStatementOrBlock = ptv.visitStatementOrBlock (elseCtx);
         }
     }
 
     @Override
     public void compile () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
         boolean elseExists = elseStatementOrBlock != null;
         Label afterIf = new Label ();
@@ -61,17 +63,17 @@ public class IfExpression extends Expression {
         condition.compile (falseNext, trueNext, true);
 
         /* if block/statement. */
-        method.visitLabelInSameFrame (trueNext);
+        mv.visitLabel (trueNext);
         ifStatementOrBlock.compile ();
 
         /* else block/statement. */
         if (elseExists) {
-            method.visitJumpInsn (GOTO, afterIf); // Belongs to if block!
-            method.visitLabelInSameFrame (falseNext);
+            mv.visitJumpInsn (GOTO, afterIf); // Belongs to if block!
+            mv.visitLabel (falseNext);
             elseStatementOrBlock.compile ();
         }
 
-        method.visitLabelInSameFrame (afterIf);
+        mv.visitLabel (afterIf);
     }
 
     @Override

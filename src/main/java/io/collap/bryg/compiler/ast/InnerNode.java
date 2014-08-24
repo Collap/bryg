@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -10,8 +10,8 @@ public abstract class InnerNode extends Node {
 
     protected List<Node> children = new ArrayList<> ();
 
-    protected InnerNode (StandardVisitor visitor) {
-        super (visitor);
+    protected InnerNode (Context context) {
+        super (context);
     }
 
     @Override

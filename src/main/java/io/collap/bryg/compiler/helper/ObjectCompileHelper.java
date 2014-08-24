@@ -13,8 +13,8 @@ public abstract class ObjectCompileHelper extends CompileHelper {
 
     protected Type type;
 
-    public ObjectCompileHelper (BrygMethodVisitor method, Type type) {
-        super (method);
+    public ObjectCompileHelper (BrygMethodVisitor mv, Type type) {
+        super (mv);
         this.type = type;
     }
 
@@ -31,10 +31,10 @@ public abstract class ObjectCompileHelper extends CompileHelper {
     public void compileNew (String constructorDesc, @Nullable List<Node> arguments) {
         String internalTypeName = type.getAsmType ().getInternalName ();
 
-        method.visitTypeInsn (NEW, internalTypeName);
+        mv.visitTypeInsn (NEW, internalTypeName);
         // -> Object
 
-        method.visitInsn (DUP);
+        mv.visitInsn (DUP);
         // Object -> Object, Object
 
         if (arguments != null) {
@@ -43,14 +43,14 @@ public abstract class ObjectCompileHelper extends CompileHelper {
             }
         }
 
-        method.visitMethodInsn (INVOKESPECIAL, internalTypeName, "<init>", constructorDesc, false);
+        mv.visitMethodInsn (INVOKESPECIAL, internalTypeName, "<init>", constructorDesc, false);
         // Object ->
     }
 
     public void compileInvokeVirtual (String methodName, String methodDesc) {
         // TODO: Check if the method exists.
 
-        method.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), methodName, methodDesc, false);
+        mv.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), methodName, methodDesc, false);
     }
 
 }

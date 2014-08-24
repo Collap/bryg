@@ -1,10 +1,10 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.BlockNode;
 import io.collap.bryg.compiler.ast.Node;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.library.Function;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
@@ -18,35 +18,45 @@ public class FunctionCallExpression extends Expression {
     private List<ArgumentExpression> argumentExpressions = new ArrayList<> ();
     private Node statementOrBlock;
 
-    public FunctionCallExpression (StandardVisitor visitor, BrygParser.BlockFunctionCallContext ctx) {
-        super (visitor);
+    public FunctionCallExpression (Context context, BrygParser.BlockFunctionCallContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
 
-        initFunction (IdHelper.idToString (ctx.id ()));
-        statementOrBlock = visitor.visitBlock (ctx.block ());
+        initFunction (IdUtil.idToString (ctx.id ()));
+        statementOrBlock = context.getParseTreeVisitor ().visitBlock (ctx.block ());
         initArguments (ctx.argumentList ());
     }
 
-    public FunctionCallExpression (StandardVisitor visitor, BrygParser.FunctionCallContext ctx) {
-        super (visitor);
+    public FunctionCallExpression (Context context, BrygParser.FunctionCallContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
 
-        initFunction (IdHelper.idToString (ctx.id ()));
-        statementOrBlock = new BlockNode (visitor);
+        initFunction (IdUtil.idToString (ctx.id ()));
+        statementOrBlock = new BlockNode (context);
         initArguments (ctx.argumentList ());
     }
 
-    public FunctionCallExpression (StandardVisitor visitor, BrygParser.StatementFunctionCallContext ctx) {
-        super (visitor);
+    public FunctionCallExpression (Context context, BrygParser.StatementFunctionCallContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
 
-        initFunction (IdHelper.idToString (ctx.id ()));
-        statementOrBlock = visitor.visitStatement (ctx.statement ());
+        initFunction (IdUtil.idToString (ctx.id ()));
+        statementOrBlock = context.getParseTreeVisitor ().visitStatement (ctx.statement ());
         initArguments (ctx.argumentList ());
+    }
+
+    public FunctionCallExpression (Context context, Function function, int line) {
+        super (context);
+        setLine (line);
+
+        this.function = function;
+        statementOrBlock = new BlockNode (context);
+
+        setType (function.getReturnType ());
     }
 
     private void initFunction (String name) {
-        function = visitor.getLibrary ().getFunction (name);
+        function = context.getLibrary ().getFunction (name);
         if (function == null) {
             throw new BrygJitException ("Function " + name + " not found!", getLine ());
         }
@@ -58,24 +68,14 @@ public class FunctionCallExpression extends Expression {
         if (argumentListCtx != null) {
             List<BrygParser.ArgumentContext> argumentContexts = argumentListCtx.argument ();
             for (BrygParser.ArgumentContext argumentContext : argumentContexts) {
-                argumentExpressions.add (new ArgumentExpression (visitor, argumentContext));
+                argumentExpressions.add (new ArgumentExpression (context, argumentContext));
             }
         }
     }
 
-    public FunctionCallExpression (StandardVisitor visitor, Function function, int line) {
-        super (visitor);
-        setLine (line);
-
-        this.function = function;
-        statementOrBlock = new BlockNode (visitor);
-
-        setType (function.getReturnType ());
-    }
-
     @Override
     public void compile () {
-        function.compile (visitor, this);
+        function.compile (context, this);
     }
 
     public List<ArgumentExpression> getArgumentExpressions () {

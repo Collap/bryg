@@ -1,31 +1,16 @@
 package io.collap.bryg.compiler.ast.expression.literal;
 
-import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
 
-public class DoubleLiteralExpression extends Expression {
+public class DoubleLiteralExpression extends LiteralExpression {
 
-    private double value;
-
-    public DoubleLiteralExpression (StandardVisitor visitor, BrygParser.DoubleLiteralContext ctx) {
-        super (visitor);
+    public DoubleLiteralExpression (Context context, BrygParser.DoubleLiteralContext ctx) {
+        super (context, ctx.getStart ().getLine ());
         setType (new Type (Double.TYPE));
-        setLine (ctx.getStart ().getLine ());
 
         value = Double.parseDouble (ctx.Double ().getText ());
-    }
-
-    @Override
-    public void compile () {
-        visitor.getMethod ().visitLdcInsn (value);
-        // -> double
-    }
-
-    @Override
-    public Object getConstantValue () {
-        return value;
     }
 
 }

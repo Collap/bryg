@@ -1,12 +1,12 @@
 package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.expression.Variable;
-import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
@@ -19,19 +19,19 @@ public class VariableDeclarationNode extends Node {
 
     // TODO: Add semantics for mut and val.
 
-    public VariableDeclarationNode (StandardVisitor visitor, BrygParser.VariableDeclarationContext ctx) {
-        super (visitor);
+    public VariableDeclarationNode (Context context, BrygParser.VariableDeclarationContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
 
-        String name = IdHelper.idToString (ctx.id ());
+        String name = IdUtil.idToString (ctx.id ());
         Type expectedType = null;
         if (ctx.type () != null) {
-            expectedType = new TypeInterpreter (visitor).interpretType (ctx.type ());
+            expectedType = new TypeInterpreter (context.getClassResolver ()).interpretType (ctx.type ());
         }
 
         expression = null;
         if (ctx.expression () != null) {
-            expression = (Expression) visitor.visit (ctx.expression ());
+            expression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
         }
 
         Type type = null;
@@ -58,20 +58,19 @@ public class VariableDeclarationNode extends Node {
             throw new BrygJitException ("Could not get type for variable '" + name + "'.", getLine ());
         }
 
-        variable = visitor.getCurrentScope ().registerVariable (name, type);
+        variable = context.getCurrentScope ().registerVariable (name, type);
     }
 
     @Override
     public void compile () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
         if (expression != null) {
             expression.compile ();
             // -> value
 
             org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
-            method.visitVarInsn (asmType.getOpcode (ISTORE), variable.getId ());
-            // method.visitFrame (F_APPEND, 1, new Object[] { asmType.getInternalName () }, 0, null);
+            mv.visitVarInsn (asmType.getOpcode (ISTORE), variable.getId ());
             // T ->
         }else {
             throw new UnsupportedOperationException ("Currently a variable must be declared with an expression, " +

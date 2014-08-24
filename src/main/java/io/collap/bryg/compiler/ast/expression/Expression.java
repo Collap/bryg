@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.Node;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 
 public abstract class Expression extends Node {
@@ -11,8 +11,8 @@ public abstract class Expression extends Node {
      */
     protected Type type;
 
-    protected Expression (StandardVisitor visitor) {
-        super (visitor);
+    protected Expression (Context context) {
+        super (context);
     }
 
     public Type getType () {

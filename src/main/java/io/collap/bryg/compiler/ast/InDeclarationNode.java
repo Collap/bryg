@@ -1,15 +1,15 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.expression.*;
-import io.collap.bryg.compiler.helper.IdHelper;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
-import io.collap.bryg.parser.BrygParser;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.InvalidInputParameterException;
+import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -19,15 +19,15 @@ public class InDeclarationNode extends Node {
     private Variable parameter;
     private Variable model;
 
-    public InDeclarationNode (StandardVisitor visitor, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
-        super (visitor);
+    public InDeclarationNode (Context context, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
+        super (context);
         setLine (ctx.getStart ().getLine ());
 
-        String name = IdHelper.idToString (ctx.id ());
+        String name = IdUtil.idToString (ctx.id ());
 
-        TypeInterpreter interpreter = new TypeInterpreter (visitor);
-        parameter = visitor.getCurrentScope ().registerVariable (name, interpreter.interpretType (ctx.type ()));
-        model = visitor.getCurrentScope ().getVariable ("model");
+        TypeInterpreter interpreter = new TypeInterpreter (context.getClassResolver ());
+        parameter = context.getCurrentScope ().registerVariable (name, interpreter.interpretType (ctx.type ()));
+        model = context.getCurrentScope ().getVariable ("model");
     }
 
     @Override
@@ -39,15 +39,15 @@ public class InDeclarationNode extends Node {
     }
 
     private void loadVariable () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
-        method.visitVarInsn (ALOAD, model.getId ());
+        mv.visitVarInsn (ALOAD, model.getId ());
         // -> Model
 
-        method.visitLdcInsn (parameter.getName ());
+        mv.visitLdcInsn (parameter.getName ());
         // -> String
 
-        method.visitMethodInsn (INVOKEINTERFACE,
+        mv.visitMethodInsn (INVOKEINTERFACE,
                 model.getType ().getAsmType ().getInternalName (),
                 "getVariable",
                 TypeHelper.generateMethodDesc (
@@ -59,25 +59,25 @@ public class InDeclarationNode extends Node {
     }
 
     private void ifNullThrowException () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
-        method.visitInsn (DUP);
+        mv.visitInsn (DUP);
         // Object -> Object, Object
 
         Label skipException = new Label ();
-        method.visitJumpInsn (IFNONNULL, skipException); /* Jump only when the reference is not null. */
+        mv.visitJumpInsn (IFNONNULL, skipException); /* Jump only when the reference is not null. */
         // Object ->
 
         /* Throw exception when the null check failed. */
         String exceptionInternalName = AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName ();
-        method.visitTypeInsn (NEW, exceptionInternalName);
-        method.visitInsn (DUP);
+        mv.visitTypeInsn (NEW, exceptionInternalName);
+        mv.visitInsn (DUP);
         // -> InvalidParameterException, InvalidParameterException
 
-        method.visitLdcInsn (parameter.getName () + " could not be loaded!");
+        mv.visitLdcInsn (parameter.getName () + " could not be loaded!");
         // -> String
 
-        method.visitMethodInsn (INVOKESPECIAL, exceptionInternalName, "<init>",
+        mv.visitMethodInsn (INVOKESPECIAL, exceptionInternalName, "<init>",
                 TypeHelper.generateMethodDesc (
                         new Class<?>[] { String.class },
                         Void.TYPE
@@ -85,32 +85,31 @@ public class InDeclarationNode extends Node {
                 false);
         // InvalidParameterException, String ->
 
-        method.visitInsn (ATHROW);
+        mv.visitInsn (ATHROW);
         // InvalidParameterException ->
 
-        method.visitFrame (F_SAME1, 0, null, 1, new Object[] { AsmTypes.getAsmType (Object.class).getInternalName () });
-        method.visitLabel (skipException);
+        mv.visitLabel (skipException);
     }
 
     private void castAndStore () {
         Type type = parameter.getType ();
         if (type.getJavaType ().isPrimitive ()) {
             if (type.equals (Boolean.TYPE)) {
-                castAndStorePrimitive (Boolean.class, Boolean.TYPE, "booleanValue", INTEGER);
+                castAndStorePrimitive (Boolean.class, Boolean.TYPE, "booleanValue");
             }else if (type.equals (Character.TYPE)) {
-                castAndStorePrimitive (Character.class, Character.TYPE, "charValue", INTEGER);
+                castAndStorePrimitive (Character.class, Character.TYPE, "charValue");
             }else if (type.equals (Byte.TYPE)) {
-                castAndStorePrimitive (Byte.class, Byte.TYPE, "byteValue", INTEGER);
+                castAndStorePrimitive (Byte.class, Byte.TYPE, "byteValue");
             }else if (type.equals (Short.TYPE)) {
-                castAndStorePrimitive (Short.class, Short.TYPE, "shortValue", INTEGER);
+                castAndStorePrimitive (Short.class, Short.TYPE, "shortValue");
             }else if (type.equals (Integer.TYPE)) {
-                castAndStorePrimitive (Integer.class, Integer.TYPE, "intValue", INTEGER);
+                castAndStorePrimitive (Integer.class, Integer.TYPE, "intValue");
             }else if (type.equals (Long.TYPE)) {
-                castAndStorePrimitive (Long.class, Long.TYPE, "longValue", LONG);
+                castAndStorePrimitive (Long.class, Long.TYPE, "longValue");
             }else if (type.equals (Float.TYPE)) {
-                castAndStorePrimitive (Float.class, Float.TYPE, "floatValue", FLOAT);
+                castAndStorePrimitive (Float.class, Float.TYPE, "floatValue");
             }else if (type.equals (Double.TYPE)) {
-                castAndStorePrimitive (Double.class, Double.TYPE, "doubleValue", DOUBLE);
+                castAndStorePrimitive (Double.class, Double.TYPE, "doubleValue");
             }
         }else {
             castAndStoreObject ();
@@ -118,25 +117,24 @@ public class InDeclarationNode extends Node {
     }
 
     private void castAndStoreObject () {
-        BrygMethodVisitor method = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
         String internalTypeName = parameter.getType ().getAsmType ().getInternalName ();
 
-        method.visitTypeInsn (CHECKCAST, internalTypeName);
+        mv.visitTypeInsn (CHECKCAST, internalTypeName);
         // Object -> T
 
-        method.visitVarInsn (ASTORE, parameter.getId ());
-        method.visitFrame (F_APPEND, 1, new Object[] { internalTypeName }, 0, null);
+        mv.visitVarInsn (ASTORE, parameter.getId ());
         // T ->
     }
 
-    private void castAndStorePrimitive (Class<?> objectClass, Class<?> primitiveClass, String valueMethodName, Integer frameType) {
-        BrygMethodVisitor method = visitor.getMethod ();
+    private void castAndStorePrimitive (Class<?> objectClass, Class<?> primitiveClass, String valueMethodName) {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
         String internalTypeName = AsmTypes.getAsmType (objectClass).getInternalName ();
 
-        method.visitTypeInsn (CHECKCAST, internalTypeName);
+        mv.visitTypeInsn (CHECKCAST, internalTypeName);
         // Object -> T
 
-        method.visitMethodInsn (INVOKEVIRTUAL, internalTypeName, valueMethodName,
+        mv.visitMethodInsn (INVOKEVIRTUAL, internalTypeName, valueMethodName,
                 TypeHelper.generateMethodDesc (
                         null,
                         primitiveClass
@@ -145,8 +143,7 @@ public class InDeclarationNode extends Node {
         );
         // Integer -> int
 
-        method.visitVarInsn (AsmTypes.getAsmType (primitiveClass).getOpcode (ISTORE), parameter.getId ());
-        method.visitFrame (F_APPEND, 1, new Object[] { frameType }, 0, null);
+        mv.visitVarInsn (AsmTypes.getAsmType (primitiveClass).getOpcode (ISTORE), parameter.getId ());
     }
 
 }

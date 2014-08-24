@@ -1,69 +1,56 @@
 package io.collap.bryg.compiler.parser;
 
+import io.collap.bryg.compiler.ast.*;
+import io.collap.bryg.compiler.ast.control.EachStatement;
+import io.collap.bryg.compiler.ast.control.IfStatement;
+import io.collap.bryg.compiler.ast.control.WhileStatement;
 import io.collap.bryg.compiler.ast.expression.*;
 import io.collap.bryg.compiler.ast.expression.arithmetic.*;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseAndExpression;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseOrExpression;
 import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseXorExpression;
+import io.collap.bryg.compiler.ast.expression.bitwise.BitwiseNotExpression;
 import io.collap.bryg.compiler.ast.expression.bool.*;
 import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
-import io.collap.bryg.compiler.ast.expression.bitwise.BitwiseNotExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedLeftShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
 import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.ast.expression.unary.IncDecExpression;
 import io.collap.bryg.compiler.ast.expression.unary.NegationExpression;
-import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.expression.*;
-import io.collap.bryg.compiler.ast.*;
-import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.compiler.helper.InterpolationHelper;
+import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.expression.Variable;
 import io.collap.bryg.compiler.library.Function;
-import io.collap.bryg.compiler.library.Library;
-import io.collap.bryg.compiler.resolver.ClassResolver;
-import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.util.IdUtil;
+import io.collap.bryg.compiler.util.InterpolationUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
-import io.collap.bryg.parser.BrygParserBaseVisitor;
 import io.collap.bryg.parser.BrygParser;
-import io.collap.bryg.model.Model;
+import io.collap.bryg.parser.BrygParserBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
 
 import javax.annotation.Nullable;
-import java.io.Writer;
 
 public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
-    private BrygMethodVisitor method;
-    private Scope rootScope = new RootScope ();
-    private Scope currentScope = rootScope; /* The current scope is the scope each node resides in at its creation. */
-    private Library library;
-    private ClassResolver classResolver;
+    private Context context;
 
-    public StandardVisitor (BrygMethodVisitor method, Library library, ClassResolver classResolver) {
-        this.method = method;
-        this.library = library;
-        this.classResolver = classResolver;
-
-        /* Register parameters in the correct order. */
-        rootScope.registerVariable ("this", null); // TODO: Proper type.
-        rootScope.registerVariable ("writer", new Type (Writer.class));
-        rootScope.registerVariable ("model", new Type (Model.class));
+    public void setContext (Context context) {
+        this.context = context;
     }
 
     @Override
     public RootNode visitStart (@NotNull BrygParser.StartContext ctx) {
-        return new RootNode (this, ctx);
+        return new RootNode (context, ctx);
     }
 
     @Override
     @Nullable
     public InDeclarationNode visitInDeclaration (@NotNull BrygParser.InDeclarationContext ctx) {
         try {
-            return new InDeclarationNode (this, ctx);
+            return new InDeclarationNode (context, ctx);
         } catch (ClassNotFoundException e) {
             e.printStackTrace ();
         }
@@ -72,12 +59,12 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public StatementNode visitStatement (@NotNull BrygParser.StatementContext ctx) {
-        return new StatementNode (this, ctx);
+        return new StatementNode (context, ctx);
     }
 
     @Override
     public BlockNode visitBlock (@NotNull BrygParser.BlockContext ctx) {
-        return new BlockNode (this, ctx);
+        return new BlockNode (context, ctx);
     }
 
     @Override
@@ -89,7 +76,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     public AccessExpression visitAccessExpression (@NotNull BrygParser.AccessExpressionContext ctx) {
         try {
             /* Note: This corresponds to the getter only, the setter scenario is handled by the assignment expression! */
-            return new AccessExpression (this, ctx, AccessMode.get);
+            return new AccessExpression (context, ctx, AccessMode.get);
         } catch (NoSuchFieldException e) {
             e.printStackTrace ();
             return null;
@@ -103,16 +90,16 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public @Nullable Expression visitVariable (@NotNull BrygParser.VariableContext ctx) {
-        String id = IdHelper.idToString (ctx.id ());
+        String id = IdUtil.idToString (ctx.id ());
         if (id != null) {
-            Variable variable = currentScope.getVariable (id);
+            Variable variable = context.getCurrentScope ().getVariable (id);
 
             if (variable != null) {
-                return new VariableExpression (this, variable, AccessMode.get, ctx.getStart ().getLine ());
+                return new VariableExpression (context, variable, AccessMode.get, ctx.getStart ().getLine ());
             }else { /* The variable is probably a function. */
-                Function function = library.getFunction (id);
+                Function function = context.getLibrary ().getFunction (id);
                 if (function != null) {
-                    return new FunctionCallExpression (this, function, ctx.getStart ().getLine ());
+                    return new FunctionCallExpression (context, function, ctx.getStart ().getLine ());
                 }
             }
 
@@ -124,27 +111,27 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public VariableDeclarationNode visitVariableDeclaration (@NotNull BrygParser.VariableDeclarationContext ctx) {
-        return new VariableDeclarationNode (this, ctx);
+        return new VariableDeclarationNode (context, ctx);
     }
 
     @Override
     public FunctionCallExpression visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
-        return new FunctionCallExpression (this, ctx);
+        return new FunctionCallExpression (context, ctx);
     }
 
     @Override
     public FunctionCallExpression visitBlockFunctionCall (@NotNull BrygParser.BlockFunctionCallContext ctx) {
-        return new FunctionCallExpression (this, ctx);
+        return new FunctionCallExpression (context, ctx);
     }
 
     @Override
     public FunctionCallExpression visitStatementFunctionCall (@NotNull BrygParser.StatementFunctionCallContext ctx) {
-        return new FunctionCallExpression (this, ctx);
+        return new FunctionCallExpression (context, ctx);
     }
 
     @Override
     public Node visitBinaryAssignmentExpression (@NotNull BrygParser.BinaryAssignmentExpressionContext ctx) {
-        return new BinaryAssignmentExpression (this, ctx);
+        return new BinaryAssignmentExpression (context, ctx);
     }
 
 
@@ -153,18 +140,18 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     //
 
     @Override
-    public IfExpression visitIfExpression (@NotNull BrygParser.IfExpressionContext ctx) {
-        return new IfExpression (this, ctx);
+    public IfStatement visitIfStatement (@NotNull BrygParser.IfStatementContext ctx) {
+        return new IfStatement (context, ctx);
     }
 
     @Override
-    public Node visitEachExpression (@NotNull BrygParser.EachExpressionContext ctx) {
-        return new EachExpression (this, ctx);
+    public Node visitEachStatement (@NotNull BrygParser.EachStatementContext ctx) {
+        return new EachStatement (context, ctx);
     }
 
     @Override
     public Node visitWhileStatement (@NotNull BrygParser.WhileStatementContext ctx) {
-        return new WhileStatement (this, ctx);
+        return new WhileStatement (context, ctx);
     }
 
 
@@ -178,9 +165,9 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         BrygParser.ExpressionContext right = ctx.expression (1);
 
         if (ctx.op.getType () == BrygLexer.PLUS) {
-            return new BinaryAdditionExpression (this, left, right);
+            return new BinaryAdditionExpression (context, left, right);
         }else { /* MINUS */
-            return new BinarySubtractionExpression (this, left, right);
+            return new BinarySubtractionExpression (context, left, right);
         }
     }
 
@@ -191,11 +178,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
         int op = ctx.op.getType ();
         if (op == BrygLexer.MUL) {
-            return new BinaryMultiplicationExpression (this, left, right);
+            return new BinaryMultiplicationExpression (context, left, right);
         }else if (op == BrygLexer.DIV) {
-            return new BinaryDivisionExpression (this, left, right);
+            return new BinaryDivisionExpression (context, left, right);
         }else { /* REM */
-            return new BinaryRemainderExpression (this, left, right);
+            return new BinaryRemainderExpression (context, left, right);
         }
     }
 
@@ -206,22 +193,22 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public EqualityBinaryBooleanExpression visitBinaryEqualityExpression (@NotNull BrygParser.BinaryEqualityExpressionContext ctx) {
-        return new EqualityBinaryBooleanExpression (this, ctx);
+        return new EqualityBinaryBooleanExpression (context, ctx);
     }
 
     @Override
     public RelationalBinaryBooleanExpression visitBinaryRelationalExpression (@NotNull BrygParser.BinaryRelationalExpressionContext ctx) {
-        return new RelationalBinaryBooleanExpression (this, ctx);
+        return new RelationalBinaryBooleanExpression (context, ctx);
     }
 
     @Override
     public Node visitBinaryLogicalAndExpression (@NotNull BrygParser.BinaryLogicalAndExpressionContext ctx) {
-        return new LogicalAndBinaryBooleanExpression (this, ctx);
+        return new LogicalAndBinaryBooleanExpression (context, ctx);
     }
 
     @Override
     public Node visitBinaryLogicalOrExpression (@NotNull BrygParser.BinaryLogicalOrExpressionContext ctx) {
-        return new LogicalOrBinaryBooleanExpression (this, ctx);
+        return new LogicalOrBinaryBooleanExpression (context, ctx);
     }
 
 
@@ -231,14 +218,14 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public Node visitCastExpression (@NotNull BrygParser.CastExpressionContext ctx) {
-        return new CastExpression (this, ctx);
+        return new CastExpression (context, ctx);
     }
 
     @Override
     public Node visitUnaryPostfixExpression (@NotNull BrygParser.UnaryPostfixExpressionContext ctx) {
         final int op = ctx.op.getType ();
         final int line = ctx.getStart ().getLine ();
-        return new IncDecExpression (this, ctx.expression (), op == BrygLexer.INC, false, line);
+        return new IncDecExpression (context, ctx.expression (), op == BrygLexer.INC, false, line);
     }
 
     @Override
@@ -246,12 +233,12 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         final int op = ctx.op.getType ();
         final int line = ctx.getStart ().getLine ();
         if (op == BrygLexer.MINUS) {
-            return new NegationExpression (this, (Expression) visit (ctx.expression ()), line);
+            return new NegationExpression (context, (Expression) visit (ctx.expression ()), line);
         }else if (op == BrygLexer.PLUS) {
             return super.visitUnaryPrefixExpression (ctx); /* A unary plus does nothing, so let the
                                                               visitor check the child. */
         }else {
-            return new IncDecExpression (this, ctx.expression (), op == BrygLexer.INC, true, line);
+            return new IncDecExpression (context, ctx.expression (), op == BrygLexer.INC, true, line);
         }
     }
 
@@ -259,10 +246,9 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     public Node visitUnaryOperationExpression (@NotNull BrygParser.UnaryOperationExpressionContext ctx) {
         final int op = ctx.op.getType ();
         if (op == BrygLexer.BNOT) {
-            return new BitwiseNotExpression (this, ctx.expression ());
+            return new BitwiseNotExpression (context, ctx.expression ());
         }else { /* NOT */
-            // TODO: Implement
-            return new LogicalNotBooleanExpression (this, ctx.expression ());
+            return new LogicalNotBooleanExpression (context, ctx.expression ());
         }
     }
 
@@ -273,17 +259,17 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public Node visitBinaryBitwiseAndExpression (@NotNull BrygParser.BinaryBitwiseAndExpressionContext ctx) {
-        return new BinaryBitwiseAndExpression (this, ctx);
+        return new BinaryBitwiseAndExpression (context, ctx);
     }
 
     @Override
     public Node visitBinaryBitwiseXorExpression (@NotNull BrygParser.BinaryBitwiseXorExpressionContext ctx) {
-        return new BinaryBitwiseXorExpression (this, ctx);
+        return new BinaryBitwiseXorExpression (context, ctx);
     }
 
     @Override
     public Node visitBinaryBitwiseOrExpression (@NotNull BrygParser.BinaryBitwiseOrExpressionContext ctx) {
-        return new BinaryBitwiseOrExpression (this, ctx);
+        return new BinaryBitwiseOrExpression (context, ctx);
     }
 
 
@@ -295,11 +281,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     public Node visitBinaryShiftExpression (@NotNull BrygParser.BinaryShiftExpressionContext ctx) {
         int op = ctx.op.getType ();
         if (op == BrygLexer.SIG_LSHIFT) {
-            return new BinarySignedLeftShiftExpression (this, ctx);
+            return new BinarySignedLeftShiftExpression (context, ctx);
         }else if (op == BrygLexer.SIG_RSHIFT) {
-            return new BinarySignedRightShiftExpression (this, ctx);
+            return new BinarySignedRightShiftExpression (context, ctx);
         }else { /* UNSIG_RSHIFT */
-            return new BinaryUnsignedRightShiftExpression (this, ctx);
+            return new BinaryUnsignedRightShiftExpression (context, ctx);
         }
     }
 
@@ -310,51 +296,24 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public Expression visitIntegerLiteral (@NotNull BrygParser.IntegerLiteralContext ctx) {
-        return new IntegerLiteralExpression (this, ctx);
+        return new IntegerLiteralExpression (context, ctx);
     }
 
     @Override
     public Node visitDoubleLiteral (@NotNull BrygParser.DoubleLiteralContext ctx) {
-        return new DoubleLiteralExpression (this, ctx);
+        return new DoubleLiteralExpression (context, ctx);
     }
 
     @Override
     public Node visitFloatLiteral (@NotNull BrygParser.FloatLiteralContext ctx) {
-        return new FloatLiteralExpression (this, ctx);
+        return new FloatLiteralExpression (context, ctx);
     }
 
     @Override
     public Expression visitStringLiteral (@NotNull BrygParser.StringLiteralContext ctx) {
         String text = ctx.getText ();
         int line = ctx.getStart ().getLine ();
-        return InterpolationHelper.compileString (this, text, line);
-    }
-
-
-
-
-    public BrygMethodVisitor getMethod () {
-        return method;
-    }
-
-    public Scope getCurrentScope () {
-        return currentScope;
-    }
-
-    public void setCurrentScope (Scope currentScope) {
-        this.currentScope = currentScope;
-    }
-
-    public Library getLibrary () {
-        return library;
-    }
-
-    public ClassResolver getClassResolver () {
-        return classResolver;
-    }
-
-    public Scope getRootScope () {
-        return rootScope;
+        return InterpolationUtil.compileString (context, text, line);
     }
 
 }

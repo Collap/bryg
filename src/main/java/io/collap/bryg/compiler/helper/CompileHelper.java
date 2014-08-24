@@ -4,10 +4,10 @@ import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 
 public abstract class CompileHelper {
 
-    protected BrygMethodVisitor method;
+    protected BrygMethodVisitor mv;
 
-    public CompileHelper (BrygMethodVisitor method) {
-        this.method = method;
+    public CompileHelper (BrygMethodVisitor mv) {
+        this.mv = mv;
     }
 
 }

@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -10,8 +10,8 @@ public class LogicalOrBinaryBooleanExpression extends BinaryBooleanExpression {
 
     // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression.
 
-    public LogicalOrBinaryBooleanExpression (StandardVisitor visitor, BrygParser.BinaryLogicalOrExpressionContext ctx) {
-        super (visitor, ctx.expression (0), ctx.expression (1));
+    public LogicalOrBinaryBooleanExpression (Context context, BrygParser.BinaryLogicalOrExpressionContext ctx) {
+        super (context, ctx.expression (0), ctx.expression (1));
         setLine (ctx.getStart ().getLine ());
     }
 
@@ -21,7 +21,7 @@ public class LogicalOrBinaryBooleanExpression extends BinaryBooleanExpression {
         Label rightTest = new Label ();
         ((BinaryBooleanExpression) left).compile (rightTest, nextTrue, false);
 
-        visitor.getMethod ().visitLabelInSameFrame (rightTest);
+        context.getMethodVisitor ().visitLabel (rightTest);
         ((BinaryBooleanExpression) right).compile (nextFalse, nextTrue, lastExpressionInChain);
     }
 

@@ -7,8 +7,8 @@ import io.collap.bryg.compiler.type.TypeHelper;
 
 public class StringBuilderCompileHelper extends ObjectCompileHelper {
 
-    public StringBuilderCompileHelper (BrygMethodVisitor method) {
-        super (method, new Type (StringBuilder.class));
+    public StringBuilderCompileHelper (BrygMethodVisitor mv) {
+        super (mv, new Type (StringBuilder.class));
     }
 
     /**

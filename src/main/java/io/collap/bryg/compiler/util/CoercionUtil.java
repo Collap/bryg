@@ -1,4 +1,4 @@
-package io.collap.bryg.compiler.helper;
+package io.collap.bryg.compiler.util;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class CoercionHelper {
+public class CoercionUtil {
 
     /**
      * Assumes that the expressions have not been compiled yet.

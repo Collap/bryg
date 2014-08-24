@@ -1,9 +1,9 @@
-package io.collap.bryg.compiler.helper;
+package io.collap.bryg.compiler.util;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.ast.expression.InterpolationExpression;
 import io.collap.bryg.compiler.ast.expression.literal.StringLiteralExpression;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
@@ -16,9 +16,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InterpolationHelper {
+public class InterpolationUtil {
 
-    public static Expression compileString (StandardVisitor visitor, String value, int line) {
+    public static Expression compileString (Context context, String value, int line) {
         List<Expression> expressions = new ArrayList<> ();
 
         /* Search for interpolation. */
@@ -39,7 +39,7 @@ public class InterpolationHelper {
 
                 if (interpolationString != null) {
                     String text = value.substring (afterLastInterpolation, nextInterpolation);
-                    expressions.add (new StringLiteralExpression (visitor, text, line));
+                    expressions.add (new StringLiteralExpression (context, text, line));
 
                     /* Add expression to the expression list. */
                     InputStream stream = new ByteArrayInputStream (interpolationString.getBytes ());
@@ -55,7 +55,7 @@ public class InterpolationHelper {
                     BrygParser parser = new BrygParser (tokenStream);
                     BrygParser.InterpolationContext interpolationContext = parser.interpolation ();
 
-                    Expression expression = (Expression) visitor.visit (interpolationContext);
+                    Expression expression = (Expression) context.getParseTreeVisitor ().visit (interpolationContext);
                     expressions.add (expression);
 
                     /* Go to the character after the interpolation. */
@@ -71,13 +71,13 @@ public class InterpolationHelper {
             /* Add the rest of the string as another literal. */
             if (afterLastInterpolation < value.length ()) {
                 String text = value.substring (afterLastInterpolation);
-                expressions.add (new StringLiteralExpression (visitor, text, line));
+                expressions.add (new StringLiteralExpression (context, text, line));
             }
 
-            return new InterpolationExpression (visitor, expressions, line);
+            return new InterpolationExpression (context, expressions, line);
         }
 
-        return new StringLiteralExpression (visitor, value, line);
+        return new StringLiteralExpression (context, value, line);
     }
 
     /**

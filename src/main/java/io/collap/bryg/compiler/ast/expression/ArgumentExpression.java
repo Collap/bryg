@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.parser.BrygParser;
 
 public class ArgumentExpression extends Expression {
@@ -8,8 +8,8 @@ public class ArgumentExpression extends Expression {
     private String name;
     private Expression expression;
 
-    public ArgumentExpression (StandardVisitor visitor, BrygParser.ArgumentContext ctx) {
-        super (visitor);
+    public ArgumentExpression (Context context, BrygParser.ArgumentContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
 
         BrygParser.ArgumentIdContext id = ctx.argumentId ();
@@ -17,7 +17,7 @@ public class ArgumentExpression extends Expression {
             name = id.getText ();
         }
 
-        expression = (Expression) visitor.visit (ctx.expression ());
+        expression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
         setType (expression.getType ());
     }
 

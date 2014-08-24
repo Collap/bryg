@@ -2,14 +2,14 @@ package io.collap.bryg.compiler.ast.expression.bool;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.IFNE;
 
 public class LogicalNotBooleanExpression extends BooleanExpression {
 
@@ -17,10 +17,10 @@ public class LogicalNotBooleanExpression extends BooleanExpression {
 
     private Expression child;
 
-    public LogicalNotBooleanExpression (StandardVisitor visitor, BrygParser.ExpressionContext childCtx) {
-        super (visitor);
+    public LogicalNotBooleanExpression (Context context, BrygParser.ExpressionContext childCtx) {
+        super (context);
         setLine (childCtx.getStart ().getLine ());
-        child = (Expression) visitor.visit (childCtx);
+        child = (Expression) context.getParseTreeVisitor ().visit (childCtx);
 
         if (!child.getType ().equals (Boolean.TYPE)) {
             throw new BrygJitException ("The NOT (`not`) operation can only be applied to boolean types.",
@@ -30,7 +30,7 @@ public class LogicalNotBooleanExpression extends BooleanExpression {
 
     @Override
     public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
-        BrygMethodVisitor mv = visitor.getMethod ();
+        BrygMethodVisitor mv = context.getMethodVisitor ();
 
         child.compile ();
         // -> boolean

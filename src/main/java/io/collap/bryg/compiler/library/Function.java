@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.library;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 
 /**
@@ -9,7 +9,7 @@ import io.collap.bryg.compiler.type.Type;
  */
 public interface Function {
 
-    public void compile (StandardVisitor visitor, FunctionCallExpression call);
+    public void compile (Context context, FunctionCallExpression call);
 
     public Type getReturnType ();
 

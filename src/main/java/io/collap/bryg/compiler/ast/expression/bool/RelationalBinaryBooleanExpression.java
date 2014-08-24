@@ -1,13 +1,13 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.expression.Operators;
 import io.collap.bryg.parser.BrygParser;
 
 public class RelationalBinaryBooleanExpression extends OperatorBinaryBooleanExpression {
 
-    public RelationalBinaryBooleanExpression (StandardVisitor visitor, BrygParser.BinaryRelationalExpressionContext ctx) {
-        super (visitor, ctx.expression (0), ctx.expression (1), Operators.fromString (ctx.getChild (1).getText ()));
+    public RelationalBinaryBooleanExpression (Context context, BrygParser.BinaryRelationalExpressionContext ctx) {
+        super (context, ctx.expression (0), ctx.expression (1), Operators.fromString (ctx.getChild (1).getText ()));
         setLine (ctx.getStart ().getLine ());
     }
 

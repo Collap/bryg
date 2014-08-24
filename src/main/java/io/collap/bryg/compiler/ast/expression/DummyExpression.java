@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.ast.expression;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 
 /**
@@ -9,8 +9,8 @@ import io.collap.bryg.compiler.type.Type;
  */
 public class DummyExpression extends Expression {
 
-    public DummyExpression (StandardVisitor visitor, Type type, int line) {
-        super (visitor);
+    public DummyExpression (Context context, Type type, int line) {
+        super (context);
         setType (type);
         setLine (line);
     }

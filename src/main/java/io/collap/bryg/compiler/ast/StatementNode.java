@@ -1,10 +1,10 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.ast.expression.literal.StringLiteralExpression;
-import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
-import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.ast.expression.Expression;
+import io.collap.bryg.compiler.ast.expression.literal.StringLiteralExpression;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.exception.BrygJitException;
@@ -12,7 +12,7 @@ import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 // TODO: Open new scope.
 
@@ -20,11 +20,11 @@ public class StatementNode extends Node {
 
     private Node child;
 
-    public StatementNode (StandardVisitor visitor, BrygParser.StatementContext ctx) {
-        super (visitor);
+    public StatementNode (Context context, BrygParser.StatementContext ctx) {
+        super (context);
         setLine (ctx.getStart ().getLine ());
 
-        child = visitor.visit (ctx.getChild (0));
+        child = context.getParseTreeVisitor ().visit (ctx.getChild (0));
         if (child == null) {
             throw new BrygJitException ("Child of statement was expected but is null!", getLine ());
         }
@@ -37,21 +37,21 @@ public class StatementNode extends Node {
         if (child instanceof Expression) {
             Expression expression = (Expression) child;
             Type type = expression.getType ();
-            if (!type.equals (Void.TYPE)) {
-                BrygMethodVisitor method = visitor.getMethod ();
+            if (!type.equals (Void.TYPE) && !context.shouldDiscardPrintOutput ()) {
+                BrygMethodVisitor mv = context.getMethodVisitor ();
                 if (expression instanceof StringLiteralExpression) {
                     /* Append String constants to the constant string writer. */
                     String text = (String) expression.getConstantValue ();
-                    method.writeConstantString (text);
+                    mv.writeConstantString (text);
                 }else {
                     // TODO: Does not work for double and long!
 
-                    method.loadWriter ();
+                    mv.loadWriter ();
                     // -> Writer
 
                     /* Stringify if necessary. */
                     if (type.getJavaType ().isPrimitive ()) {
-                        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (method);
+                        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (mv);
                         stringBuilder.compileNew ();
                         stringBuilder.compileAppend (expression); // Note: The expression is compiled here!
                         stringBuilder.compileToString ();
@@ -61,13 +61,13 @@ public class StatementNode extends Node {
                         // -> value
 
                         if (!type.equals (String.class)) {
-                            method.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
+                            mv.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
                                     TypeHelper.generateMethodDesc (null, Void.TYPE), false);
                             // T -> String
                         }
                     }
 
-                    method.writeString ();
+                    mv.writeString ();
                     // Writer, value ->
                 }
             }else {

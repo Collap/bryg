@@ -1,39 +1,23 @@
 package io.collap.bryg.compiler.ast.expression.literal;
 
-import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
 
-public class IntegerLiteralExpression extends Expression {
+public class IntegerLiteralExpression extends LiteralExpression {
 
-    private int value;
-
-    public IntegerLiteralExpression (StandardVisitor visitor, BrygParser.IntegerLiteralContext ctx) {
-        super (visitor);
+    public IntegerLiteralExpression (Context context, BrygParser.IntegerLiteralContext ctx) {
+        super (context, ctx.getStart ().getLine ());
         setType (new Type (Integer.TYPE));
-        setLine (ctx.getStart ().getLine ());
 
         value = Integer.parseInt (ctx.Integer ().getText ());
     }
 
-    public IntegerLiteralExpression (StandardVisitor visitor, int value, int line) {
-        super (visitor);
+    public IntegerLiteralExpression (Context context, int value, int line) {
+        super (context, line);
         setType (new Type (Integer.TYPE));
-        setLine (line);
 
         this.value = value;
-    }
-
-    @Override
-    public void compile () {
-        visitor.getMethod ().visitLdcInsn (value);
-        // -> int
-    }
-
-    @Override
-    public Object getConstantValue () {
-        return value;
     }
 
 }

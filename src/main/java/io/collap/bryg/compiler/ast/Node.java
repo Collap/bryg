@@ -1,16 +1,16 @@
 package io.collap.bryg.compiler.ast;
 
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.context.Context;
 
 import java.io.PrintStream;
 
 public abstract class Node {
 
-    protected StandardVisitor visitor;
+    protected Context context;
     private int line = 0;
 
-    protected Node (StandardVisitor visitor) {
-        this.visitor = visitor;
+    protected Node (Context context) {
+        this.context = context;
     }
 
     /**

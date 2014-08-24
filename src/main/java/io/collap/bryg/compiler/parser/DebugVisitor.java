@@ -1,12 +1,10 @@
 package io.collap.bryg.compiler.parser;
 
-import io.collap.bryg.compiler.helper.IdHelper;
-import io.collap.bryg.parser.BrygParserBaseVisitor;
-import io.collap.bryg.parser.BrygLexer;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.parser.BrygParser;
+import io.collap.bryg.parser.BrygParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.omg.CORBA.IDLTypeHelper;
 
 public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
 
@@ -166,9 +164,9 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitIfExpression (@NotNull BrygParser.IfExpressionContext ctx) {
+    public Integer visitIfStatement (@NotNull BrygParser.IfStatementContext ctx) {
         visitAny (ctx);
-        super.visitIfExpression (ctx);
+        super.visitIfStatement (ctx);
         return 0;
     }
 
@@ -187,9 +185,9 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitEachExpression (@NotNull BrygParser.EachExpressionContext ctx) {
+    public Integer visitEachStatement (@NotNull BrygParser.EachStatementContext ctx) {
         visitAny (ctx);
-        super.visitEachExpression (ctx);
+        super.visitEachStatement (ctx);
         return 0;
     }
 
@@ -223,7 +221,7 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
 
     @Override
     public Integer visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
-        visitAny (ctx, IdHelper.idToString (ctx.id ()));
+        visitAny (ctx, IdUtil.idToString (ctx.id ()));
         super.visitFunctionCall (ctx);
         return 0;
     }

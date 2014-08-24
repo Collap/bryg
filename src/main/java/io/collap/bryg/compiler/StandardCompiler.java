@@ -1,18 +1,19 @@
 package io.collap.bryg.compiler;
 
+import io.collap.bryg.Template;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.library.BasicLibrary;
-import io.collap.bryg.compiler.parser.*;
+import io.collap.bryg.compiler.parser.DebugVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
-import io.collap.bryg.exception.InvalidInputParameterException;
-import io.collap.bryg.Template;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -27,9 +28,11 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class StandardCompiler implements Compiler {
 
+    private Configuration configuration;
     private ClassResolver classResolver;
 
-    public StandardCompiler (ClassResolver classResolver) {
+    public StandardCompiler (Configuration configuration, ClassResolver classResolver) {
+        this.configuration = configuration;
         this.classResolver = classResolver;
     }
 
@@ -44,8 +47,7 @@ public class StandardCompiler implements Compiler {
             BrygLexer lexer = new BrygLexer (new ANTLRInputStream (stream));
             CommonTokenStream tokenStream = new CommonTokenStream (lexer);
 
-            boolean printTokens = false;
-            if (printTokens) {
+            if (configuration.shouldPrintTokens ()) {
                 while (true) {
                     Token token = tokenStream.LT (1);
                     if (token.getType () == -1 /* EOF */) break;
@@ -86,9 +88,7 @@ public class StandardCompiler implements Compiler {
 
         if (startContext == null) return null;
 
-        // TODO: Add printParseTree as configuration option.
-        boolean printParseTree = false;
-        if (printParseTree) {
+        if (configuration.shouldPrintParseTree ()) {
             DebugVisitor debugVisitor = new DebugVisitor ();
             debugVisitor.visit (startContext);
         }
@@ -98,9 +98,8 @@ public class StandardCompiler implements Compiler {
         long jitStart = System.nanoTime ();
 
         ClassWriter classWriter = new ClassWriter (ClassWriter.COMPUTE_FRAMES);
-        boolean printGeneratedBytecode = false; // TODO: Add as configuration option.
         ClassVisitor parentVisitor;
-        if (printGeneratedBytecode) {
+        if (configuration.shouldPrintBytecode ()) {
             parentVisitor = new TraceClassVisitor (classWriter, new PrintWriter (System.out));
         }else {
             parentVisitor = classWriter;
@@ -131,11 +130,10 @@ public class StandardCompiler implements Compiler {
                     null,
                     new String[] { AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName () });
             {
-                StandardVisitor visitor = new StandardVisitor (render, new BasicLibrary (), classResolver);
-                Node node = visitor.visit (startContext);
+                Context context = new Context (render, new BasicLibrary (), classResolver);
+                Node node = context.getParseTreeVisitor ().visit (startContext);
 
-                boolean printAst = false; // TODO: Add as configuration option.
-                if (printAst) {
+                if (configuration.shouldPrintAst ()) {
                     node.print (System.out, 0);
                 }
 
