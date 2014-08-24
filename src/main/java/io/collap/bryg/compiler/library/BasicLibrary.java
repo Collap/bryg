@@ -10,6 +10,10 @@ public class BasicLibrary implements Library {
     private Map<String, Function> functions = new HashMap<> ();
 
     public BasicLibrary () {
+        /* Special global functions. */
+        setFunction ("discard", new DiscardFunction ());
+
+        /* HMTL functions. */
         new HTMLFunctionCollection (this).register ();
     }
 

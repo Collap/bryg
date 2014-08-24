@@ -13,6 +13,7 @@ import io.collap.bryg.parser.BrygParser;
 import java.io.PrintStream;
 
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.POP;
 
 // TODO: Open new scope.
 
@@ -37,7 +38,7 @@ public class StatementNode extends Node {
         if (child instanceof Expression) {
             Expression expression = (Expression) child;
             Type type = expression.getType ();
-            if (!type.equals (Void.TYPE) && !context.shouldDiscardPrintOutput ()) {
+            if (!type.equals (Void.TYPE)) {
                 BrygMethodVisitor mv = context.getMethodVisitor ();
                 if (expression instanceof StringLiteralExpression) {
                     /* Append String constants to the constant string writer. */
@@ -46,29 +47,38 @@ public class StatementNode extends Node {
                 }else {
                     // TODO: Does not work for double and long!
 
-                    mv.loadWriter ();
-                    // -> Writer
+                    if (!context.shouldDiscardPrintOutput ()) {
+                        mv.loadWriter ();
+                        // -> Writer
 
                     /* Stringify if necessary. */
-                    if (type.getJavaType ().isPrimitive ()) {
-                        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (mv);
-                        stringBuilder.compileNew ();
-                        stringBuilder.compileAppend (expression); // Note: The expression is compiled here!
-                        stringBuilder.compileToString ();
-                        // value -> String
-                    } else {
-                        expression.compile ();
-                        // -> value
+                        if (type.getJavaType ().isPrimitive ()) {
+                            StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (mv);
+                            stringBuilder.compileNew ();
+                            stringBuilder.compileAppend (expression); // Note: The expression is compiled here!
+                            stringBuilder.compileToString ();
+                            // value -> String
+                        } else {
+                            expression.compile ();
+                            // -> value
 
-                        if (!type.equals (String.class)) {
-                            mv.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
-                                    TypeHelper.generateMethodDesc (null, Void.TYPE), false);
-                            // T -> String
+                            if (!type.equals (String.class)) {
+                                mv.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
+                                        TypeHelper.generateMethodDesc (null, Void.TYPE), false);
+                                // T -> String
+                            }
                         }
-                    }
 
-                    mv.writeString ();
-                    // Writer, value ->
+                        mv.writeString ();
+                        // Writer, value ->
+                    }else {
+                        expression.compile ();
+                        // -> T
+
+                        /* Instead of being written, the value needs to be popped. */
+                        mv.visitInsn (POP);
+                        // T ->
+                    }
                 }
             }else {
                 child.compile ();
