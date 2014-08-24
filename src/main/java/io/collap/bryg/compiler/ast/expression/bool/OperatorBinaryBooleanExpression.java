@@ -2,12 +2,12 @@ package io.collap.bryg.compiler.ast.expression.bool;
 
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.expression.Operator;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.util.CoercionUtil;
 import io.collap.bryg.exception.BrygJitException;
+import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import org.objectweb.asm.Label;
 
@@ -17,10 +17,10 @@ import static org.objectweb.asm.Opcodes.*;
 
 public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpression {
 
-    protected Operator operator;
+    protected int operator;
 
     protected OperatorBinaryBooleanExpression (Context context, BrygParser.ExpressionContext left,
-                                               BrygParser.ExpressionContext right, Operator operator) {
+                                               BrygParser.ExpressionContext right, int operator) {
         super (context, left, right);
         this.operator = operator;
     }
@@ -41,24 +41,24 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
         if (operandType.getJavaType ().isPrimitive ()) {
             if (operandType.equals (Integer.TYPE)) {
                 switch (operator) {
-                    case equality:
+                    case BrygLexer.REQ:
                         mv.visitJumpInsn (IF_ICMPNE, nextFalse);
                         break;
-                    case inequality:
+                    case BrygLexer.RNE:
                         mv.visitJumpInsn (IF_ICMPEQ, nextFalse);
                         break;
 
                     /* The relational tests have to test the opposite for a "jump when false" scenario. */
-                    case relational_greater_than:
+                    case BrygLexer.RGT:
                         mv.visitJumpInsn (IF_ICMPLE, nextFalse);
                         break;
-                    case relational_greater_equal:
+                    case BrygLexer.RGE:
                         mv.visitJumpInsn (IF_ICMPLT, nextFalse);
                         break;
-                    case relational_less_than:
+                    case BrygLexer.RLT:
                         mv.visitJumpInsn (IF_ICMPGE, nextFalse);
                         break;
-                    case relational_less_equal:
+                    case BrygLexer.RLE:
                         mv.visitJumpInsn (IF_ICMPGT, nextFalse);
                         break;
 
@@ -82,24 +82,24 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
 
                 switch (operator) {
                     // dcmpg/fcmpg returns 0 if equal.
-                    case equality:
+                    case BrygLexer.REQ:
                         mv.visitJumpInsn (IFNE, nextFalse);
                         break;
-                    case inequality:
+                    case BrygLexer.RNE:
                         mv.visitJumpInsn (IFEQ, nextFalse);
                         break;
 
                     // dcmpg/fcmpg returns -1 if d1 > d2, 1 if d1 < d2.
-                    case relational_greater_than:
+                    case BrygLexer.RGT:
                         mv.visitJumpInsn (IFLE, nextFalse);
                         break;
-                    case relational_greater_equal:
+                    case BrygLexer.RGE:
                         mv.visitJumpInsn (IFLT, nextFalse);
                         break;
-                    case relational_less_than:
+                    case BrygLexer.RLT:
                         mv.visitJumpInsn (IFGE, nextFalse);
                         break;
-                    case relational_less_equal:
+                    case BrygLexer.RLE:
                         mv.visitJumpInsn (IFGT, nextFalse);
                         break;
 
@@ -117,10 +117,10 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
             // Object, Object -> boolean
 
             switch (operator) {
-                case equality:
+                case BrygLexer.REQ:
                     mv.visitJumpInsn (IFEQ, nextFalse); /* equality is false when the result equals 0 (false). */
                     break;
-                case inequality:
+                case BrygLexer.RNE:
                     mv.visitJumpInsn (IFNE, nextFalse); /* inequality is false when the result does not equal 0 (true). */
                     break;
                 default:

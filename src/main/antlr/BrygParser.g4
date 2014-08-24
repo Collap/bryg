@@ -63,9 +63,9 @@ expression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
     |   expression op=('+' | '-') expression                # binaryAddSubExpression
     |   expression op=('<<' | '>>>' | '>>') expression      # binaryShiftExpression
-    |   expression ('<=' | '>=' | '>' | '<') expression     # binaryRelationalExpression
+    |   expression op=('<=' | '>=' | '>' | '<') expression  # binaryRelationalExpression
     |   expression 'is' type                                # binaryIsExpression                // TODO: Implement
-    |   expression ('==' | '!=') expression                 # binaryEqualityExpression
+    |   expression op=('==' | '!=') expression              # binaryEqualityExpression
     |   expression '&' expression                           # binaryBitwiseAndExpression
     |   expression '^' expression                           # binaryBitwiseXorExpression
     |   expression '|' expression                           # binaryBitwiseOrExpression
