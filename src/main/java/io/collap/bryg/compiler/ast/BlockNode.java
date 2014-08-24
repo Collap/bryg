@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.expression.Scope;
+import io.collap.bryg.compiler.scope.Scope;
 import io.collap.bryg.parser.BrygParser;
 import org.antlr.v4.runtime.tree.ParseTree;
 

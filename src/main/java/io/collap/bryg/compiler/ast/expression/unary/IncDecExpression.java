@@ -7,7 +7,7 @@ import io.collap.bryg.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.compiler.ast.expression.arithmetic.BinaryAdditionExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.util.OperationUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;

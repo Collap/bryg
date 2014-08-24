@@ -21,7 +21,7 @@ import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.ast.expression.unary.IncDecExpression;
 import io.collap.bryg.compiler.ast.expression.unary.NegationExpression;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.compiler.util.InterpolationUtil;

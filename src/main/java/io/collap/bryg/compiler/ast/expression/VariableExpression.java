@@ -3,7 +3,7 @@ package io.collap.bryg.compiler.ast.expression;
 import io.collap.bryg.compiler.ast.AccessMode;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;

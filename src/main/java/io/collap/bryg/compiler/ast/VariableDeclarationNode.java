@@ -3,7 +3,7 @@ package io.collap.bryg.compiler.ast;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;

@@ -1,4 +1,4 @@
-package io.collap.bryg.compiler.expression;
+package io.collap.bryg.compiler.scope;
 
 import io.collap.bryg.compiler.type.Type;
 

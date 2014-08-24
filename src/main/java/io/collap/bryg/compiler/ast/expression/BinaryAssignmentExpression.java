@@ -10,7 +10,7 @@ import io.collap.bryg.compiler.ast.expression.shift.BinarySignedRightShiftExpres
 import io.collap.bryg.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
 import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.expression.Variable;
+import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.util.CoercionUtil;
 import io.collap.bryg.compiler.util.IdUtil;
