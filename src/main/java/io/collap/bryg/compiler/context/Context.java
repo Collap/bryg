@@ -10,7 +10,6 @@ import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.model.Model;
 
 import java.io.Writer;
-import java.util.Stack;
 
 public class Context {
 
@@ -30,11 +29,10 @@ public class Context {
     private Scope currentScope = rootScope;
 
     /**
-     * When the stack has at least one element, any print output is discarded.
-     * This is a Stack instead of a boolean, because 'discard' functions can be nested.
-     * The element type has no meaning.
+     * If the counter is greater than 1, any print output is discarded.
+     * This is a counter instead of a boolean, because 'discard' functions can be nested.
      */
-    private Stack<Integer> discardStack = new Stack<> ();
+    private int discardsOpen = 0;
 
     public Context (BrygMethodVisitor methodVisitor, Library library, ClassResolver classResolver) {
         this.parseTreeVisitor = new StandardVisitor ();
@@ -53,15 +51,15 @@ public class Context {
     }
 
     public boolean shouldDiscardPrintOutput () {
-        return !discardStack.isEmpty ();
+        return discardsOpen > 0;
     }
 
     public void pushDiscard () {
-        discardStack.push (0);
+        ++discardsOpen;
     }
 
     public void popDiscard () {
-        discardStack.pop ();
+        --discardsOpen;
     }
 
     public StandardVisitor getParseTreeVisitor () {
