@@ -18,6 +18,7 @@ public class BasicLibrary implements Library {
         return functions.get (name);
     }
 
+    @Override
     public void setFunction (String name, Function function) {
         functions.put (name, function);
     }
