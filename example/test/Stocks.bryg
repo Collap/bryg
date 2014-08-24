@@ -45,9 +45,9 @@ html
           th: change
           th: ratio
       tbody
-        each item in items
+        each item, index in items
           tr(class 'odd', id 'mark:items')
-            td(style 'text-align: center', id 'mark:index') 1
+            td(style 'text-align: center', id 'mark:index') index + 1
             td a(href '/stocks/' + item.symbol, id 'mark:symbol') item.symbol
             td a(href item.url, id 'mark:url') item.name2
             td strong(id 'mark:price') item.price

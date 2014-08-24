@@ -104,7 +104,7 @@ eachExpression
     ;
 
 eachHead
-    :   type? id IN expression
+    :   type? element=id (',' index=id)? IN expression
     ;
 
 block

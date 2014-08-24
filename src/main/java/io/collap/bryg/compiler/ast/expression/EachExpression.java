@@ -24,6 +24,7 @@ public class EachExpression extends Expression {
     private boolean isArray;
     private Variable iterator;
     private Variable element;
+    private Variable index;
     private Expression collectionExpression;
     private Node statementOrBlock;
 
@@ -83,8 +84,14 @@ public class EachExpression extends Expression {
             iterator = new Variable (iteratorType, "", visitor.getRootScope ().calculateNextId (iteratorType));
         }
 
-        String variableName = IdHelper.idToString (headCtx.id ());
+        String variableName = IdHelper.idToString (headCtx.element);
         element = scope.registerVariable (variableName, elementType);
+
+        BrygParser.IdContext indexCtx = headCtx.index;
+        if (indexCtx != null) {
+            String indexName = IdHelper.idToString (indexCtx);
+            index = scope.registerVariable (indexName, new Type (Integer.TYPE));
+        }
 
         BrygParser.StatementOrBlockContext statementOrBlockCtx = ctx.statementOrBlock ();
         if (statementOrBlockCtx != null)  {
@@ -102,6 +109,7 @@ public class EachExpression extends Expression {
         BrygMethodVisitor method = visitor.getMethod ();
 
         if (isArray) {
+            // TODO: Implement
             throw new UnsupportedOperationException ("The each expression is not implemented for arrays yet!");
         }else { /* Iterable. */
             Label conditionLabel = new Label ();
@@ -118,6 +126,16 @@ public class EachExpression extends Expression {
             method.visitVarInsn (ASTORE, iterator.getId ());
             method.visitFrame (F_APPEND, 1, new Object[] { iterator.getType ().getAsmType ().getInternalName () }, 0, null);
             // Iterator ->
+
+            /* Init index variable (if needed). */
+            if (index != null) {
+                // TODO: Do we need to set it to zero? Check the JVM spec!
+                method.visitLdcInsn (0);
+                // -> 0
+
+                method.visitVarInsn (ISTORE, index.getId ());
+                // 0 ->
+            }
 
             /* Jump to the condition. */
             method.visitJumpInsn (GOTO, conditionLabel);
@@ -139,6 +157,12 @@ public class EachExpression extends Expression {
             // T ->
 
             statementOrBlock.compile (); /* Use local. */
+
+            /* Increment index. */
+            if (index != null) {
+                method.visitIincInsn (index.getId (), 1);
+                // int -> int
+            }
 
             method.visitFrame (F_CHOP, 1, null, 0, null); /* Remove local. */
 
