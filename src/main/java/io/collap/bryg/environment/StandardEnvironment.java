@@ -1,6 +1,7 @@
 package io.collap.bryg.environment;
 
 import io.collap.bryg.Template;
+import io.collap.bryg.loader.TemplateClassLoader;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,10 +18,12 @@ public class StandardEnvironment implements Environment {
 
     @Override
     public Template getTemplate (String name) {
-        Template template = templateMap.get (name);
+        String prefixedName = TemplateClassLoader.templateClassPrefix + name;
+
+        Template template = templateMap.get (prefixedName);
 
         if (template == null) {
-            template = loadTemplate (name);
+            template = loadTemplate (prefixedName);
         }
 
         return template;
@@ -29,8 +32,8 @@ public class StandardEnvironment implements Environment {
     /**
      * Also adds the loaded template to the cache.
      */
-    private synchronized Template loadTemplate (String name) {
-        Template template = templateMap.get (name);
+    private synchronized Template loadTemplate (String prefixedName) {
+        Template template = templateMap.get (prefixedName);
 
         /* There could be a case where getTemplate is called with the same name two or more times,
            which would result in the following scenario:
@@ -42,11 +45,11 @@ public class StandardEnvironment implements Environment {
         if (template == null) {
             try {
                 System.out.println ();
-                System.out.println ("Template: " + name);
+                System.out.println ("Template: " + prefixedName);
                 long start = System.nanoTime ();
-                Class<? extends Template> cl = (Class<? extends Template>) templateClassLoader.loadClass (name);
+                Class<? extends Template> cl = (Class<? extends Template>) templateClassLoader.loadClass (prefixedName);
                 template = cl.newInstance ();
-                templateMap.put (name, template);
+                templateMap.put (prefixedName, template);
                 System.out.println ("Loading took " + ((System.nanoTime () - start) / 1.0e9) + "s.");
                 System.out.println ();
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
