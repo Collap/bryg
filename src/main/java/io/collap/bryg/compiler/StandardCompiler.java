@@ -2,6 +2,7 @@ package io.collap.bryg.compiler;
 
 import io.collap.bryg.Template;
 import io.collap.bryg.compiler.ast.Node;
+import io.collap.bryg.compiler.ast.RootNode;
 import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
@@ -11,6 +12,7 @@ import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.exception.InvalidInputParameterException;
+import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
@@ -31,11 +33,21 @@ public class StandardCompiler implements Compiler {
     private Configuration configuration;
     private Library library;
     private ClassResolver classResolver;
+    private GlobalVariableModel globalVariableModel;
 
+    /**
+     * Creates a StandardCompiler with an empty GlobalVariableModel.
+     */
     public StandardCompiler (Configuration configuration, Library library, ClassResolver classResolver) {
+        this (configuration, library, classResolver, new GlobalVariableModel ());
+    }
+
+    public StandardCompiler (Configuration configuration, Library library, ClassResolver classResolver,
+                             GlobalVariableModel globalVariableModel) {
         this.configuration = configuration;
         this.library = library;
         this.classResolver = classResolver;
+        this.globalVariableModel = globalVariableModel;
     }
 
     @Override
@@ -132,11 +144,15 @@ public class StandardCompiler implements Compiler {
                     null,
                     new String[] { AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName () });
             {
-                Context context = new Context (render, library, classResolver);
+                Context context = new Context (render, library, classResolver, globalVariableModel);
                 Node node = context.getParseTreeVisitor ().visit (startContext);
 
                 if (configuration.shouldPrintAst ()) {
                     node.print (System.out, 0);
+                }
+
+                if (node instanceof RootNode) {
+                    ((RootNode) node).addGlobalVariableInDeclarations (context.getRootScope ());
                 }
 
                 node.compile ();

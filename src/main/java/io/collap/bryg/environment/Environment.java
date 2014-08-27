@@ -1,6 +1,7 @@
 package io.collap.bryg.environment;
 
 import io.collap.bryg.Template;
+import io.collap.bryg.model.Model;
 
 /**
  * An implementation of Environment <b>must</b> be thread-safe. It must also be guaranteed that any SourceLoader or
@@ -10,5 +11,15 @@ import io.collap.bryg.Template;
 public interface Environment {
 
     public Template getTemplate (String name);
+
+    /**
+     * The common model holds variables that are defined in all models created with createModel ().
+     */
+    public Model getCommonModel ();
+
+    /**
+     * Creates a new Model that includes the variables defined in the common model.
+     */
+    public Model createModel ();
 
 }

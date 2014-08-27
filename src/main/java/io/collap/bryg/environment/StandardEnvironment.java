@@ -2,6 +2,8 @@ package io.collap.bryg.environment;
 
 import io.collap.bryg.Template;
 import io.collap.bryg.loader.TemplateClassLoader;
+import io.collap.bryg.model.BasicModel;
+import io.collap.bryg.model.Model;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,11 +11,17 @@ import java.util.Map;
 
 public class StandardEnvironment implements Environment {
 
+    private Model commonModel;
     private Map<String, Template> templateMap = Collections.synchronizedMap (new HashMap<String, Template> ());
-    private ClassLoader templateClassLoader;
+    private TemplateClassLoader templateClassLoader;
 
-    public StandardEnvironment (ClassLoader templateClassLoader) {
+    public StandardEnvironment (TemplateClassLoader templateClassLoader) {
+        this (templateClassLoader, new BasicModel ());
+    }
+
+    public StandardEnvironment (TemplateClassLoader templateClassLoader, Model commonModel) {
         this.templateClassLoader = templateClassLoader;
+        this.commonModel = commonModel;
     }
 
     @Override
@@ -58,6 +66,16 @@ public class StandardEnvironment implements Environment {
         }
 
         return template;
+    }
+
+    @Override
+    public Model getCommonModel () {
+        return commonModel;
+    }
+
+    @Override
+    public Model createModel () {
+        return new BasicModel (commonModel);
     }
 
 }

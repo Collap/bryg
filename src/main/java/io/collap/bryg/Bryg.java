@@ -15,6 +15,7 @@ import io.collap.bryg.loader.FileSourceLoader;
 import io.collap.bryg.loader.SourceLoader;
 import io.collap.bryg.loader.TemplateClassLoader;
 import io.collap.bryg.model.BasicModel;
+import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;
 
 import java.io.File;
@@ -33,8 +34,10 @@ public class Bryg {
         classResolver.getRootPackageFilter ().addSubpackageFilter ("io.collap.bryg.example");
         classResolver.resolveClassNames ();
         Library library = new BasicLibrary ();
-        io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, library, classResolver);
-        Environment environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader));
+        GlobalVariableModel commonModel = new GlobalVariableModel ();
+        commonModel.declareVariable ("testObject", TestObject.class, new TestObject ());
+        io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, library, classResolver, commonModel);
+        Environment environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader), commonModel);
 
         /* Pre-compile templates. */
         environment.getTemplate ("test.MethodCall");
@@ -52,7 +55,7 @@ public class Bryg {
         /* test.MethodCall */
         if (true) {
             Template template = environment.getTemplate ("test.MethodCall");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             model.setVariable ("obj", new TestObject ());
             benchmarkTemplate (template, model);
         }
@@ -60,7 +63,7 @@ public class Bryg {
         /* test.Simple */
         if (true) {
             Template template = environment.getTemplate ("test.Simple");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             model.setVariable ("test", "Hello Bryg!");
             model.setVariable ("number", 42);
             model.setVariable ("object", new TestObject ());
@@ -70,7 +73,7 @@ public class Bryg {
         /* test.Parameters */
         if (true) {
             Template template = environment.getTemplate ("test.Parameters");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             model.setVariable ("z", true);
             model.setVariable ("c", 'H');
             model.setVariable ("b", (byte) 42);
@@ -85,7 +88,7 @@ public class Bryg {
         /* test.Each */
         if (true) {
             Template template = environment.getTemplate ("test.Each");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             List<String> names = new ArrayList<> ();
             names.add ("Robert");
             names.add ("Dany");
@@ -97,7 +100,7 @@ public class Bryg {
         /* post.Edit */
         if (true) {
             Template template = environment.getTemplate ("post.Edit");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             Post post = new Post ();
             post.setId (1);
             post.setTitle ("Test Post");
@@ -115,7 +118,7 @@ public class Bryg {
         /* test.Item */
         if (true) {
             Template template = environment.getTemplate ("test.Item");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             model.setVariable ("id", 12345);
             benchmarkTemplate (template, model);
         }
@@ -123,7 +126,7 @@ public class Bryg {
         /* test.Stocks */
         if (true) {
             Template template = environment.getTemplate ("test.Stocks");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             model.setVariable ("items", Stock.dummyItems ());
             benchmarkTemplate (template, model);
         }
@@ -131,7 +134,7 @@ public class Bryg {
         /* test.GetSet */
         if (true) {
             Template template = environment.getTemplate ("test.GetSet");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             Post post = new Post ();
             post.setContent ("Hello Alice");
             model.setVariable ("post", post);
@@ -141,7 +144,7 @@ public class Bryg {
         /* test.While */
         if (true) {
             Template template = environment.getTemplate ("test.While");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             model.setVariable ("iterations", 10);
             benchmarkTemplate (template, model);
         }
@@ -149,7 +152,7 @@ public class Bryg {
         /* test.Operations */
         if (true) {
             Template template = environment.getTemplate ("test.Operations");
-            Model model = new BasicModel ();
+            Model model = environment.createModel ();
             model.setVariable ("a", 15);
             model.setVariable ("b", -5);
             benchmarkTemplate (template, model);

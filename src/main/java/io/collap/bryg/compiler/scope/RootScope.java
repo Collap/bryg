@@ -1,20 +1,48 @@
 package io.collap.bryg.compiler.scope;
 
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.model.GlobalVariableModel;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RootScope extends Scope {
 
+    private GlobalVariableModel globalVariableModel;
+    private Set<String> globalVariablesUsed = new HashSet<> ();
+
     private int nextId = 0;
 
-    public RootScope () {
+    public RootScope (GlobalVariableModel globalVariableModel) {
         super (null);
+        this.globalVariableModel = globalVariableModel;
     }
 
     @Override
     public Variable getVariable (String name) {
-        return variables.get (name);
+        Variable variable = variables.get (name);
+        if (variable == null) {
+            GlobalVariableModel.GlobalVariable globalVariable = globalVariableModel.getDeclaredVariable (name);
+            if (globalVariable != null) {
+                Type type = new Type (globalVariable.getType ());
+                variable = new Variable (type, name, calculateNextId (type));
+                variables.put (name, variable);
+                globalVariablesUsed.add (name);
+            }
+        }
+
+        return variable;
+    }
+
+    @Override
+    public Variable registerVariable (String name, Type type) {
+        /* Remove flag if global variable is overshadowed. */
+        if (globalVariablesUsed.contains (name)) {
+            globalVariablesUsed.remove (name);
+        }
+
+        return super.registerVariable (name, type);
     }
 
     @Override
@@ -34,6 +62,14 @@ public class RootScope extends Scope {
         }
 
         return id;
+    }
+
+    public GlobalVariableModel getGlobalVariableModel () {
+        return globalVariableModel;
+    }
+
+    public Set<String> getGlobalVariablesUsed () {
+        return globalVariablesUsed;
     }
 
 }

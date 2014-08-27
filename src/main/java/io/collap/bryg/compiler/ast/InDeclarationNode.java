@@ -20,13 +20,23 @@ public class InDeclarationNode extends Node {
     private Variable model;
 
     public InDeclarationNode (Context context, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
+        this (
+                context,
+                IdUtil.idToString (ctx.id ()),
+                new TypeInterpreter (context.getClassResolver ()).interpretType (ctx.type ()),
+                ctx.getStart ().getLine ()
+        );
+    }
+
+    public InDeclarationNode (Context context, String name, Type type, int line) {
+        this (context, context.getCurrentScope ().registerVariable (name, type), line);
+    }
+
+    public InDeclarationNode (Context context, Variable parameter, int line) {
         super (context);
-        setLine (ctx.getStart ().getLine ());
+        setLine (line);
 
-        String name = IdUtil.idToString (ctx.id ());
-
-        TypeInterpreter interpreter = new TypeInterpreter (context.getClassResolver ());
-        parameter = context.getCurrentScope ().registerVariable (name, interpreter.interpretType (ctx.type ()));
+        this.parameter = parameter;
         model = context.getCurrentScope ().getVariable ("model");
     }
 

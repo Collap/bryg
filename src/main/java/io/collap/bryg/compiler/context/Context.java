@@ -7,6 +7,7 @@ import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;
 
 import java.io.Writer;
@@ -15,9 +16,10 @@ public class Context {
 
     private StandardVisitor parseTreeVisitor;
     private BrygMethodVisitor methodVisitor;
-    private Scope rootScope = new RootScope ();
+    private RootScope rootScope;
     private Library library;
     private ClassResolver classResolver;
+    private GlobalVariableModel globalVariableModel;
 
     //
     //  Compiler states
@@ -26,7 +28,7 @@ public class Context {
     /**
      * The current scope is the scope each node resides in at its creation.
      */
-    private Scope currentScope = rootScope;
+    private Scope currentScope;
 
     /**
      * If the counter is greater than 1, any print output is discarded.
@@ -34,11 +36,15 @@ public class Context {
      */
     private int discardsOpen = 0;
 
-    public Context (BrygMethodVisitor methodVisitor, Library library, ClassResolver classResolver) {
+    public Context (BrygMethodVisitor methodVisitor, Library library, ClassResolver classResolver,
+                    GlobalVariableModel globalVariableModel) {
         this.parseTreeVisitor = new StandardVisitor ();
         this.methodVisitor = methodVisitor;
         this.library = library;
         this.classResolver = classResolver;
+        this.globalVariableModel = globalVariableModel;
+        rootScope = new RootScope (globalVariableModel);
+        currentScope = rootScope;
 
         /* Register parameters in the correct order. */
         rootScope.registerVariable ("this", null); // TODO: Proper type.
@@ -70,7 +76,7 @@ public class Context {
         return methodVisitor;
     }
 
-    public Scope getRootScope () {
+    public RootScope getRootScope () {
         return rootScope;
     }
 
@@ -88,6 +94,10 @@ public class Context {
 
     public void setCurrentScope (Scope currentScope) {
         this.currentScope = currentScope;
+    }
+
+    public GlobalVariableModel getGlobalVariableModel () {
+        return globalVariableModel;
     }
 
 }
