@@ -3,6 +3,7 @@ package io.collap.bryg;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.Model;
 
+import javax.annotation.Nullable;
 import java.io.Writer;
 
 /**
@@ -12,10 +13,11 @@ import java.io.Writer;
 public interface Template {
 
     /**
+     * @param model May be null if no parameters are expected.
      * @throws InvalidInputParameterException Thrown when the Model does not contain a variable.
      * @throws java.lang.ClassCastException Thrown when the supplied variable in the Model has a type that can not be
      *                                      casted to the expected type.
      */
-    public void render (Writer writer, Model model) throws InvalidInputParameterException, ClassCastException;
+    public void render (Writer writer, @Nullable Model model) throws InvalidInputParameterException, ClassCastException;
 
 }
