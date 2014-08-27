@@ -10,9 +10,9 @@ import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class InDeclarationNode extends Node {
 

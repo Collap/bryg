@@ -18,14 +18,14 @@ import io.collap.bryg.parser.BrygParser;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.util.TraceClassVisitor;
+import bryg.org.objectweb.asm.ClassVisitor;
+import bryg.org.objectweb.asm.ClassWriter;
+import bryg.org.objectweb.asm.MethodVisitor;
+import bryg.org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.*;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class StandardCompiler implements Compiler {
 

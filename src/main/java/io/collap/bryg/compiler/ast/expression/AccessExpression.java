@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class AccessExpression extends Expression {
 

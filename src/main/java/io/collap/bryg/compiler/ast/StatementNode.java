@@ -12,8 +12,8 @@ import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
 
-import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
-import static org.objectweb.asm.Opcodes.POP;
+import static bryg.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static bryg.org.objectweb.asm.Opcodes.POP;
 
 // TODO: Open new scope.
 

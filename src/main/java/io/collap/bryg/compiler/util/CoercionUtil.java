@@ -7,7 +7,7 @@ import io.collap.bryg.exception.BrygJitException;
 
 import javax.annotation.Nullable;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class CoercionUtil {
 

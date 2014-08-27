@@ -4,11 +4,11 @@ import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 
-import static org.objectweb.asm.Opcodes.GOTO;
+import static bryg.org.objectweb.asm.Opcodes.GOTO;
 
 public abstract class BooleanExpression extends Expression {
 

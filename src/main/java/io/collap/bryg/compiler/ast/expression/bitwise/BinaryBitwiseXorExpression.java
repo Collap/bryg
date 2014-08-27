@@ -3,7 +3,7 @@ package io.collap.bryg.compiler.ast.expression.bitwise;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Opcodes;
+import bryg.org.objectweb.asm.Opcodes;
 
 public class BinaryBitwiseXorExpression extends BinaryBitwiseExpression {
 

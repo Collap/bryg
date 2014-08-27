@@ -3,8 +3,8 @@ package io.collap.bryg.compiler.util;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.type.Type;
 
-import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.DUP2;
+import static bryg.org.objectweb.asm.Opcodes.DUP;
+import static bryg.org.objectweb.asm.Opcodes.DUP2;
 
 public class OperationUtil {
 

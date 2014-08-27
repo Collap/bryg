@@ -8,11 +8,11 @@ import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
 import java.io.PrintStream;
 
-import static org.objectweb.asm.Opcodes.GOTO;
+import static bryg.org.objectweb.asm.Opcodes.GOTO;
 
 public class IfStatement extends Node {
 

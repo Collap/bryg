@@ -8,8 +8,8 @@ import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
-import static org.objectweb.asm.Opcodes.ILOAD;
-import static org.objectweb.asm.Opcodes.ISTORE;
+import static bryg.org.objectweb.asm.Opcodes.ILOAD;
+import static bryg.org.objectweb.asm.Opcodes.ISTORE;
 
 public class VariableExpression extends Expression {
 

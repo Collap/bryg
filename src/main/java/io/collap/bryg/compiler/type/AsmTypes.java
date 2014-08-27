@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler.type;
 
-import org.objectweb.asm.Type;
+import bryg.org.objectweb.asm.Type;
 
 import java.util.HashMap;
 import java.util.Map;

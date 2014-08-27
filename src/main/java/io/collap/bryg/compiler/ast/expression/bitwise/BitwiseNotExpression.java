@@ -6,7 +6,7 @@ import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
-import static org.objectweb.asm.Opcodes.IXOR;
+import static bryg.org.objectweb.asm.Opcodes.IXOR;
 
 // TODO: Promote byte and short?
 

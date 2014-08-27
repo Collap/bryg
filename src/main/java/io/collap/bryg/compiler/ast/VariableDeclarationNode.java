@@ -10,7 +10,7 @@ import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
-import static org.objectweb.asm.Opcodes.ISTORE;
+import static bryg.org.objectweb.asm.Opcodes.ISTORE;
 
 public class VariableDeclarationNode extends Node {
 
@@ -69,7 +69,7 @@ public class VariableDeclarationNode extends Node {
             expression.compile ();
             // -> value
 
-            org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
+            bryg.org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
             mv.visitVarInsn (asmType.getOpcode (ISTORE), variable.getId ());
             // T ->
         }else {

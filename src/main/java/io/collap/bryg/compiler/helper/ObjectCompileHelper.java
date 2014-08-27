@@ -7,7 +7,7 @@ import io.collap.bryg.compiler.type.Type;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public abstract class ObjectCompileHelper extends CompileHelper {
 

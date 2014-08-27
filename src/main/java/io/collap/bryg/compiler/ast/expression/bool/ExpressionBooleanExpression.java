@@ -4,11 +4,11 @@ import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 
-import static org.objectweb.asm.Opcodes.IFEQ;
+import static bryg.org.objectweb.asm.Opcodes.IFEQ;
 
 /**
  * This boolean expression evaluates an arbitrary expression, which must return a boolean, but is not required to be a

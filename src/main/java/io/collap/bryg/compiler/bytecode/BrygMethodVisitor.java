@@ -1,9 +1,9 @@
 package io.collap.bryg.compiler.bytecode;
 
 import io.collap.bryg.compiler.context.Context;
-import org.objectweb.asm.*;
+import bryg.org.objectweb.asm.*;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 /**
  * This class assumes the following parameters to the method:

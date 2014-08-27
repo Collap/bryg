@@ -13,13 +13,13 @@ import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class EachStatement extends Node {
 

@@ -9,11 +9,11 @@ import io.collap.bryg.compiler.util.CoercionUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 
-import static org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpression {
 

@@ -5,7 +5,7 @@ import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Opcodes;
+import bryg.org.objectweb.asm.Opcodes;
 
 public class BinaryAdditionExpression extends BinaryArithmeticExpression {
 

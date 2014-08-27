@@ -6,7 +6,7 @@ import java.util.List;
 public class Type {
 
     private Class<?> javaType;
-    private org.objectweb.asm.Type asmType;
+    private bryg.org.objectweb.asm.Type asmType;
     private List<Type> genericTypes; /* Lazily loaded. */
 
     public Type (Class<?> javaType) {
@@ -18,7 +18,7 @@ public class Type {
         return javaType;
     }
 
-    public org.objectweb.asm.Type getAsmType () {
+    public bryg.org.objectweb.asm.Type getAsmType () {
         return asmType;
     }
 

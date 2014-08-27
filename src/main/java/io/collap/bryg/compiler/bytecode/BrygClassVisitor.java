@@ -1,8 +1,8 @@
 package io.collap.bryg.compiler.bytecode;
 
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import bryg.org.objectweb.asm.ClassVisitor;
+import bryg.org.objectweb.asm.MethodVisitor;
+import bryg.org.objectweb.asm.Opcodes;
 
 public class BrygClassVisitor extends ClassVisitor {
 

@@ -5,11 +5,11 @@ import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 
-import static org.objectweb.asm.Opcodes.IFNE;
+import static bryg.org.objectweb.asm.Opcodes.IFNE;
 
 public class LogicalNotBooleanExpression extends BooleanExpression {
 

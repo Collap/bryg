@@ -2,7 +2,7 @@ package io.collap.bryg.compiler.ast.expression.bool;
 
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.parser.BrygParser;
-import org.objectweb.asm.Label;
+import bryg.org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 
