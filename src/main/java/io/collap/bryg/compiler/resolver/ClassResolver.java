@@ -22,6 +22,22 @@ public class ClassResolver {
     private List<Filter> filters = new ArrayList<Filter> () {{ add (rootPackageFilter); }};
     private List<String> includedJarFiles = new ArrayList<> ();
 
+    private ClassNameFinder finder = new ClassNameFinder (new ClassNameVisitor () {
+        @Override
+        public void visit (String fullName) {
+                /* Exclude inner classes and anonymous classes. */
+            if (fullName.indexOf ('$') >= 0) {
+                return;
+            }
+
+            if (isClassImported (fullName)) {
+                int lastDot = fullName.lastIndexOf ('.');
+                String simpleName = fullName.substring (lastDot + 1);
+                setResolvedClass (simpleName, fullName);
+            }
+        }
+    }, includedJarFiles);
+
     /**
      * This constructor adds package filters for:
      *   - java.lang
@@ -91,24 +107,7 @@ public class ClassResolver {
 
     public void resolveClassNames () {
         long time = System.nanoTime ();
-
-        ClassNameFinder finder = new ClassNameFinder (new ClassNameVisitor () {
-            @Override
-            public void visit (String fullName) {
-                /* Exclude inner classes and anonymous classes. */
-                if (fullName.indexOf ('$') >= 0) {
-                    return;
-                }
-
-                if (isClassImported (fullName)) {
-                    int lastDot = fullName.lastIndexOf ('.');
-                    String simpleName = fullName.substring (lastDot + 1);
-                    setResolvedClass (simpleName, fullName);
-                }
-            }
-        }, includedJarFiles);
         finder.crawl ();
-
         System.out.println ("Resolving all classes took " + ((System.nanoTime () - time) / 1.0e9) + "s.");
     }
 
@@ -136,6 +135,10 @@ public class ClassResolver {
 
     public List<String> getIncludedJarFiles () {
         return includedJarFiles;
+    }
+
+    public ClassNameFinder getFinder () {
+        return finder;
     }
 
 }
