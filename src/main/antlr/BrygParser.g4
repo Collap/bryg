@@ -53,7 +53,7 @@ expression
     :   literal                                             # literalExpression
     |   '(' expression ')'                                  # expressionPrecedenceOrder
     |   expression '.' id                                   # accessExpression
-    |   expression '.' functionCall                         # functionCallAccessExpression      // TODO: Implement
+    |   expression '.' functionCall                         # methodCallExpression
     |   functionCall                                        # functionCallExpression
     |   variable                                            # variableExpression
     |   '(' type ')' expression                             # castExpression

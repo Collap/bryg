@@ -1,0 +1,3 @@
+in TestObject obj
+
+obj.testString (10)

@@ -8,4 +8,12 @@ public class TestObject {
         return name;
     }
 
+    public String testString (int n) {
+        String str = "";
+        for (int i = 0; i < n; ++i) {
+            str += "test;";
+        }
+        return str;
+    }
+
 }

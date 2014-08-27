@@ -130,6 +130,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitMethodCallExpression (@NotNull BrygParser.MethodCallExpressionContext ctx) {
+        return new MethodCallExpression (context, ctx);
+    }
+
+    @Override
     public Node visitBinaryAssignmentExpression (@NotNull BrygParser.BinaryAssignmentExpressionContext ctx) {
         return new BinaryAssignmentExpression (context, ctx);
     }

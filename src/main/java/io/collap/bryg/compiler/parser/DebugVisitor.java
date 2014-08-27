@@ -171,6 +171,13 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
+    public Integer visitMethodCallExpression (@NotNull BrygParser.MethodCallExpressionContext ctx) {
+        visitAny (ctx);
+        super.visitMethodCallExpression (ctx);
+        return 0;
+    }
+
+    @Override
     public Integer visitBlock (@NotNull BrygParser.BlockContext ctx) {
         visitAny (ctx);
         super.visitBlock (ctx);

@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 public class ArgumentExpression extends Expression {
@@ -18,6 +19,11 @@ public class ArgumentExpression extends Expression {
         }
 
         expression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
+
+        if (expression.getType ().equals (Void.TYPE)) {
+            throw new BrygJitException ("An argument expression must not return void.", getLine ());
+        }
+
         setType (expression.getType ());
     }
 
