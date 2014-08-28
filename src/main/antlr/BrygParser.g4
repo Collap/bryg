@@ -19,7 +19,7 @@ start
     ;
 
 inDeclaration
-    :   IN type id
+    :   qualifier=(IN | OPT) type id
         NEWLINE
     ;
 
@@ -66,6 +66,7 @@ expression
     |   expression op=('<=' | '>=' | '>' | '<') expression  # binaryRelationalExpression
     |   expression 'is' type                                # binaryIsExpression                // TODO: Implement
     |   expression op=('==' | '!=') expression              # binaryEqualityExpression
+    |   expression op=('===' | '!==') expression            # binaryReferenceEqualityExpression
     |   expression '&' expression                           # binaryBitwiseAndExpression
     |   expression '^' expression                           # binaryBitwiseXorExpression
     |   expression '|' expression                           # binaryBitwiseOrExpression
@@ -168,6 +169,7 @@ literal
     |   Integer     # integerLiteral
     |   Double      # doubleLiteral
     |   Float       # floatLiteral
+    |   NULL        # nullLiteral
     ;
 
 type
@@ -183,11 +185,15 @@ id
         |   AND
         |   OR
         |   IN
+        |   OPT
+        |   IS
         |   EACH
+        |   WHILE
         |   ELSE
         |   IF
         |   MUT
         |   VAL
+        |   NULL
         )
         '`'
     ;

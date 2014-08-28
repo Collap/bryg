@@ -30,7 +30,7 @@ public class RootNode extends InnerNode {
 
     public void addGlobalVariableInDeclarations (RootScope scope) {
         for (String globalVariableName : scope.getGlobalVariablesUsed ()) {
-            inDeclarations.add (new InDeclarationNode (context, scope.getVariable (globalVariableName), -1));
+            inDeclarations.add (new InDeclarationNode (context, scope.getVariable (globalVariableName), false, -1));
         }
     }
 

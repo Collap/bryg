@@ -1,0 +1,20 @@
+opt Object a
+opt Object b
+
+if a === b
+  p: 'a' and 'b' are equal by reference
+
+if a !== b
+  p: 'a' and 'b' are not equal by reference
+
+if a === null
+  p: 'a' is null
+
+if a !== null
+  p: 'a' is not null
+
+if b === null
+  p: 'b' is null
+
+if b !== null
+  p: 'b' is not null

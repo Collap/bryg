@@ -8,7 +8,9 @@ import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.exception.InvalidInputParameterException;
+import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import bryg.org.objectweb.asm.Label;
 
@@ -19,32 +21,44 @@ public class InDeclarationNode extends Node {
     private Variable parameter;
     private Variable model;
 
+    /**
+     * An optional input parameter may be null.
+     */
+    private boolean optional;
+
     public InDeclarationNode (Context context, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
         this (
                 context,
                 IdUtil.idToString (ctx.id ()),
                 new TypeInterpreter (context.getClassResolver ()).interpretType (ctx.type ()),
+                ctx.qualifier.getType () == BrygLexer.OPT,
                 ctx.getStart ().getLine ()
         );
     }
 
-    public InDeclarationNode (Context context, String name, Type type, int line) {
-        this (context, context.getCurrentScope ().registerVariable (name, type), line);
+    public InDeclarationNode (Context context, String name, Type type, boolean optional, int line) {
+        this (context, context.getCurrentScope ().registerVariable (name, type), optional, line);
     }
 
-    public InDeclarationNode (Context context, Variable parameter, int line) {
+    public InDeclarationNode (Context context, Variable parameter, boolean optional, int line) {
         super (context);
         setLine (line);
 
+        this.optional = optional;
         this.parameter = parameter;
         model = context.getCurrentScope ().getVariable ("model");
+
+        /* A primitive may not be optional. */
+        if (optional && parameter.getType ().getJavaType ().isPrimitive ()) {
+            throw new BrygJitException ("A primitive input parameter may not be optional.", getLine ());
+        }
     }
 
     @Override
     public void compile () {
         /* Get, check, cast and store variable. */
         loadVariable ();
-        ifNullThrowException ();
+        if (!optional) ifNullThrowException ();
         castAndStore ();
     }
 

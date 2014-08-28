@@ -6,14 +6,13 @@ import io.collap.bryg.compiler.ast.control.IfStatement;
 import io.collap.bryg.compiler.ast.control.WhileStatement;
 import io.collap.bryg.compiler.ast.expression.*;
 import io.collap.bryg.compiler.ast.expression.arithmetic.*;
-import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseAndExpression;
-import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseOrExpression;
-import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseXorExpression;
-import io.collap.bryg.compiler.ast.expression.bitwise.BitwiseNotExpression;
+import io.collap.bryg.compiler.ast.expression.bitwise.*;
 import io.collap.bryg.compiler.ast.expression.bool.*;
 import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
 import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.literal.ObjectLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.shift.BinaryShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedLeftShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
@@ -150,12 +149,12 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitEachStatement (@NotNull BrygParser.EachStatementContext ctx) {
+    public EachStatement visitEachStatement (@NotNull BrygParser.EachStatementContext ctx) {
         return new EachStatement (context, ctx);
     }
 
     @Override
-    public Node visitWhileStatement (@NotNull BrygParser.WhileStatementContext ctx) {
+    public WhileStatement visitWhileStatement (@NotNull BrygParser.WhileStatementContext ctx) {
         return new WhileStatement (context, ctx);
     }
 
@@ -207,13 +206,18 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitBinaryLogicalAndExpression (@NotNull BrygParser.BinaryLogicalAndExpressionContext ctx) {
+    public LogicalAndBinaryBooleanExpression visitBinaryLogicalAndExpression (@NotNull BrygParser.BinaryLogicalAndExpressionContext ctx) {
         return new LogicalAndBinaryBooleanExpression (context, ctx);
     }
 
     @Override
-    public Node visitBinaryLogicalOrExpression (@NotNull BrygParser.BinaryLogicalOrExpressionContext ctx) {
+    public LogicalOrBinaryBooleanExpression visitBinaryLogicalOrExpression (@NotNull BrygParser.BinaryLogicalOrExpressionContext ctx) {
         return new LogicalOrBinaryBooleanExpression (context, ctx);
+    }
+
+    @Override
+    public Node visitBinaryReferenceEqualityExpression (@NotNull BrygParser.BinaryReferenceEqualityExpressionContext ctx) {
+        return new ReferenceEqualityExpression (context, ctx);
     }
 
 
@@ -222,12 +226,12 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     //
 
     @Override
-    public Node visitCastExpression (@NotNull BrygParser.CastExpressionContext ctx) {
+    public CastExpression visitCastExpression (@NotNull BrygParser.CastExpressionContext ctx) {
         return new CastExpression (context, ctx);
     }
 
     @Override
-    public Node visitUnaryPostfixExpression (@NotNull BrygParser.UnaryPostfixExpressionContext ctx) {
+    public IncDecExpression visitUnaryPostfixExpression (@NotNull BrygParser.UnaryPostfixExpressionContext ctx) {
         final int op = ctx.op.getType ();
         final int line = ctx.getStart ().getLine ();
         return new IncDecExpression (context, ctx.expression (), op == BrygLexer.INC, false, line);
@@ -248,7 +252,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitUnaryOperationExpression (@NotNull BrygParser.UnaryOperationExpressionContext ctx) {
+    public Expression visitUnaryOperationExpression (@NotNull BrygParser.UnaryOperationExpressionContext ctx) {
         final int op = ctx.op.getType ();
         if (op == BrygLexer.BNOT) {
             return new BitwiseNotExpression (context, ctx.expression ());
@@ -263,17 +267,17 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     //
 
     @Override
-    public Node visitBinaryBitwiseAndExpression (@NotNull BrygParser.BinaryBitwiseAndExpressionContext ctx) {
+    public BinaryBitwiseAndExpression visitBinaryBitwiseAndExpression (@NotNull BrygParser.BinaryBitwiseAndExpressionContext ctx) {
         return new BinaryBitwiseAndExpression (context, ctx);
     }
 
     @Override
-    public Node visitBinaryBitwiseXorExpression (@NotNull BrygParser.BinaryBitwiseXorExpressionContext ctx) {
+    public BinaryBitwiseXorExpression visitBinaryBitwiseXorExpression (@NotNull BrygParser.BinaryBitwiseXorExpressionContext ctx) {
         return new BinaryBitwiseXorExpression (context, ctx);
     }
 
     @Override
-    public Node visitBinaryBitwiseOrExpression (@NotNull BrygParser.BinaryBitwiseOrExpressionContext ctx) {
+    public BinaryBitwiseOrExpression visitBinaryBitwiseOrExpression (@NotNull BrygParser.BinaryBitwiseOrExpressionContext ctx) {
         return new BinaryBitwiseOrExpression (context, ctx);
     }
 
@@ -283,7 +287,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     //
 
     @Override
-    public Node visitBinaryShiftExpression (@NotNull BrygParser.BinaryShiftExpressionContext ctx) {
+    public BinaryShiftExpression visitBinaryShiftExpression (@NotNull BrygParser.BinaryShiftExpressionContext ctx) {
         int op = ctx.op.getType ();
         if (op == BrygLexer.SIG_LSHIFT) {
             return new BinarySignedLeftShiftExpression (context, ctx);
@@ -300,17 +304,17 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     //
 
     @Override
-    public Expression visitIntegerLiteral (@NotNull BrygParser.IntegerLiteralContext ctx) {
+    public IntegerLiteralExpression visitIntegerLiteral (@NotNull BrygParser.IntegerLiteralContext ctx) {
         return new IntegerLiteralExpression (context, ctx);
     }
 
     @Override
-    public Node visitDoubleLiteral (@NotNull BrygParser.DoubleLiteralContext ctx) {
+    public DoubleLiteralExpression visitDoubleLiteral (@NotNull BrygParser.DoubleLiteralContext ctx) {
         return new DoubleLiteralExpression (context, ctx);
     }
 
     @Override
-    public Node visitFloatLiteral (@NotNull BrygParser.FloatLiteralContext ctx) {
+    public FloatLiteralExpression visitFloatLiteral (@NotNull BrygParser.FloatLiteralContext ctx) {
         return new FloatLiteralExpression (context, ctx);
     }
 
@@ -319,6 +323,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         String text = ctx.getText ();
         int line = ctx.getStart ().getLine ();
         return InterpolationUtil.compileString (context, text, line);
+    }
+
+    @Override
+    public ObjectLiteralExpression visitNullLiteral (@NotNull BrygParser.NullLiteralContext ctx) {
+        return new ObjectLiteralExpression (context, null, ctx.getStart ().getLine ());
     }
 
 }

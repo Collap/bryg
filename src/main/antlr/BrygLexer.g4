@@ -150,6 +150,7 @@ NOT                 : 'not';
 AND                 : 'and';
 OR                  : 'or';
 IN                  : 'in';
+OPT                 : 'opt';
 IS                  : 'is';
 EACH                : 'each';
 WHILE               : 'while';
@@ -157,6 +158,7 @@ ELSE                : 'else';
 IF                  : 'if';
 MUT                 : 'mut';
 VAL                 : 'val';
+NULL                : 'null';
 
 
 
@@ -303,6 +305,8 @@ RLT                 : '<';
 RLE                 : '<=';
 REQ                 : '==';
 RNE                 : '!=';
+REFEQ               : '===';
+REFNE               : '!==';
 
 SIG_LSHIFT          : '<<';
 SIG_RSHIFT          : '>>';

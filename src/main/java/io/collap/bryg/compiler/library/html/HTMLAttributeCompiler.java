@@ -18,8 +18,8 @@ public class HTMLAttributeCompiler {
         @Override
         public int compare (ArgumentExpression o1, ArgumentExpression o2) {
             int result = 0;
-            if (o1.getConstantValue () != null) result -= 1;
-            if (o2.getConstantValue () != null) result += 1;
+            if (o1.isConstant ()) result -= 1;
+            if (o2.isConstant ()) result += 1;
             return result;
         }
 
@@ -52,8 +52,10 @@ public class HTMLAttributeCompiler {
             }
 
             Object constantValue = attribute.getConstantValue ();
-            boolean isEmpty = constantValue != null && constantValue instanceof String
-                                && ((String) constantValue).isEmpty ();
+            boolean isEmpty = attribute.isConstant () &&
+                                (constantValue instanceof String
+                                    && ((String) constantValue).isEmpty ()
+                                || constantValue == null); /* Ignore a 'null' constant. */
 
             method.writeConstantString (" " + name);
 
