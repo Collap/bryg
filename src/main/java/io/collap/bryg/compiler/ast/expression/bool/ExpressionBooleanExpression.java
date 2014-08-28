@@ -20,6 +20,7 @@ public class ExpressionBooleanExpression extends BooleanExpression {
 
     public ExpressionBooleanExpression (Context context, Expression expression) {
         super (context);
+        setLine (expression.getLine ());
         this.expression = expression;
 
         if (!expression.getType ().equals (Boolean.TYPE)) {
