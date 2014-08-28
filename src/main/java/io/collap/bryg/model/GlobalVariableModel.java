@@ -43,7 +43,12 @@ public class GlobalVariableModel implements Model {
 
     @Override
     public Object getVariable (String name) {
-        return variables.get (name).getValue ();
+        GlobalVariable variable = getDeclaredVariable (name);
+        if (variable == null) {
+            return null;
+        }
+
+        return variable.getValue ();
     }
 
     @Override
