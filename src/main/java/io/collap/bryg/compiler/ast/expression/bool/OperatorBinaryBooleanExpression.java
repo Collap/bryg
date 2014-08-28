@@ -128,6 +128,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
             }
         }
 
+        /* Jump to nextTrue label. */
         super.compile (nextFalse, nextTrue, lastExpressionInChain);
     }
 
