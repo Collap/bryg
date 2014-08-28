@@ -7,7 +7,11 @@ import java.io.PrintStream;
 public abstract class Node {
 
     protected Context context;
-    private int line = 0;
+
+    /**
+     * A line of -1 indicates that the line has not been set!
+     */
+    private int line = -1;
 
     protected Node (Context context) {
         this.context = context;
