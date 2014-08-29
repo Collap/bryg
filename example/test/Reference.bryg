@@ -18,3 +18,10 @@ if b === null
 
 if b !== null
   p: 'b' is not null
+
+val flag = a === a
+if flag == true
+  p: Flag is true, like it should be.
+
+if flag == false
+  p: Flag is false, but this should not be.

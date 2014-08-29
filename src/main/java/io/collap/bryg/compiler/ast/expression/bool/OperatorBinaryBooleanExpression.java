@@ -39,7 +39,19 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
         // -> T, T
 
         if (operandType.getJavaType ().isPrimitive ()) {
-            if (operandType.equals (Integer.TYPE)) {
+            if (operandType.equals (Boolean.TYPE)) {
+                switch (operator) {
+                    case BrygLexer.REQ:
+                        mv.visitJumpInsn (IF_ICMPNE, nextFalse);
+                        break;
+                    case BrygLexer.RNE:
+                        mv.visitJumpInsn (IF_ICMPEQ, nextFalse);
+                        break;
+
+                    default:
+                        throw new BrygJitException ("A boolean can only be compared with req (==) and rne (!=).", getLine ());
+                }
+            }else if (operandType.equals (Integer.TYPE)) {
                 switch (operator) {
                     case BrygLexer.REQ:
                         mv.visitJumpInsn (IF_ICMPNE, nextFalse);

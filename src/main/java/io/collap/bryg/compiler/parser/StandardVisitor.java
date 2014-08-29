@@ -8,10 +8,7 @@ import io.collap.bryg.compiler.ast.expression.*;
 import io.collap.bryg.compiler.ast.expression.arithmetic.*;
 import io.collap.bryg.compiler.ast.expression.bitwise.*;
 import io.collap.bryg.compiler.ast.expression.bool.*;
-import io.collap.bryg.compiler.ast.expression.literal.DoubleLiteralExpression;
-import io.collap.bryg.compiler.ast.expression.literal.FloatLiteralExpression;
-import io.collap.bryg.compiler.ast.expression.literal.IntegerLiteralExpression;
-import io.collap.bryg.compiler.ast.expression.literal.ObjectLiteralExpression;
+import io.collap.bryg.compiler.ast.expression.literal.*;
 import io.collap.bryg.compiler.ast.expression.shift.BinaryShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedLeftShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
@@ -328,6 +325,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public ObjectLiteralExpression visitNullLiteral (@NotNull BrygParser.NullLiteralContext ctx) {
         return new ObjectLiteralExpression (context, null, ctx.getStart ().getLine ());
+    }
+
+    @Override
+    public Node visitBooleanLiteral (@NotNull BrygParser.BooleanLiteralContext ctx) {
+        return new BooleanLiteralExpression (context, ctx);
     }
 
 }

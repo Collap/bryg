@@ -159,6 +159,8 @@ IF                  : 'if';
 MUT                 : 'mut';
 VAL                 : 'val';
 NULL                : 'null';
+TRUE                : 'true';
+FALSE               : 'false';
 
 
 

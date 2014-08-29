@@ -165,11 +165,12 @@ argumentId
     ;
 
 literal
-    :   String      # stringLiteral
-    |   Integer     # integerLiteral
-    |   Double      # doubleLiteral
-    |   Float       # floatLiteral
-    |   NULL        # nullLiteral
+    :   String                  # stringLiteral
+    |   Integer                 # integerLiteral
+    |   Double                  # doubleLiteral
+    |   Float                   # floatLiteral
+    |   NULL                    # nullLiteral
+    |   value=(TRUE | FALSE)    # booleanLiteral
     ;
 
 type
@@ -194,6 +195,8 @@ id
         |   MUT
         |   VAL
         |   NULL
+        |   TRUE
+        |   FALSE
         )
         '`'
     ;
