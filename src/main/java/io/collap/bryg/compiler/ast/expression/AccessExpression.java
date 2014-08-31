@@ -51,7 +51,21 @@ public class AccessExpression extends Expression {
                 + " (Type: " + childType + ")", getLine ());
         }
 
-        field = childType.getJavaType ().getDeclaredField (fieldName);
+        /* Get field of this class or superclass. */
+        Class<?> javaType = childType.getJavaType ();
+        boolean successful = false;
+        while (!successful) {
+            try {
+                field = javaType.getDeclaredField (fieldName);
+                successful = true;
+            } catch (NoSuchFieldException ex) {
+                javaType = javaType.getSuperclass ();
+                if (javaType == null) {
+                    throw ex;
+                }
+            }
+        }
+
         if (mode == AccessMode.get) {
             setType (new Type (field.getType ()));
         }else {
