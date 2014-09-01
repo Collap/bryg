@@ -86,7 +86,7 @@ public class BoxingUtil {
     /**
      * Compiles the expression.
      */
-    public static void compileBoxing (BrygMethodVisitor mv, Expression expression, Type primitive, Type box) {
+    public static void compileBoxing (BrygMethodVisitor mv, Expression expression, Type box) {
         String boxTypeName = box.getAsmType ().getInternalName ();
 
         mv.visitTypeInsn (NEW, boxTypeName);
@@ -100,7 +100,7 @@ public class BoxingUtil {
 
         mv.visitMethodInsn (INVOKESPECIAL, boxTypeName, "<init>",
                 TypeHelper.generateMethodDesc (
-                        new Type[] { primitive },
+                        new Type[] { expression.getType () },
                         new Type (Void.TYPE)
                 ),
                 false);
