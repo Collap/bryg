@@ -31,7 +31,7 @@ public class FileSourceLoader implements SourceLoader {
             stream.read (data);
             source = new String (data, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace ();
+            throw new RuntimeException ("Template '" + name + "' not found.", e);
         }
         return source;
     }
