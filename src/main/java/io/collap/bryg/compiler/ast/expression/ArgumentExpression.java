@@ -4,9 +4,12 @@ import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
+import javax.annotation.Nullable;
+
 public class ArgumentExpression extends Expression {
 
-    private String name;
+    private @Nullable String name;
+
     private Expression expression;
 
     public ArgumentExpression (Context context, BrygParser.ArgumentContext ctx) {
@@ -32,7 +35,7 @@ public class ArgumentExpression extends Expression {
         expression.compile ();
     }
 
-    public String getName () {
+    public @Nullable String getName () {
         return name;
     }
 

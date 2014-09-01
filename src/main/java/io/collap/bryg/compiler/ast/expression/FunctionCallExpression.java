@@ -4,10 +4,12 @@ import io.collap.bryg.compiler.ast.BlockNode;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.library.Function;
+import io.collap.bryg.compiler.util.FunctionUtil;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
+import javax.annotation.Nullable;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.List;
 public class FunctionCallExpression extends Expression {
 
     private Function function;
-    private List<ArgumentExpression> argumentExpressions = new ArrayList<> ();
+    private List<ArgumentExpression> argumentExpressions;
     private Node statementOrBlock;
 
     public FunctionCallExpression (Context context, BrygParser.BlockFunctionCallContext ctx) {
@@ -51,6 +53,7 @@ public class FunctionCallExpression extends Expression {
 
         this.function = function;
         statementOrBlock = new BlockNode (context);
+        initArguments (null);
 
         setType (function.getReturnType ());
     }
@@ -64,12 +67,16 @@ public class FunctionCallExpression extends Expression {
         setType (function.getReturnType ());
     }
 
-    private void initArguments (BrygParser.ArgumentListContext argumentListCtx) {
+    /**
+     * Creates a List of ArgumentExpressions and assigns it to 'argumentExpressions'.
+     *
+     * @param argumentListCtx null: Creates an empty list.
+     */
+    private void initArguments (@Nullable BrygParser.ArgumentListContext argumentListCtx) {
         if (argumentListCtx != null) {
-            List<BrygParser.ArgumentContext> argumentContexts = argumentListCtx.argument ();
-            for (BrygParser.ArgumentContext argumentContext : argumentContexts) {
-                argumentExpressions.add (new ArgumentExpression (context, argumentContext));
-            }
+            argumentExpressions = FunctionUtil.parseArgumentList (context, argumentListCtx);
+        }else {
+            argumentExpressions = new ArrayList<> ();
         }
     }
 

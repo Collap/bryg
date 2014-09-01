@@ -3,6 +3,7 @@ package io.collap.bryg.compiler.ast.expression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.util.FunctionUtil;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -16,7 +17,7 @@ import static bryg.org.objectweb.asm.Opcodes.*;
 public class MethodCallExpression extends Expression {
 
     private Expression operandExpression;
-    private List<ArgumentExpression> argumentExpressions = new ArrayList<> ();
+    private List<ArgumentExpression> argumentExpressions;
     private Method method;
 
     public MethodCallExpression (Context context, BrygParser.MethodCallExpressionContext ctx) {
@@ -33,12 +34,12 @@ public class MethodCallExpression extends Expression {
         String methodName = IdUtil.idToString (ctx.functionCall ().id ());
 
         /* Init argument expressions. */
+        argumentExpressions = FunctionUtil.parseArgumentList (context, ctx.functionCall ().argumentList ());
+
+        /* Find out parameter type. */
         List<Class<?>> parameterTypes = new ArrayList<> ();
-        List<BrygParser.ArgumentContext> argumentContexts = ctx.functionCall ().argumentList ().argument ();
-        for (BrygParser.ArgumentContext argumentContext : argumentContexts) {
-            ArgumentExpression argumentExpression = new ArgumentExpression (context, argumentContext);
-            argumentExpressions.add (argumentExpression);
-            parameterTypes.add (argumentExpression.getType ().getJavaType ());
+        for (ArgumentExpression argument : argumentExpressions) {
+            parameterTypes.add (argument.getType ().getJavaType ());
         }
 
         /* Find method. */
@@ -54,7 +55,7 @@ public class MethodCallExpression extends Expression {
 
     @Override
     public void compile () {
-        // TODO: Use invokevirtual for class methods?
+        // TODO: Use invokeinterface for interface methods?
 
         operandExpression.compile ();
         // -> O
