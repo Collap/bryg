@@ -157,7 +157,13 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
 
     @Override
     public Integer visitArgument (@NotNull BrygParser.ArgumentContext ctx) {
-        String name = ctx.argumentId ().getText ();
+        String name;
+        BrygParser.ArgumentIdContext id = ctx.argumentId ();
+        if (id != null) {
+            name = id.getText ();
+        }else {
+            name = "<unnamed>";
+        }
         visitAny (ctx, name);
         super.visitArgument (ctx);
         return 0;
