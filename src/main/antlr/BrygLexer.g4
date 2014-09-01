@@ -162,13 +162,6 @@ NULL                : 'null';
 TRUE                : 'true';
 FALSE               : 'false';
 
-
-
-//
-//  Operators
-//
-
-
 Identifier
     :   Letter
         (Letter | Number)*
