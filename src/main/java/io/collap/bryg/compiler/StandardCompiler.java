@@ -1,6 +1,6 @@
 package io.collap.bryg.compiler;
 
-import io.collap.bryg.Template;
+import io.collap.bryg.StandardTemplate;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.RootNode;
 import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
@@ -11,6 +11,7 @@ import io.collap.bryg.compiler.parser.DebugVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.environment.Environment;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;
@@ -131,10 +132,12 @@ public class StandardCompiler implements Compiler {
     }
 
     private void compile (ClassVisitor classVisitor, String name, BrygParser.StartContext startContext) {
-        classVisitor.visit (V1_7, ACC_PUBLIC, name.replace ('.', '/'), null, AsmTypes.getAsmType (Object.class).getInternalName (),
-                new String[] { AsmTypes.getAsmType (Template.class).getInternalName () });
+        classVisitor.visit (
+                V1_7, ACC_PUBLIC, name.replace ('.', '/'), null,
+                AsmTypes.getAsmType (StandardTemplate.class).getInternalName (),
+                null);
         {
-            createEmptyConstructor (classVisitor);
+            createConstructor (classVisitor);
 
             BrygMethodVisitor render = (BrygMethodVisitor) classVisitor.visitMethod (ACC_PUBLIC, "render",
                     TypeHelper.generateMethodDesc (
@@ -166,12 +169,18 @@ public class StandardCompiler implements Compiler {
         classVisitor.visitEnd ();
     }
 
-    private void createEmptyConstructor (ClassVisitor classVisitor) {
-        MethodVisitor constructor = classVisitor.visitMethod (ACC_PUBLIC, "<init>", "()V", null, null);
-        constructor.visitVarInsn (ALOAD, 0);
-        constructor.visitMethodInsn (INVOKESPECIAL, AsmTypes.getAsmType (Object.class).getInternalName (), "<init>", "()V", false);
+    private void createConstructor (ClassVisitor classVisitor) {
+        String desc = TypeHelper.generateMethodDesc (new Class[] {Environment.class }, Void.TYPE);
+        MethodVisitor constructor = classVisitor.visitMethod (ACC_PUBLIC, "<init>",
+                desc,
+                null, null);
+        constructor.visitVarInsn (ALOAD, 0); /* this */
+        constructor.visitVarInsn (ALOAD, 1); /* environment */
+        constructor.visitMethodInsn (INVOKESPECIAL,
+                AsmTypes.getAsmType (StandardTemplate.class).getInternalName (),
+                "<init>", desc, false);
         constructor.visitInsn (RETURN);
-        constructor.visitMaxs (1, 1);
+        constructor.visitMaxs (2, 2);
         constructor.visitEnd ();
     }
 

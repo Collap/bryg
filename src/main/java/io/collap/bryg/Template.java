@@ -6,8 +6,10 @@ import io.collap.bryg.model.Model;
 import java.io.Writer;
 
 /**
- * Implementations of the template interface must be thread-safe, as only a single object is used to render all instances
- * of the template.
+ * Implementations of the template interface are allowed to have fields, as a new template object must be created for
+ * each call to Environment.getTemplate.
+ * The same template object (with the same fields) an be used to render multiple models; This means that the user
+ * has to ensure that a template object is reused in the correct manner.
  */
 public interface Template {
 

@@ -10,6 +10,10 @@ import io.collap.bryg.model.Model;
  */
 public interface Environment {
 
+    /**
+     * Returns a <b>new</b> instance of the template each time the method is called.
+     * Also loads and compiles the template if it is not already loaded.
+     */
     public Template getTemplate (String name);
 
     /**
