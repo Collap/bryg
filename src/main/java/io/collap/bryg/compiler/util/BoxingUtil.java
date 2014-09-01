@@ -2,6 +2,7 @@ package io.collap.bryg.compiler.util;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
@@ -9,7 +10,7 @@ import io.collap.bryg.compiler.type.TypeHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-import static bryg.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class BoxingUtil {
 
@@ -65,6 +66,9 @@ public class BoxingUtil {
         return null;
     }
 
+    /**
+     * Assumes that the value is already on the stack.
+     */
     public static void compileUnboxing (BrygMethodVisitor mv, Type box, Type target) {
         String boxTypeName = box.getAsmType ().getInternalName ();
         String valueMethodName = valueMethodNames.get (box.getJavaType ());
@@ -79,5 +83,28 @@ public class BoxingUtil {
         // T -> primitive
     }
 
+    /**
+     * Compiles the expression.
+     */
+    public static void compileBoxing (BrygMethodVisitor mv, Expression expression, Type primitive, Type box) {
+        String boxTypeName = box.getAsmType ().getInternalName ();
+
+        mv.visitTypeInsn (NEW, boxTypeName);
+        // -> T
+
+        mv.visitInsn (DUP);
+        // T -> T, T
+
+        expression.compile ();
+        // -> primitive
+
+        mv.visitMethodInsn (INVOKESPECIAL, boxTypeName, "<init>",
+                TypeHelper.generateMethodDesc (
+                        new Type[] { primitive },
+                        new Type (Void.TYPE)
+                ),
+                false);
+        // T, primitive ->
+    }
 
 }
