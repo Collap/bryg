@@ -34,7 +34,7 @@ public abstract class BinaryBitwiseExpression extends BinaryExpression {
     public void compile () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
-        CoercionUtil.attemptBinaryCoercion (mv, left, right, type);
+        CoercionUtil.attemptBinaryCoercion (context, left, right, type);
         // -> T, T
 
         int opcode = type.getAsmType ().getOpcode (getOpcode ());

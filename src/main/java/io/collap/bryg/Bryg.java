@@ -40,6 +40,7 @@ public class Bryg {
         Environment environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader), commonModel);
 
         /* Pre-compile templates. */
+        environment.getTemplate ("test.Unboxing");
         environment.getTemplate ("test.Reference");
         environment.getTemplate ("test.MethodCall");
         environment.getTemplate ("test.Simple");
@@ -52,6 +53,15 @@ public class Bryg {
         environment.getTemplate ("test.While");
         environment.getTemplate ("test.Operations");
         System.gc (); /* Attempt to clear the heap for less impact on the benchmarks. */
+
+        /* test.Unboxing */
+        if (true) {
+            Template template = environment.getTemplate ("test.Unboxing");
+            Model model = environment.createModel ();
+            model.setVariable ("a", 10);
+            model.setVariable ("b", 20);
+            benchmarkTemplate (template, model);
+        }
 
         /* test.Reference */
         if (true) {

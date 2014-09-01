@@ -7,6 +7,7 @@ import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.compiler.util.BoxingUtil;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.exception.InvalidInputParameterException;
@@ -116,25 +117,19 @@ public class InDeclarationNode extends Node {
     }
 
     private void castAndStore () {
-        Type type = parameter.getType ();
-        if (type.getJavaType ().isPrimitive ()) {
-            if (type.equals (Boolean.TYPE)) {
-                castAndStorePrimitive (Boolean.class, Boolean.TYPE, "booleanValue");
-            }else if (type.equals (Character.TYPE)) {
-                castAndStorePrimitive (Character.class, Character.TYPE, "charValue");
-            }else if (type.equals (Byte.TYPE)) {
-                castAndStorePrimitive (Byte.class, Byte.TYPE, "byteValue");
-            }else if (type.equals (Short.TYPE)) {
-                castAndStorePrimitive (Short.class, Short.TYPE, "shortValue");
-            }else if (type.equals (Integer.TYPE)) {
-                castAndStorePrimitive (Integer.class, Integer.TYPE, "intValue");
-            }else if (type.equals (Long.TYPE)) {
-                castAndStorePrimitive (Long.class, Long.TYPE, "longValue");
-            }else if (type.equals (Float.TYPE)) {
-                castAndStorePrimitive (Float.class, Float.TYPE, "floatValue");
-            }else if (type.equals (Double.TYPE)) {
-                castAndStorePrimitive (Double.class, Double.TYPE, "doubleValue");
-            }
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+
+        Type expectedType = parameter.getType ();
+        Type boxedType = BoxingUtil.boxType (expectedType);
+
+        if (boxedType != null) {
+            mv.visitTypeInsn (CHECKCAST, boxedType.getAsmType ().getInternalName ());
+            // Object -> T
+
+            BoxingUtil.compileUnboxing (context.getMethodVisitor (), boxedType, expectedType);
+
+            mv.visitVarInsn (expectedType.getAsmType ().getOpcode (ISTORE), parameter.getId ());
+            // primitive ->
         }else {
             castAndStoreObject ();
         }
@@ -149,25 +144,6 @@ public class InDeclarationNode extends Node {
 
         mv.visitVarInsn (ASTORE, parameter.getId ());
         // T ->
-    }
-
-    private void castAndStorePrimitive (Class<?> objectClass, Class<?> primitiveClass, String valueMethodName) {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
-        String internalTypeName = AsmTypes.getAsmType (objectClass).getInternalName ();
-
-        mv.visitTypeInsn (CHECKCAST, internalTypeName);
-        // Object -> T
-
-        mv.visitMethodInsn (INVOKEVIRTUAL, internalTypeName, valueMethodName,
-                TypeHelper.generateMethodDesc (
-                        null,
-                        primitiveClass
-                ),
-                false
-        );
-        // Integer -> int
-
-        mv.visitVarInsn (AsmTypes.getAsmType (primitiveClass).getOpcode (ISTORE), parameter.getId ());
     }
 
 }

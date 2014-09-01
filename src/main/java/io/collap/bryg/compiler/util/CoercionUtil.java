@@ -2,6 +2,7 @@ package io.collap.bryg.compiler.util;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.exception.BrygJitException;
 
@@ -11,42 +12,84 @@ import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class CoercionUtil {
 
+    private static class UnboxingExpression extends Expression {
+
+        private Expression child;
+        private Type boxedType;
+
+        private UnboxingExpression (Context context, Expression child, Type unboxedType) {
+            super (context);
+            setLine (child.getLine ());
+            setType (unboxedType);
+            this.child = child;
+            this.boxedType = child.getType ();
+        }
+
+        @Override
+        public void compile () {
+            child.compile ();
+            // -> T
+
+            BoxingUtil.compileUnboxing (context.getMethodVisitor (), boxedType, type);
+            // T -> primitive
+        }
+
+    }
+
     /**
      * Assumes that the expressions have not been compiled yet.
      * The expressions are guaranteed to be compiled when the method returns properly (i.e. without throwing an exception);
      * The results are placed on the stack in the following order: left, right
      *
+     * Unboxes boxed values.
+     *
      * @throws io.collap.bryg.exception.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
      *         hence the compilation should be stopped at that point.
      */
-    public static void attemptBinaryCoercion (BrygMethodVisitor methodVisitor, Expression left, Expression right,
+    public static void attemptBinaryCoercion (Context context, Expression left, Expression right,
                                               Type targetType) {
-        Type leftType = left.getType ();
-        Type rightType = right.getType ();
-
-        if (leftType.equals (rightType)) {
+        if (left.getType ().equals (right.getType ()) && left.getType ().equals (targetType)) {
             left.compile ();
             right.compile ();
             return;
         }
 
-        if (leftType.isIntegralType () && rightType.isIntegralType ()) {
+        if (!left.getType ().getJavaType ().isPrimitive ()) {
+            left = getUnboxingExpressionOrThrowException (context, left);
+        }
+
+        if (!right.getType ().getJavaType ().isPrimitive ()) {
+            right = getUnboxingExpressionOrThrowException (context, right);
+        }
+
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+        if (left.getType ().isIntegralType () && right.getType ().isIntegralType ()) {
             /* This promotes all integers to longs. */
-            promoteType (methodVisitor, left, right, targetType);
-        }else if (leftType.isFloatingPointType () && rightType.isFloatingPointType ()) {
+            promoteType (mv, left, right, targetType);
+        }else if (left.getType ().isFloatingPointType () && right.getType ().isFloatingPointType ()) {
             /* This promotes all floats to doubles. */
-            promoteType (methodVisitor, left, right, targetType);
-        }else if (leftType.isIntegralType () && rightType.isFloatingPointType ()) {
-            coerceIFP (methodVisitor, left, right, targetType, false);
-        }else if (leftType.isFloatingPointType () && rightType.isIntegralType ()) {
-            coerceIFP (methodVisitor, right, left, targetType, true);
+            promoteType (mv, left, right, targetType);
+        }else if (left.getType ().isIntegralType () && right.getType ().isFloatingPointType ()) {
+            coerceIFP (mv, left, right, targetType, false);
+        }else if (left.getType ().isFloatingPointType () && right.getType ().isIntegralType ()) {
+            coerceIFP (mv, right, left, targetType, true);
         }else {
             throw new BrygJitException ("Coercion failed, but a target type was supplied.", left.getLine ());
         }
     }
 
+    private static UnboxingExpression getUnboxingExpressionOrThrowException (Context context, Expression child) {
+        Type unboxedType = BoxingUtil.unboxType (child.getType ());
+        if (unboxedType == null) {
+            throw new BrygJitException ("Can not coerce object types, but a target type was supplied.", child.getLine ());
+        }
+
+        return new UnboxingExpression (context, child, unboxedType);
+    }
+
     /**
      * This method does not attempt to coerce object types, but accepts equal object types!
+     * Boxed values are counted as unboxed. They are <b>not</b> unboxed by this method, though.
      *
      * @throws io.collap.bryg.exception.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
      *         hence the compilation should be stopped at that point.
@@ -59,7 +102,27 @@ public class CoercionUtil {
             return leftType;
         }
 
-        if (!leftType.getJavaType ().isPrimitive () || !rightType.getJavaType ().isPrimitive ()) {
+        boolean attemptedToCoerceObjects = false;
+
+        if (!leftType.getJavaType ().isPrimitive ()) {
+            Type unboxedLeftType = BoxingUtil.unboxType (leftType);
+            if (unboxedLeftType != null) {
+                leftType = unboxedLeftType;
+            }else {
+                attemptedToCoerceObjects = true;
+            }
+        }
+
+        if (!rightType.getJavaType ().isPrimitive ()) {
+            Type unboxedRightType = BoxingUtil.unboxType (rightType);
+            if (unboxedRightType != null) {
+                rightType = unboxedRightType;
+            }else {
+                attemptedToCoerceObjects = true;
+            }
+        }
+
+        if (attemptedToCoerceObjects) {
             throw new BrygJitException ("Can not coerce Object types!", line);
         }
 

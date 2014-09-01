@@ -36,7 +36,7 @@ public abstract class BinaryArithmeticExpression extends BinaryExpression {
     public void compile () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
         if (type.getJavaType ().isPrimitive ()) {
-            CoercionUtil.attemptBinaryCoercion (mv, left, right, type);
+            CoercionUtil.attemptBinaryCoercion (context, left, right, type);
             int op = type.getAsmType ().getOpcode (getOpcode ());
             mv.visitInsn (op);
         }else {
