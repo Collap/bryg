@@ -14,7 +14,6 @@ import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.loader.FileSourceLoader;
 import io.collap.bryg.loader.SourceLoader;
 import io.collap.bryg.loader.TemplateClassLoader;
-import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;
 
@@ -40,6 +39,7 @@ public class Bryg {
         Environment environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader), commonModel);
 
         /* Pre-compile templates. */
+        environment.getTemplate ("test.WhileSquared");
         environment.getTemplate ("test.Unboxing");
         environment.getTemplate ("test.Reference");
         environment.getTemplate ("test.MethodCall");
@@ -53,6 +53,14 @@ public class Bryg {
         environment.getTemplate ("test.While");
         environment.getTemplate ("test.Operations");
         System.gc (); /* Attempt to clear the heap for less impact on the benchmarks. */
+
+        /* test.WhileSquared */
+        if (true) {
+            Template template = environment.getTemplate ("test.WhileSquared");
+            Model model = environment.createModel ();
+            model.setVariable ("n", 3);
+            benchmarkTemplate (template, model);
+        }
 
         /* test.Unboxing */
         if (true) {

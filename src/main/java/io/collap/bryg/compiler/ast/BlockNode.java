@@ -14,8 +14,8 @@ public class BlockNode extends InnerNode {
         context.setCurrentScope (scope);
 
         for (ParseTree tree : ctx.children) {
-            if (tree instanceof BrygParser.StatementLineContext) {
-                children.add (new StatementNode (context, ((BrygParser.StatementLineContext) tree).statement ()));
+            if (tree instanceof BrygParser.StatementContext) {
+                children.add (new StatementNode (context, ((BrygParser.StatementContext) tree)));
             }
         }
 

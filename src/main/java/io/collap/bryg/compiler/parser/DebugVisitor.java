@@ -205,13 +205,6 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitStatementLine (@NotNull BrygParser.StatementLineContext ctx) {
-        visitAny (ctx);
-        super.visitStatementLine (ctx);
-        return 0;
-    }
-
-    @Override
     public Integer visitStatement (@NotNull BrygParser.StatementContext ctx) {
         visitAny (ctx);
         super.visitStatement (ctx);
@@ -236,6 +229,13 @@ public class DebugVisitor extends BrygParserBaseVisitor<Integer> {
     public Integer visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
         visitAny (ctx, IdUtil.idToString (ctx.id ()));
         super.visitFunctionCall (ctx);
+        return 0;
+    }
+
+    @Override
+    public Integer visitTemplateFragmentCall (@NotNull BrygParser.TemplateFragmentCallContext ctx) {
+        visitAny (ctx, IdUtil.templateIdToString (ctx.templateId ()));
+        super.visitTemplateFragmentCall (ctx);
         return 0;
     }
 

@@ -1,0 +1,6 @@
+in int n
+
+mut i = 0
+while i < n
+  @test.While (iterations n)
+  discard ++i

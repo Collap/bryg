@@ -14,4 +14,10 @@ public class IdUtil {
         return text;
     }
 
+    public static String templateIdToString (BrygParser.TemplateIdContext ctx) {
+        if (ctx == null) return null;
+
+        return ctx.getText ().substring (1); /* Omit the AT (@). */
+    }
+
 }

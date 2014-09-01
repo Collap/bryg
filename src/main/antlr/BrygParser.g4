@@ -14,7 +14,7 @@ options {
 
 start
     :   (inDeclaration | NEWLINE)*
-        (statementLine | NEWLINE)*
+        (statement | NEWLINE)*
         EOF // EOF is needed for SLL(*) parsing! Otherwise no exception is thrown, which is needed to induce LL(*) parsing.
     ;
 
@@ -23,10 +23,6 @@ inDeclaration
         NEWLINE
     ;
 
-
-statementLine
-    :   statement
-    ;
 
 statement
     :   ifStatement
@@ -40,6 +36,8 @@ statement
     |   statementFunctionCall   /* This rule has to be placed after expression, because otherwise an expression
                                    like a - 7 would be interpreted as a statementFunctionCall with an arithmetic
                                    negation (that leads to the number -7) instead of a binary subtraction. */
+    |   templateFragmentCall
+        NEWLINE
     ;
 
 /**
@@ -119,7 +117,7 @@ whileStatement
 
 block
     :   INDENT
-        statementLine*
+        statement*
         DEDENT
     ;
 
@@ -150,6 +148,15 @@ blockFunctionCall
 statementFunctionCall
     :   id argumentList?
         statement
+    ;
+
+/* Calls functions of other templates. By default, 'render' is called. */
+templateFragmentCall
+    :   templateId argumentList?
+    ;
+
+templateId
+    :   '@' (id '.') id
     ;
 
 argumentList

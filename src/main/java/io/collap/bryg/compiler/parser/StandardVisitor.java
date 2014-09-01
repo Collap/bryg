@@ -126,8 +126,13 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitMethodCallExpression (@NotNull BrygParser.MethodCallExpressionContext ctx) {
+    public MethodCallExpression visitMethodCallExpression (@NotNull BrygParser.MethodCallExpressionContext ctx) {
         return new MethodCallExpression (context, ctx);
+    }
+
+    @Override
+    public TemplateFragmentCall visitTemplateFragmentCall (@NotNull BrygParser.TemplateFragmentCallContext ctx) {
+        return new TemplateFragmentCall (context, ctx);
     }
 
     @Override
