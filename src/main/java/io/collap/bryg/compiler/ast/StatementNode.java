@@ -51,7 +51,7 @@ public class StatementNode extends Node {
                         mv.loadWriter ();
                         // -> Writer
 
-                    /* Stringify if necessary. */
+                        /* Stringify if necessary. */
                         if (type.getJavaType ().isPrimitive ()) {
                             StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (mv);
                             stringBuilder.compileNew ();
@@ -64,7 +64,7 @@ public class StatementNode extends Node {
 
                             if (!type.equals (String.class)) {
                                 mv.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
-                                        TypeHelper.generateMethodDesc (null, Void.TYPE), false);
+                                        TypeHelper.generateMethodDesc (null, String.class), false);
                                 // T -> String
                             }
                         }
