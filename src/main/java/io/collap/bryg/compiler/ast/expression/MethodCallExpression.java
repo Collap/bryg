@@ -44,14 +44,33 @@ public class MethodCallExpression extends Expression {
         }
 
         /* Find method. */
-        try {
-            method = objectType.getMethod (methodName, parameterTypes.toArray (new Class<?>[0]));
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace ();
+        Method[] methods = objectType.getMethods ();
+        for (Method supposedMethod : methods) {
+            if (supposedMethod.getName ().equals (methodName)) {
+                if (parameterTypesFit (parameterTypes, supposedMethod.getParameterTypes ())) {
+                    method = supposedMethod;
+                }
+            }
+        }
+
+        if (method == null) {
             throw new BrygJitException ("Method " + methodName + " could not be found.", getLine ());
         }
 
         setType (new Type (method.getReturnType ()));
+    }
+
+    private boolean parameterTypesFit (List<Class<?>> searchedTypes, Class<?>[] actualTypes) {
+        if (searchedTypes.size () != actualTypes.length) return false;
+
+        int i = 0;
+        for (Class<?> searchedType : searchedTypes) {
+            Class<?> actualType = actualTypes[i];
+            if (!actualType.isAssignableFrom (searchedType)) return false;
+            ++i;
+        }
+
+        return true;
     }
 
     @Override
