@@ -56,7 +56,8 @@ public class MethodCallExpression extends Expression {
 
     @Override
     public void compile () {
-        // TODO: Use invokeinterface for interface methods?
+        Type ownerType = operandExpression.getType ();
+        boolean isInterface = ownerType.getJavaType ().isInterface ();
 
         operandExpression.compile ();
         // -> O
@@ -66,14 +67,13 @@ public class MethodCallExpression extends Expression {
         }
         // -> A1, A2, ...
 
-        Type ownerType = operandExpression.getType ();
-        context.getMethodVisitor ().visitMethodInsn (INVOKEVIRTUAL,
+        context.getMethodVisitor ().visitMethodInsn (isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
                 ownerType.getAsmType ().getInternalName (),
                 method.getName (),
                 TypeHelper.generateMethodDesc (
                         method.getParameterTypes (),
                         method.getReturnType ()
-                ), ownerType.getJavaType ().isInterface ());
+                ), isInterface);
         // O, A1, A2, ... -> T
     }
 
