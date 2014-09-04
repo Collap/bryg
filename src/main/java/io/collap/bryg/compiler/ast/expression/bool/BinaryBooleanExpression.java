@@ -5,6 +5,8 @@ import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
 
+import java.io.PrintStream;
+
 /* This also would have to extend BinaryExpression, but multiple
    inheritance is not permitted in Java. */
 
@@ -19,6 +21,13 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
         StandardVisitor ptv = context.getParseTreeVisitor ();
         this.left = (Expression) ptv.visit (left);
         this.right = (Expression) ptv.visit (right);
+    }
+
+    @Override
+    public void print (PrintStream out, int depth) {
+        super.print (out, depth);
+        left.print (out, depth + 1);
+        right.print (out, depth + 1);
     }
 
 }

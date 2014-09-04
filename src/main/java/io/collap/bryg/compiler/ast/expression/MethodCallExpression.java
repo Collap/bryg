@@ -8,6 +8,7 @@ import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +75,12 @@ public class MethodCallExpression extends Expression {
                         method.getReturnType ()
                 ), ownerType.getJavaType ().isInterface ());
         // O, A1, A2, ... -> T
+    }
+
+    @Override
+    public void print (PrintStream out, int depth) {
+        super.print (out, depth);
+        operandExpression.print (out, depth + 1);
     }
 
 }
