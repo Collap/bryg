@@ -1,0 +1,18 @@
+- Mention in the language reference that === is reference equality, while == is value equality.
+    Reference equality includes the condition that the references are equal, while value equality
+    only makes sure that the values are equal or that a specific equals implementation returns true.
+    Since values at the same reference must fulfill the equals condition, reference equality always
+    includes value equality.
+
+Upcoming features:
+    - Parameter predicates: option(selected if false)
+    - Variable mutability
+    - Fragment functions
+    - new Object ()
+    - Check if there needs to be more boxing.
+
+Ideas:
+    - @Template (post post, integer integer) etc. named arguments are redundant and annoying. Find a way to
+      find out the name of the parameter so the user does not have to specify it.
+    - @.Template (...) to invoke a template in the current "package" (relative template path).
+      Also: @.sub.Template (...) for a subpackage.

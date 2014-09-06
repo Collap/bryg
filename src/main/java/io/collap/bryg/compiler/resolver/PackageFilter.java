@@ -3,6 +3,8 @@ package io.collap.bryg.compiler.resolver;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: Add addSubpackageFilterFromClass method that accepts a Class object to determine the package to be imported.
+
 public class PackageFilter implements Filter {
 
     private boolean validEnd; /* Whether the package is a valid last package. */
