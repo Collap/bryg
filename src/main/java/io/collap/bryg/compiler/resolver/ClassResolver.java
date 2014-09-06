@@ -105,6 +105,10 @@ public class ClassResolver {
         filters.add (filter);
     }
 
+    public void includeJar (String name) {
+        includedJarFiles.add (name);
+    }
+
     public void resolveClassNames () {
         long time = System.nanoTime ();
         finder.crawl ();
@@ -131,10 +135,6 @@ public class ClassResolver {
 
     public PackageFilter getRootPackageFilter () {
         return rootPackageFilter;
-    }
-
-    public List<String> getIncludedJarFiles () {
-        return includedJarFiles;
     }
 
     public ClassNameFinder getFinder () {
