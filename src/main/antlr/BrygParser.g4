@@ -156,7 +156,7 @@ templateFragmentCall
     ;
 
 templateId
-    :   '@' (id '.') id
+    :   '@' (id '.')* id
     ;
 
 argumentList
