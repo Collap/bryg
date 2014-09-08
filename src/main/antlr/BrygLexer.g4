@@ -377,7 +377,7 @@ Text
 
         String fullText = getText ();
         String[] fragments = splitTextAndSpaces (fullText);
-        if (fragments.length == 2) {
+        if (fragments.length == 2) { /* Newline and spaces. */
             String text = fragments[0];
             String spaces = fragments[1];
 
@@ -396,8 +396,13 @@ Text
             }else if (indent < previous) {
                 handlePossibleBlockStringDedent (indent);
             }
-        }else if (fragments.length == 1) {
+        }else if (fragments.length == 1) { /* Only text without spaces. */
             currentBlockString += fragments[0];
+            handlePossibleBlockStringDedent (0);
+        }else {
+            /* When no tokens are found, the next line is either blank or
+               a proper dedented line. In the latter case, the block string
+               needs to be closed. */
             handlePossibleBlockStringDedent (0);
         }
 
