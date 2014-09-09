@@ -18,8 +18,6 @@ public class VariableDeclarationNode extends Node {
     private Variable variable;
     private Expression expression;
 
-    // TODO: Add semantics for mut and val.
-
     public VariableDeclarationNode (Context context, BrygParser.VariableDeclarationContext ctx) {
         super (context);
         setLine (ctx.getStart ().getLine ());

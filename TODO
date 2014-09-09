@@ -9,6 +9,7 @@ Upcoming features:
     - Fragment functions
     - new Object ()
     - Check if there needs to be more boxing.
+    - Static function calls.
 
 Ideas:
     - @Template (post post, integer integer) etc. named arguments are redundant and annoying. Find a way to

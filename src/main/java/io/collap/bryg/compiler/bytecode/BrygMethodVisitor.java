@@ -113,7 +113,6 @@ public class BrygMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitFrame (int type, int nLocal, Object[] local, int nStack, Object[] stack) {
-        // TODO: Remove visit frame calls instead.
         throw new UnsupportedOperationException ("Frames are automatically generated!");
     }
 

@@ -15,8 +15,6 @@ import java.io.PrintStream;
 import static bryg.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static bryg.org.objectweb.asm.Opcodes.POP;
 
-// TODO: Open new scope.
-
 public class StatementNode extends Node {
 
     private Node child;
@@ -45,8 +43,6 @@ public class StatementNode extends Node {
                     String text = (String) expression.getConstantValue ();
                     mv.writeConstantString (text);
                 }else {
-                    // TODO: Does not work for double and long!
-
                     if (!context.shouldDiscardPrintOutput ()) {
                         mv.loadWriter ();
                         // -> Writer

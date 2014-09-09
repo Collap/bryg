@@ -1,7 +1,6 @@
 parser grammar BrygParser;
 
 // TODO: Find a way to do: if (...) a else b
-// TODO: Rename ifExpression and eachExpression to *Statement, because they aren't expressions.
 
 options {
     tokenVocab = BrygLexer;
