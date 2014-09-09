@@ -26,7 +26,7 @@ public class RootScope extends Scope {
             GlobalVariableModel.GlobalVariable globalVariable = globalVariableModel.getDeclaredVariable (name);
             if (globalVariable != null) {
                 Type type = new Type (globalVariable.getType ());
-                variable = new Variable (type, name, calculateNextId (type));
+                variable = new Variable (type, name, calculateNextId (type), false);
                 variables.put (name, variable);
                 globalVariablesUsed.add (name);
             }
@@ -36,13 +36,13 @@ public class RootScope extends Scope {
     }
 
     @Override
-    public Variable registerVariable (String name, Type type) {
-        /* Remove flag if global variable is overshadowed. */
+    public Variable registerVariable (String name, Type type, boolean isMutable) {
+        /* Remove flag if global variable is overshadowed in the root scope. */
         if (globalVariablesUsed.contains (name)) {
             globalVariablesUsed.remove (name);
         }
 
-        return super.registerVariable (name, type);
+        return super.registerVariable (name, type, isMutable);
     }
 
     @Override

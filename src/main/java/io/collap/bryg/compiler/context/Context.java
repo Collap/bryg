@@ -47,9 +47,9 @@ public class Context {
         currentScope = rootScope;
 
         /* Register parameters in the correct order. */
-        rootScope.registerVariable ("this", null); // TODO: Proper type.
-        rootScope.registerVariable ("writer", new Type (Writer.class));
-        rootScope.registerVariable ("model", new Type (Model.class));
+        rootScope.registerVariable ("this", null, false); // TODO: Proper type.
+        rootScope.registerVariable ("writer", new Type (Writer.class), false);
+        rootScope.registerVariable ("model", new Type (Model.class), false);
 
         /* Set context instance for the parameters. */
         parseTreeVisitor.setContext (this);

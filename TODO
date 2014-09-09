@@ -6,7 +6,6 @@
 
 Upcoming features:
     - Parameter predicates: option(selected if false)
-    - Variable mutability
     - Fragment functions
     - new Object ()
     - Check if there needs to be more boxing.
@@ -16,3 +15,8 @@ Ideas:
       find out the name of the parameter so the user does not have to specify it.
     - @.Template (...) to invoke a template in the current "package" (relative template path).
       Also: @.sub.Template (...) for a subpackage.
+
+Absolutely needed improvements:
+    - Better ANTLR and AST error reporting (with an error list, instead of aborting the compilation instantly).
+    - Proper testing instead of a Bryg main class.
+    - Replace System.out.println with a Logger.

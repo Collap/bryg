@@ -131,7 +131,7 @@ variable
     ;
 
 variableDeclaration
-    :   (MUT | VAL)
+    :   mutability=(MUT | VAL)
         type? id
         ('=' expression)?
     ;

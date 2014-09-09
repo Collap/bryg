@@ -23,8 +23,8 @@ public class Scope {
         return variable;
     }
 
-    public Variable registerVariable (String name, Type type) {
-        Variable variable = new Variable (type, name, calculateNextId (type));
+    public Variable registerVariable (String name, Type type, boolean isMutable) {
+        Variable variable = new Variable (type, name, calculateNextId (type), isMutable);
         variables.put (name, variable);
         return variable;
     }

@@ -40,14 +40,19 @@ public class BinaryAssignmentExpression extends BinaryExpression {
         BrygParser.ExpressionContext leftCtx = ctx.expression (0);
         Expression leftGet = null; /* Set when the operator is used. */
         if (leftCtx instanceof BrygParser.VariableExpressionContext) {
-            // TODO: Use new variable constructor!
+            // TODO: Use new variable expression constructor!
             BrygParser.VariableExpressionContext variableCtx = (BrygParser.VariableExpressionContext) leftCtx;
             String variableName = IdUtil.idToString (variableCtx.variable ().id ());
             int variableLine = ctx.getStart ().getLine ();
             Variable variable = context.getCurrentScope ().getVariable (variableName);
             if (variable == null) {
-                throw new BrygJitException ("Variable " + variableName + " not found!", variableLine);
+                throw new BrygJitException ("Variable '" + variableName + "' not found.", variableLine);
             }
+
+            if (!variable.isMutable ()) {
+                throw new BrygJitException ("Variable '" + variableName + "' is not mutable.", variableLine);
+            }
+
             left = new VariableExpression (context, variable, AccessMode.set, variableLine);
             expectedType = variable.getType ();
 

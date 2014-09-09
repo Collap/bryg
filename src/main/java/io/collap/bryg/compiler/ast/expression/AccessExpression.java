@@ -68,7 +68,11 @@ public class AccessExpression extends Expression {
 
         if (mode == AccessMode.get) {
             setType (new Type (field.getType ()));
-        }else {
+        }else { /* AccessMode.set */
+            if (Modifier.isFinal (field.getModifiers ())) {
+                throw new BrygJitException ("The field is final and can not be changed.", getLine ());
+            }
+
             setType (new Type (Void.TYPE));
         }
 

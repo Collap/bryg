@@ -8,6 +8,7 @@ import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
+import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 
 import static bryg.org.objectweb.asm.Opcodes.ISTORE;
@@ -58,7 +59,7 @@ public class VariableDeclarationNode extends Node {
             throw new BrygJitException ("Could not get type for variable '" + name + "'.", getLine ());
         }
 
-        variable = context.getCurrentScope ().registerVariable (name, type);
+        variable = context.getCurrentScope ().registerVariable (name, type, ctx.mutability.getType () == BrygLexer.MUT);
     }
 
     @Override

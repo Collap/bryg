@@ -23,7 +23,7 @@ public class InDeclarationNode extends Node {
     private Variable model;
 
     /**
-     * An optional input parameter may be null.
+     * An optional ('opt') input parameter may be null.
      */
     private boolean optional;
 
@@ -38,7 +38,10 @@ public class InDeclarationNode extends Node {
     }
 
     public InDeclarationNode (Context context, String name, Type type, boolean optional, int line) {
-        this (context, context.getCurrentScope ().registerVariable (name, type), optional, line);
+        /**
+         * In declarations are always immutable.
+         */
+        this (context, context.getCurrentScope ().registerVariable (name, type, true), optional, line);
     }
 
     public InDeclarationNode (Context context, Variable parameter, boolean optional, int line) {

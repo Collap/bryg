@@ -4,16 +4,16 @@ import io.collap.bryg.compiler.type.Type;
 
 public class Variable {
 
-    // TODO: Handle mutability.
-
     private Type type;
     private String name;
     private int id;
+    private boolean isMutable;
 
-    public Variable (Type type, String name, int id) {
+    public Variable (Type type, String name, int id, boolean isMutable) {
         this.type = type;
         this.name = name;
         this.id = id;
+        this.isMutable = isMutable;
     }
 
     public Type getType () {
@@ -26,6 +26,10 @@ public class Variable {
 
     public int getId () {
         return id;
+    }
+
+    public boolean isMutable () {
+        return isMutable;
     }
 
 }

@@ -84,16 +84,16 @@ public class EachStatement extends Node {
         /* Register variable(s). */
         if (!isArray) {
             Type iteratorType = new Type (Iterator.class);
-            iterator = new Variable (iteratorType, "", context.getRootScope ().calculateNextId (iteratorType));
+            iterator = new Variable (iteratorType, "", context.getRootScope ().calculateNextId (iteratorType), false); /* Immutable. */
         }
 
         String variableName = IdUtil.idToString (headCtx.element);
-        element = scope.registerVariable (variableName, elementType);
+        element = scope.registerVariable (variableName, elementType, false); /* Immutable. */
 
         BrygParser.IdContext indexCtx = headCtx.index;
         if (indexCtx != null) {
             String indexName = IdUtil.idToString (indexCtx);
-            index = scope.registerVariable (indexName, new Type (Integer.TYPE));
+            index = scope.registerVariable (indexName, new Type (Integer.TYPE), false); /* Immutable. */
         }
 
         BrygParser.StatementOrBlockContext statementOrBlockCtx = ctx.statementOrBlock ();
