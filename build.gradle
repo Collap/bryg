@@ -63,7 +63,10 @@ task cleanupRepackageLibs (type: Delete, dependsOn: 'applyRepackage') {
 compileJava.dependsOn (cleanupRepackageLibs)
 
 test {
-    setMaxParallelForks (8)
+    /* Multiple forks lead to multiple separate Environments to be created, so be
+       careful how high you choose the number.
+       In normal (non-benchmarking) cases, it does not need to be higher than 1. */
+    setMaxParallelForks (1)
 }
 
 sourceSets {
