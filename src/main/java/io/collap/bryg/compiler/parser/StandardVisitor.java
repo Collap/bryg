@@ -316,7 +316,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
 
     //
-    //  Literals
+    //  Literal
     //
 
     @Override
