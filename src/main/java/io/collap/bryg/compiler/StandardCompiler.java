@@ -103,8 +103,8 @@ public class StandardCompiler implements Compiler {
         if (startContext == null) return null;
 
         if (configuration.shouldPrintParseTree ()) {
-            DebugVisitor debugVisitor = new DebugVisitor ();
-            debugVisitor.visit (startContext);
+            PrintTreeVisitor printTreeVisitor = new PrintTreeVisitor ();
+            printTreeVisitor.visit (startContext);
         }
 
         double parseTime = (System.nanoTime () - parseStart) / 1.0e9;
