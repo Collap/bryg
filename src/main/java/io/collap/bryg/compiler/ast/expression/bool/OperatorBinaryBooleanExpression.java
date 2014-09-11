@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.AsmTypes;
@@ -9,7 +10,6 @@ import io.collap.bryg.compiler.util.CoercionUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
-import bryg.org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 

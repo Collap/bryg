@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.bytecode;
 
-import io.collap.bryg.compiler.context.Context;
 import bryg.org.objectweb.asm.*;
+import io.collap.bryg.compiler.context.Context;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 

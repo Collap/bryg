@@ -13,7 +13,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static bryg.org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.INVOKEINTERFACE;
+import static bryg.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 public class MethodCallExpression extends Expression {
 

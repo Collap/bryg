@@ -1,10 +1,10 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
-import bryg.org.objectweb.asm.Label;
 
 import javax.annotation.Nullable;
 

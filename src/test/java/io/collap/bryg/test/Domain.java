@@ -5,7 +5,6 @@ import io.collap.bryg.compiler.StandardCompiler;
 import io.collap.bryg.compiler.library.BasicLibrary;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
-import io.collap.bryg.compiler.resolver.PackageFilter;
 import io.collap.bryg.compiler.resolver.PrefixFilter;
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.environment.StandardEnvironment;
@@ -14,7 +13,10 @@ import io.collap.bryg.loader.SourceLoader;
 import io.collap.bryg.loader.TemplateClassLoader;
 import io.collap.bryg.model.GlobalVariableModel;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 
 public class Domain {
 

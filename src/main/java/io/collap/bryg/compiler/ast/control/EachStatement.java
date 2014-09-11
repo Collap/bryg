@@ -1,19 +1,19 @@
 package io.collap.bryg.compiler.ast.control;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.scope.Scope;
 import io.collap.bryg.compiler.scope.Variable;
-import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
-import bryg.org.objectweb.asm.Label;
 
 import java.io.PrintStream;
 import java.util.Iterator;

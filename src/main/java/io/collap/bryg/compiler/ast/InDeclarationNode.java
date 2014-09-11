@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.scope.Variable;
@@ -13,7 +14,6 @@ import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
-import bryg.org.objectweb.asm.Label;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 

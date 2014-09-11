@@ -9,7 +9,8 @@ import io.collap.bryg.parser.BrygParser;
 
 import javax.annotation.Nullable;
 
-import static bryg.org.objectweb.asm.Opcodes.*;
+import static bryg.org.objectweb.asm.Opcodes.IF_ACMPEQ;
+import static bryg.org.objectweb.asm.Opcodes.IF_ACMPNE;
 
 public class ReferenceEqualityExpression extends BinaryBooleanExpression {
 

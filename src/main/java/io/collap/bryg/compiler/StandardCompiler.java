@@ -1,5 +1,9 @@
 package io.collap.bryg.compiler;
 
+import bryg.org.objectweb.asm.ClassVisitor;
+import bryg.org.objectweb.asm.ClassWriter;
+import bryg.org.objectweb.asm.MethodVisitor;
+import bryg.org.objectweb.asm.util.TraceClassVisitor;
 import io.collap.bryg.StandardTemplate;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.RootNode;
@@ -20,10 +24,6 @@ import io.collap.bryg.parser.BrygParser;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
-import bryg.org.objectweb.asm.ClassVisitor;
-import bryg.org.objectweb.asm.ClassWriter;
-import bryg.org.objectweb.asm.MethodVisitor;
-import bryg.org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.*;
 

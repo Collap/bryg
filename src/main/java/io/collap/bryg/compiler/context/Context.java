@@ -1,11 +1,11 @@
 package io.collap.bryg.compiler.context;
 
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.scope.RootScope;
-import io.collap.bryg.compiler.scope.Scope;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.parser.StandardVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
+import io.collap.bryg.compiler.scope.RootScope;
+import io.collap.bryg.compiler.scope.Scope;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;

@@ -1,11 +1,11 @@
 package io.collap.bryg.compiler.ast.expression.arithmetic;
 
+import bryg.org.objectweb.asm.Opcodes;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
-import bryg.org.objectweb.asm.Opcodes;
 
 public class BinaryAdditionExpression extends BinaryArithmeticExpression {
 
