@@ -6,9 +6,6 @@ import io.collap.bryg.test.TemplateTest;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Marco Pennekamp
- */
 public class EachTest extends TemplateTest {
 
     @Override

@@ -16,9 +16,6 @@ import io.collap.bryg.model.GlobalVariableModel;
 
 import java.io.*;
 
-/**
- * @author Marco Pennekamp
- */
 public class Domain {
 
     private static Environment environment = null;

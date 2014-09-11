@@ -3,9 +3,6 @@ package io.collap.bryg.test.expression;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.test.TemplateTest;
 
-/**
- * @author Marco Pennekamp
- */
 public class OperationsTest extends TemplateTest {
 
     @Override

@@ -10,9 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 
-/**
- * @author Marco Pennekamp
- */
 public abstract class TemplateTest {
 
     private Template template;

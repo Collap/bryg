@@ -1,12 +1,11 @@
-/**
- * The class is taken from https://github.com/greenlaw110/template-engine-benchmarks
- */
-
 package io.collap.bryg.test.example;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is taken from https://github.com/greenlaw110/template-engine-benchmarks
+ */
 public class Stock {
 
     public String name;

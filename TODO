@@ -4,7 +4,6 @@
     Since values at the same reference must fulfill the equals condition, reference equality always
     includes value equality.
 
-- Add @author notes to class files.
 - Check if there needs to be more boxing.
 - Update DebugVisitor to current language grammar.
 

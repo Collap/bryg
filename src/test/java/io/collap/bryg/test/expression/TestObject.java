@@ -1,8 +1,5 @@
 package io.collap.bryg.test.expression;
 
-/**
- * @author Marco Pennekamp
- */
 public class TestObject {
 
     private String name = "Hello Object!";
