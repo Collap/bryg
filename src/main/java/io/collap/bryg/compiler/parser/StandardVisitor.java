@@ -37,14 +37,18 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         this.context = context;
     }
 
+
+    //
+    //  General
+    //
+
     @Override
     public RootNode visitStart (@NotNull BrygParser.StartContext ctx) {
         return new RootNode (context, ctx);
     }
 
     @Override
-    @Nullable
-    public InDeclarationNode visitInDeclaration (@NotNull BrygParser.InDeclarationContext ctx) {
+    public @Nullable InDeclarationNode visitInDeclaration (@NotNull BrygParser.InDeclarationContext ctx) {
         try {
             return new InDeclarationNode (context, ctx);
         } catch (ClassNotFoundException e) {
@@ -63,52 +67,20 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         return new BlockNode (context, ctx);
     }
 
-    @Override
-    public Expression visitInterpolation (@NotNull BrygParser.InterpolationContext ctx) {
-        return (Expression) visit (ctx.expression ());
-    }
 
-    @Override
-    public AccessExpression visitAccessExpression (@NotNull BrygParser.AccessExpressionContext ctx) {
-        try {
-            /* Note: This corresponds to the getter only, the setter scenario is handled by the assignment expression! */
-            return new AccessExpression (context, ctx, AccessMode.get);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace ();
-            return null;
-        }
-    }
-
-    @Override
-    public @Nullable Expression visitExpressionPrecedenceOrder (@NotNull BrygParser.ExpressionPrecedenceOrderContext ctx) {
-        return (Expression) visit (ctx.expression ());
-    }
-
-    @Override
-    public @Nullable Expression visitVariable (@NotNull BrygParser.VariableContext ctx) {
-        String id = IdUtil.idToString (ctx.id ());
-        if (id != null) {
-            Variable variable = context.getCurrentScope ().getVariable (id);
-
-            if (variable != null) {
-                return new VariableExpression (context, variable, AccessMode.get, ctx.getStart ().getLine ());
-            }else { /* The variable is probably a function. */
-                Function function = context.getLibrary ().getFunction (id);
-                if (function != null) {
-                    return new FunctionCallExpression (context, function, ctx.getStart ().getLine ());
-                }
-            }
-
-            throw new BrygJitException ("Variable " + id + " not found.", ctx.getStart ().getLine ());
-        }
-
-        return null;
-    }
+    //
+    //  General Statement
+    //
 
     @Override
     public VariableDeclarationNode visitVariableDeclaration (@NotNull BrygParser.VariableDeclarationContext ctx) {
         return new VariableDeclarationNode (context, ctx);
     }
+
+
+    //
+    //  Function Call
+    //
 
     @Override
     public FunctionCallExpression visitFunctionCall (@NotNull BrygParser.FunctionCallContext ctx) {
@@ -133,11 +105,6 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public TemplateFragmentCall visitTemplateFragmentCall (@NotNull BrygParser.TemplateFragmentCallContext ctx) {
         return new TemplateFragmentCall (context, ctx);
-    }
-
-    @Override
-    public Node visitBinaryAssignmentExpression (@NotNull BrygParser.BinaryAssignmentExpressionContext ctx) {
-        return new BinaryAssignmentExpression (context, ctx);
     }
 
 
@@ -228,6 +195,43 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     //
 
     @Override
+    public @Nullable Expression visitVariable (@NotNull BrygParser.VariableContext ctx) {
+        String id = IdUtil.idToString (ctx.id ());
+        if (id != null) {
+            Variable variable = context.getCurrentScope ().getVariable (id);
+
+            if (variable != null) {
+                return new VariableExpression (context, variable, AccessMode.get, ctx.getStart ().getLine ());
+            }else { /* The variable is probably a function. */
+                Function function = context.getLibrary ().getFunction (id);
+                if (function != null) {
+                    return new FunctionCallExpression (context, function, ctx.getStart ().getLine ());
+                }
+            }
+
+            throw new BrygJitException ("Variable " + id + " not found.", ctx.getStart ().getLine ());
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Expression visitExpressionPrecedenceOrder (@NotNull BrygParser.ExpressionPrecedenceOrderContext ctx) {
+        return (Expression) visit (ctx.expression ());
+    }
+
+    @Override
+    public AccessExpression visitAccessExpression (@NotNull BrygParser.AccessExpressionContext ctx) {
+        try {
+            /* Note: This corresponds to the getter only, the setter scenario is handled by the assignment expression! */
+            return new AccessExpression (context, ctx, AccessMode.get);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace ();
+            return null;
+        }
+    }
+
+    @Override
     public CastExpression visitCastExpression (@NotNull BrygParser.CastExpressionContext ctx) {
         return new CastExpression (context, ctx);
     }
@@ -265,7 +269,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
 
     //
-    //  Binary Bitwise
+    //  Bitwise
     //
 
     @Override
@@ -298,6 +302,16 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         }else { /* UNSIG_RSHIFT */
             return new BinaryUnsignedRightShiftExpression (context, ctx);
         }
+    }
+
+
+    //
+    //  Assignment
+    //
+
+    @Override
+    public Node visitBinaryAssignmentExpression (@NotNull BrygParser.BinaryAssignmentExpressionContext ctx) {
+        return new BinaryAssignmentExpression (context, ctx);
     }
 
 
@@ -335,6 +349,26 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public Node visitBooleanLiteral (@NotNull BrygParser.BooleanLiteralContext ctx) {
         return new BooleanLiteralExpression (context, ctx);
+    }
+
+
+    //
+    //  Interpolation
+    //
+
+    @Override
+    public Expression visitInterpolation (@NotNull BrygParser.InterpolationContext ctx) {
+        return (Expression) visit (ctx.expression ());
+    }
+
+
+    //
+    //  Currently Unsupported
+    //
+
+    @Override
+    public Node visitBinaryIsExpression (@NotNull BrygParser.BinaryIsExpressionContext ctx) {
+        throw new UnsupportedOperationException ("The 'is' operator is not yet implemented.");
     }
 
 }
