@@ -3,12 +3,10 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'maven'
-apply plugin: 'application'
 
 archivesBaseName = 'bryg'
 version = '0.2-dev'
 group = 'io.collap.bryg'
-mainClassName = 'io.collap.bryg.Bryg'
 
 sourceCompatibility = 1.7
 
@@ -21,6 +19,7 @@ configurations {
 }
 
 dependencies {
+    compile 'junit:junit:4.11'
     compile 'com.google.code.findbugs:jsr305:3.0.0'
     // compile 'org.antlr:antlr4:4.3'
     compile 'org.reflections:reflections:0.9.9-RC1'
@@ -63,6 +62,10 @@ task cleanupRepackageLibs (type: Delete, dependsOn: 'applyRepackage') {
 }
 compileJava.dependsOn (cleanupRepackageLibs)
 
+test {
+    setMaxParallelForks (8)
+}
+
 sourceSets {
     main {
         java {
@@ -77,7 +80,6 @@ jar {
     from files ('lib/antlr-4.4.1-dev-complete.jar', 'lib/asm-5.0.3.patched.jar').collect { it.isDirectory() ? it : zipTree(it) }
     manifest {
         attributes 'Implementation-Title': archivesBaseName,
-                   'Implementation-Version': version,
-                   'Main-Class': 'io.collap.bryg.Bryg'
+                   'Implementation-Version': version
     }
 }

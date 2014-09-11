@@ -1,4 +1,4 @@
 in TestObject obj
 
 p obj.testString (10)
-p testObject.testString (1)
+p obj.testString (1)

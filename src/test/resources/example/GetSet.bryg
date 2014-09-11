@@ -1,0 +1,6 @@
+in Stock stock
+
+stock.name = 'Imaginary Corp.'
+stock.symbol = 'IMGN'
+
+section: \{stock.name} (\{stock.symbol})
