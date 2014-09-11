@@ -5,7 +5,7 @@
     includes value equality.
 
 - Check if there needs to be more boxing.
-- Update DebugVisitor to current language grammar.
+- Make benchmark test functions optional.
 
 Upcoming features:
     - Parameter predicates: option(selected if false)
