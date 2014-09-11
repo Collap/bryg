@@ -4,20 +4,22 @@
     Since values at the same reference must fulfill the equals condition, reference equality always
     includes value equality.
 
+- Add @author notes to class files.
+- Check if there needs to be more boxing.
+- Update DebugVisitor to current language grammar.
+
 Upcoming features:
     - Parameter predicates: option(selected if false)
+    - @.Template (...) to invoke a template in the current "package" (relative template path).
+      Also: @.sub.Template (...) for a subpackage.
     - Fragment functions
     - new Object ()
-    - Check if there needs to be more boxing.
     - Static function calls.
 
 Ideas:
     - @Template (post post, integer integer) etc. named arguments are redundant and annoying. Find a way to
       find out the name of the parameter so the user does not have to specify it.
-    - @.Template (...) to invoke a template in the current "package" (relative template path).
-      Also: @.sub.Template (...) for a subpackage.
+    - Replace System.out.println with a Logger?
 
 Absolutely needed improvements:
     - Better ANTLR and AST error reporting (with an error list, instead of aborting the compilation instantly).
-    - Proper testing instead of a Bryg main class.
-    - Replace System.out.println with a Logger.
