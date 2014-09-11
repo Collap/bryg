@@ -7,7 +7,7 @@ import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.library.Library;
-import io.collap.bryg.compiler.parser.DebugVisitor;
+import io.collap.bryg.compiler.parser.PrintTreeVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.TypeHelper;
@@ -72,6 +72,7 @@ public class StandardCompiler implements Compiler {
                     tokenStream.consume ();
                 }
 
+                System.out.println ();
                 tokenStream.reset ();
             }
 
@@ -105,6 +106,7 @@ public class StandardCompiler implements Compiler {
         if (configuration.shouldPrintParseTree ()) {
             PrintTreeVisitor printTreeVisitor = new PrintTreeVisitor ();
             printTreeVisitor.visit (startContext);
+            System.out.println ();
         }
 
         double parseTime = (System.nanoTime () - parseStart) / 1.0e9;
@@ -120,6 +122,9 @@ public class StandardCompiler implements Compiler {
         }
         BrygClassVisitor brygClassVisitor = new BrygClassVisitor (parentVisitor);
         compile (brygClassVisitor, name, startContext);
+        if (configuration.shouldPrintBytecode ()) {
+            System.out.println ();
+        }
 
         double jitTime = (System.nanoTime () - jitStart) / 1.0e9;
 
@@ -151,6 +156,7 @@ public class StandardCompiler implements Compiler {
 
                 if (configuration.shouldPrintAst ()) {
                     node.print (System.out, 0);
+                    System.out.println ();
                 }
 
                 if (node instanceof RootNode) {
