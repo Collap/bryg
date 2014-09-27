@@ -1,11 +1,9 @@
-- Mention in the language reference that === is reference equality, while == is value equality.
-    Reference equality includes the condition that the references are equal, while value equality
-    only makes sure that the values are equal or that a specific equals implementation returns true.
-    Since values at the same reference must fulfill the equals condition, reference equality always
-    includes value equality.
-
-- Check if there needs to be more boxing.
+- More boxing and unboxing in method and function calls.
+- Add coercion to method and function calls.
+- Expand object type coercion.
 - Make benchmark test functions optional.
+- Possibly remove the unary + operator, which does essentially nothing.
+- What about Java enums and their values?
 
 Upcoming features:
     - Parameter predicates: option(selected if false)
@@ -13,7 +11,7 @@ Upcoming features:
       Also: @.sub.Template (...) for a subpackage.
     - Fragment functions
     - new Object ()
-    - Static function calls.
+    - Static function calls
 
 Ideas:
     - @Template (post post, integer integer) etc. named arguments are redundant and annoying. Find a way to
