@@ -38,9 +38,14 @@ public class MethodCallExpression extends Expression {
         /* Init argument expressions. */
         argumentExpressions = FunctionUtil.parseArgumentList (context, ctx.functionCall ().argumentList ());
 
-        /* Find out parameter type. */
+        /* Validate and find out parameter types. */
         List<Class<?>> parameterTypes = new ArrayList<> ();
         for (ArgumentExpression argument : argumentExpressions) {
+            /* Check that no argument is named. */
+            if (argument.getName () != null) {
+                throw new BrygJitException ("Named arguments are not supported with method calls.", getLine ());
+            }
+
             parameterTypes.add (argument.getType ().getJavaType ());
         }
 
