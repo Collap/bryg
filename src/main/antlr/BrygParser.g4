@@ -155,7 +155,7 @@ templateFragmentCall
     ;
 
 templateId
-    :   '@' (id '.')* id
+    :   '@' currentPackage='.'? (id '.')* id
     ;
 
 argumentList

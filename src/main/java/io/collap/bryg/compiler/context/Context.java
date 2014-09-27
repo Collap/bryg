@@ -20,6 +20,7 @@ public class Context {
     private Library library;
     private ClassResolver classResolver;
     private GlobalVariableModel globalVariableModel;
+    private String templatePackage;
 
     //
     //  Compiler states
@@ -98,6 +99,14 @@ public class Context {
 
     public GlobalVariableModel getGlobalVariableModel () {
         return globalVariableModel;
+    }
+
+    public String getTemplatePackage () {
+        return templatePackage;
+    }
+
+    public void setTemplatePackage (String templatePackage) {
+        this.templatePackage = templatePackage;
     }
 
 }

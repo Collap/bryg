@@ -7,8 +7,6 @@
 
 Upcoming features:
     - Parameter predicates: option(selected if false)
-    - @.Template (...) to invoke a template in the current "package" (relative template path).
-      Also: @.sub.Template (...) for a subpackage.
     - Fragment functions
     - new Object ()
     - Static function calls

@@ -29,7 +29,7 @@ public class TemplateFragmentCall extends Node {
         super (context);
         setLine (ctx.getStart ().getLine ());
 
-        templateName = IdUtil.templateIdToString (ctx.templateId ());
+        templateName = IdUtil.templateIdToString (ctx.templateId (), context.getTemplatePackage ());
 
         /* Get argument expressions. */
         argumentExpressions = FunctionUtil.parseArgumentList (context, ctx.argumentList ());

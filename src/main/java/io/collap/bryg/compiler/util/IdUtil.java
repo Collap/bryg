@@ -14,10 +14,17 @@ public class IdUtil {
         return text;
     }
 
-    public static String templateIdToString (BrygParser.TemplateIdContext ctx) {
+    public static String templateIdToString (BrygParser.TemplateIdContext ctx, String parentPackage) {
         if (ctx == null) return null;
 
-        return ctx.getText ().substring (1); /* Omit the AT (@). */
+        String packageName = ctx.getText ().substring (1); /* Omit the AT (@). */
+
+        /* Check if the parent package needs to be prepended. */
+        if (ctx.currentPackage != null) {
+            packageName = parentPackage + packageName;
+        }
+
+        return packageName;
     }
 
 }

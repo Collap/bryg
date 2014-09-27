@@ -152,6 +152,7 @@ public class StandardCompiler implements Compiler {
                     new String[] { AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName () });
             {
                 Context context = new Context (render, library, classResolver, globalVariableModel);
+                context.setTemplatePackage (name.substring (0, name.lastIndexOf ('.')));
                 Node node = context.getParseTreeVisitor ().visit (startContext);
 
                 if (configuration.shouldPrintAst ()) {

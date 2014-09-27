@@ -427,7 +427,7 @@ public class PrintTreeVisitor extends BrygParserBaseVisitor<Integer> {
 
     @Override
     public Integer visitTemplateId (@NotNull BrygParser.TemplateIdContext ctx) {
-        printContext (ctx, IdUtil.templateIdToString (ctx));
+        printContext (ctx, ctx.getText ());
         return 0;
     }
 
