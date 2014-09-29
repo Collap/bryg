@@ -51,9 +51,7 @@ html
             td a(href '/stocks/' + item.symbol, id 'mark:symbol') item.symbol
             td a(href item.url, id 'mark:url') item.name2
             td strong(id 'mark:price') item.price
-            if (item.change < 0)
-              td(class 'minus', id 'mark:change') item.change
-              td(class 'minus', id 'mark:ratio') item.ratio
-            else
-              td item.change
-              td item.ratio
+
+            mut changeNegative = item.change < 0
+            td(class 'minus' if changeNegative, id 'mark:change' if changeNegative) item.change
+            td(class 'minus' if changeNegative, id 'mark:ratio' if changeNegative) item.ratio

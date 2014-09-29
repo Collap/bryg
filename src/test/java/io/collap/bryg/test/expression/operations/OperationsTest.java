@@ -1,4 +1,4 @@
-package io.collap.bryg.test.expression;
+package io.collap.bryg.test.expression.operations;
 
 import io.collap.bryg.model.Model;
 import io.collap.bryg.test.TemplateTest;
@@ -13,7 +13,7 @@ public class OperationsTest extends TemplateTest {
 
     @Override
     protected String getTemplateName () {
-        return "expression.Operations";
+        return "expression.operations.Operations";
     }
 
 }

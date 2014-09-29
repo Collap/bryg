@@ -41,9 +41,13 @@ public class MethodCallExpression extends Expression {
         /* Validate and find out parameter types. */
         List<Class<?>> parameterTypes = new ArrayList<> ();
         for (ArgumentExpression argument : argumentExpressions) {
-            /* Check that no argument is named. */
+            /* Check that no argument is named or has a predicate. */
             if (argument.getName () != null) {
                 throw new BrygJitException ("Named arguments are not supported with method calls.", getLine ());
+            }
+
+            if (argument.getPredicate () != null) {
+                throw new BrygJitException ("Argument predicates are not supported with method calls.", getLine ());
             }
 
             parameterTypes.add (argument.getType ().getJavaType ());

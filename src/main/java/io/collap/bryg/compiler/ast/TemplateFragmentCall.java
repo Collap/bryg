@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.StandardTemplate;
 import io.collap.bryg.Template;
 import io.collap.bryg.compiler.ast.expression.ArgumentExpression;
@@ -87,6 +88,9 @@ public class TemplateFragmentCall extends Node {
                 throw new BrygJitException ("All arguments to a template must be named.", getLine ());
             }
 
+            /* Compile predicate. */
+            Label afterArgument = argument.compilePredicate ();
+
             mv.visitInsn (DUP);
             // Model -> Model, Model
 
@@ -109,6 +113,10 @@ public class TemplateFragmentCall extends Node {
                             Void.TYPE
                     ), true);
             // Model, String, T ->
+
+            if (afterArgument != null) {
+                mv.visitLabel (afterArgument);
+            }
         }
 
         /* Invoke render method. */

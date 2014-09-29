@@ -163,11 +163,15 @@ argumentList
     ;
 
 argument
-    :   argumentId? expression
+    :   argumentId? expression argumentPredicate?
     ;
 
 argumentId
     :   id ('-' id)*
+    ;
+
+argumentPredicate
+    :   IF expression
     ;
 
 literal

@@ -57,18 +57,15 @@ html
       ; of printing the source code.
       ; Once we introduce fragments and template calling/inclusion,
       ; we can also omit the boilerplate table code.
+      ; TODO: Update template according to assumption above.
       div(class 'box')
         h1: Addition
         table
           thead tr
             th: term
             th: result
-          tr
-            td: 5 + a
-            td  5 + a
-          tr(class odd)
-            td: b + 7
-            td  b + 7
+          @.OpRow(odd false, term '5 + a', result 5 + a)
+          @.OpRow(odd true, term 'b + 7', result b + 7)
           tr
             td: a + b
             td  a + b

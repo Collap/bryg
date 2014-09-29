@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.library.html;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.ast.expression.ArgumentExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
@@ -9,8 +10,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-// TODO: Add dynamic (runtime) attributes (currently, while attributes can have dynamic values, the attribute choice itself is fixed).
-
 public class HTMLAttributeCompiler {
 
     private class ArgumentComparator implements Comparator<ArgumentExpression> {
@@ -18,8 +17,8 @@ public class HTMLAttributeCompiler {
         @Override
         public int compare (ArgumentExpression o1, ArgumentExpression o2) {
             int result = 0;
-            if (o1.isConstant ()) result -= 1;
-            if (o2.isConstant ()) result += 1;
+            if (o1.isConstant () && o1.getPredicate () == null) result -= 1;
+            if (o2.isConstant () && o2.getPredicate () == null) result += 1;
             return result;
         }
 
@@ -43,13 +42,15 @@ public class HTMLAttributeCompiler {
             String name = attribute.getName ();
 
             boolean valid = name.startsWith ("data-")
-                    | Arrays.binarySearch (validAttributes, name) >= 0
-                    | Arrays.binarySearch (Attributes.validGlobalAttributes, name) >= 0;
+                    || Arrays.binarySearch (validAttributes, name) >= 0
+                    || Arrays.binarySearch (Attributes.validGlobalAttributes, name) >= 0;
 
             if (!valid) {
                 // TODO: Add notice for which tag said attribute is not defined.
                 System.out.println ("Warning: The attribute " + name + " is not a valid HTML5 attribute! Line: " + attribute.getLine ());
             }
+
+            Label nextFalseLabel = attribute.compilePredicate ();
 
             Object constantValue = attribute.getConstantValue ();
             boolean isEmpty = attribute.isConstant () &&
@@ -67,14 +68,14 @@ public class HTMLAttributeCompiler {
                     method.loadWriter ();
                     // -> Writer
 
-                    // TODO: Accept all values and cast if necessary.
+                    // TODO: Accept all value types and cast if necessary.
                     if (attribute.getType ().equals (String.class)) {
                         attribute.compile ();
                         // -> value
                     }else {
                         StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (method);
                         stringBuilder.compileNew ();
-                        stringBuilder.compileAppend (attribute.getExpression ()); // Note: The expression is compiled here!
+                        stringBuilder.compileAppend (attribute); // Note: The expression is compiled here!
                         stringBuilder.compileToString ();
                         // -> String
                     }
@@ -84,6 +85,10 @@ public class HTMLAttributeCompiler {
                 }
 
                 method.writeConstantString ("\"");
+            }
+
+            if (nextFalseLabel != null) {
+                method.visitLabel (nextFalseLabel);
             }
         }
     }

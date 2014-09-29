@@ -6,10 +6,10 @@
 - What about Java enums and their values?
 
 Upcoming features:
-    - Parameter predicates: option(selected if false)
     - Fragment functions
     - new Object ()
     - Static function calls
+    - Also check out the roadmap in the Wiki.
 
 Ideas:
     - @Template (post post, integer integer) etc. named arguments are redundant and annoying. Find a way to

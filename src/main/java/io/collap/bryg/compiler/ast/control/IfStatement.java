@@ -27,6 +27,7 @@ public class IfStatement extends Node {
         StandardVisitor ptv = context.getParseTreeVisitor ();
 
         Expression conditionOrExpression = (Expression) ptv.visit (ctx.expression ());
+        // TODO: Automate this "node boxing".
         if (conditionOrExpression instanceof BooleanExpression) {
             condition = (BooleanExpression) conditionOrExpression;
         }else {
