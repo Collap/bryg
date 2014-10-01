@@ -21,6 +21,10 @@ You can find a language reference in the [wiki](https://github.com/Collap/bryg/w
 
 ## Compilation
 
-Bryg is built with gradle, simple and easy.
+Bryg is built with gradle. Just type
+
+    gradle build test install
+    
+into your favorite command line while being in the root folder of bryg. This command will build the bryg sources and test sources, execute the tests and install the jar to the local maven repository.
 
 You need to compile the antlr4 sources manually to the folder gen with the package io.collap.bryg.parser.
