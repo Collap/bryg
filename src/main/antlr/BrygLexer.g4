@@ -56,33 +56,24 @@ tokens { INDENT, DEDENT }
     return tokens.isEmpty() ? next : tokens.poll();
   }
 
-  // Calculates the indentation of the provided spaces, taking the
-  // following rules into account:
-  //
-  // "Tabs are replaced (from left to right) by one to eight spaces
-  //  such that the total number of characters up to and including
-  //  the replacement is a multiple of eight [...]"
-  //
-  //  -- https://docs.python.org/3.1/reference/lexical_analysis.html#indentation
-  static int getIndentationCount(String spaces) {
+    /**
+     *  Replaces tabs according to the Indentation section in the language refernce.
+     */
+    static int getIndentationCount(String spaces) {
+        int count = 0;
 
-    int count = 0;
+        for (char ch : spaces.toCharArray()) {
+            switch (ch) {
+            case '\t':
+                count += 2 - (count % 2);
+                break;
+            default:
+                count++;
+            }
+        }
 
-    // TODO: Mark tabs as syntax error!
-
-    for (char ch : spaces.toCharArray()) {
-      switch (ch) {
-        case '\t':
-          count += 8 - (count % 8);
-          break;
-        default:
-          // A normal space char.
-          count++;
-      }
+        return count;
     }
-
-    return count;
-  }
 
     /**
      *  Pops indents from the stack until 'indent' is reached.

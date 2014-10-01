@@ -1,7 +1,6 @@
 - More boxing and unboxing in method and function calls.
 - Add coercion to method and function calls.
 - Expand object type coercion.
-- Make benchmark test functions optional.
 - Possibly remove the unary + operator, which does essentially nothing.
 - What about Java enums and their values?
 
@@ -18,3 +17,7 @@ Ideas:
 
 Absolutely needed improvements:
     - Better ANTLR and AST error reporting (with an error list, instead of aborting the compilation instantly).
+
+Tests:
+    - Test the tab to indentation translation of the lexer.
+    - Make benchmark test functions optional.
