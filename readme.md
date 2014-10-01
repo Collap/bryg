@@ -16,7 +16,7 @@ It is developed with these goals:
 
 ## Language Reference
 
-You can find a language reference for each bryg release in the [wiki](https://github.com/Collap/bryg/wiki).
+You can find a language reference in the [wiki](https://github.com/Collap/bryg/wiki).
 
 
 ## Compilation
