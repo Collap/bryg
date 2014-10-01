@@ -6,8 +6,6 @@ import io.collap.bryg.parser.BrygParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 
-// TODO: Can we override 'visit' to invoke printContext? Might reduce a lot of the boilerplate code.
-
 public class PrintTreeVisitor extends BrygParserBaseVisitor<Integer> {
 
     private void printContext (ParserRuleContext ctx) {

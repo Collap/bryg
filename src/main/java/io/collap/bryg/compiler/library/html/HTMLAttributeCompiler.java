@@ -46,7 +46,7 @@ public class HTMLAttributeCompiler {
                     || Arrays.binarySearch (Attributes.validGlobalAttributes, name) >= 0;
 
             if (!valid) {
-                // TODO: Add notice for which tag said attribute is not defined.
+                // TODO: Add notice for which tag said attribute is not defined. (Fix with Improved Error Handling)
                 System.out.println ("Warning: The attribute " + name + " is not a valid HTML5 attribute! Line: " + attribute.getLine ());
             }
 
@@ -68,8 +68,8 @@ public class HTMLAttributeCompiler {
                     method.loadWriter ();
                     // -> Writer
 
-                    // TODO: Accept all value types and cast if necessary.
-                    if (attribute.getType ().equals (String.class)) {
+                    // TODO: Accept all value types and cast if necessary. (Fix in 0.3 with Improved Coercion)
+                    if (attribute.getType ().similarTo (String.class)) {
                         attribute.compile ();
                         // -> value
                     }else {

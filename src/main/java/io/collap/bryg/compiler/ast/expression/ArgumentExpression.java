@@ -31,7 +31,7 @@ public class ArgumentExpression extends Expression {
 
         expression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
 
-        if (expression.getType ().equals (Void.TYPE)) {
+        if (expression.getType ().similarTo (Void.TYPE)) {
             throw new BrygJitException ("An argument expression must not return void.", getLine ());
         }
 
@@ -41,7 +41,7 @@ public class ArgumentExpression extends Expression {
         BrygParser.ArgumentPredicateContext predicateContext = ctx.argumentPredicate ();
         if (predicateContext != null) {
             Expression predicateExpression = (Expression) context.getParseTreeVisitor ().visit (predicateContext);
-            // TODO: Automate this "node boxing".
+            // TODO: Automate this "node boxing". (Fix in 0.3 with Improved Coercion)
             if (predicateExpression instanceof BooleanExpression) {
                 predicate = (BooleanExpression) predicateExpression;
             }else {

@@ -24,12 +24,12 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
     public void compileAppend (Expression expression, boolean compileExpression) {
         Type argumentType = expression.getType ();
         if (!argumentType.getJavaType ().isPrimitive ()) { /* All objects are supplied as either String or Object. */
-            if (!argumentType.equals (String.class)) {
+            if (!argumentType.similarTo (String.class)) {
                 argumentType = new Type (Object.class);
             }
         }else {
             /* Byte and Short primitives need to be appended as integers. */
-            if (argumentType.equals (Byte.TYPE) || argumentType.equals (Short.TYPE)) {
+            if (argumentType.similarTo (Byte.TYPE) || argumentType.similarTo (Short.TYPE)) {
                 argumentType = new Type (Integer.TYPE);
             }
         }

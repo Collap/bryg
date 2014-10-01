@@ -15,7 +15,7 @@ public class NegationExpression extends Expression {
         setLine (line);
 
         if (!child.getType ().isNumeric ()) {
-            // TODO: Convert byte and short to int
+            // TODO: Convert byte and short to int. (Fix in 0.3 with Improved Coercion)
             throw new BrygJitException ("Can only negate numeric primitive types!", line);
         }
         setType (child.getType ());

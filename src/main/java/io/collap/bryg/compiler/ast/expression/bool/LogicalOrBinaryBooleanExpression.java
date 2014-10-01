@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 public class LogicalOrBinaryBooleanExpression extends BinaryBooleanExpression {
 
-    // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression.
+    // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression. (Fix in 0.3 with Improved Coercion)
 
     public LogicalOrBinaryBooleanExpression (Context context, BrygParser.BinaryLogicalOrExpressionContext ctx) {
         super (context, ctx.expression (0), ctx.expression (1));

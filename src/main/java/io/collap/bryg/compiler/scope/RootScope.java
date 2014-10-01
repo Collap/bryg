@@ -52,7 +52,7 @@ public class RootScope extends Scope {
         /* Double and long use two variable slots. */
         boolean isWide = false;
         if (type != null && type.getJavaType ().isPrimitive ()) {
-            isWide = type.equals (Long.TYPE) || type.equals (Double.TYPE);
+            isWide = type.similarTo (Long.TYPE) || type.similarTo (Double.TYPE);
         }
 
         if (isWide) {

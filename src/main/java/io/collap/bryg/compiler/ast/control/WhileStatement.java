@@ -42,7 +42,7 @@ public class WhileStatement extends Node {
         /* Condition. */
         mv.visitLabel (conditionLabel);
         BooleanExpression booleanExpression;
-        // TODO: Automate this "node boxing".
+        // TODO: Automate this "node boxing". (Fix in 0.3 with Improved Coercion)
         if (condition instanceof BooleanExpression) {
             booleanExpression = ((BooleanExpression) condition);
         }else {

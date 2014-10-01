@@ -74,7 +74,7 @@ public class EachStatement extends Node {
         if (declaredElementType != null) {
             if (elementType == null) {
                 elementType = declaredElementType;
-            }else if (!declaredElementType.equals (elementType)) {
+            }else if (!declaredElementType.similarTo (elementType)) {
                 throw new BrygJitException ("The inferred element type differs from the declared element type!", getLine ());
             }
         }else if (elementType == null) {

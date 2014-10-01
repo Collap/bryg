@@ -44,8 +44,8 @@ public class VariableDeclarationNode extends Node {
             if (expression == null) {
                 type = expectedType;
             }else {
-                if (!expression.getType ().equals (expectedType)) {
-                    // TODO: Coercion?
+                if (!expression.getType ().similarTo (expectedType)) {
+                    // TODO: Coercion? (Fix in 0.3 with Improved Coercion)
                     throw new BrygJitException ("The expected type and inferred type do not match for variable '" + name + "'.",
                         getLine ());
                 }

@@ -20,7 +20,7 @@ public class BinaryAdditionExpression extends BinaryArithmeticExpression {
 
     @Override
     protected void setupType () {
-        if (left.getType ().equals (String.class) || right.getType ().equals (String.class)) {
+        if (left.getType ().similarTo (String.class) || right.getType ().similarTo (String.class)) {
             setType (new Type (String.class));
         }else {
             super.setupType ();
@@ -30,7 +30,7 @@ public class BinaryAdditionExpression extends BinaryArithmeticExpression {
     @Override
     public void compile () {
         /* Build String. */
-        if (type.equals (String.class)) {
+        if (type.similarTo (String.class)) {
             buildString ();
             // -> String
         }else {

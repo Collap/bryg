@@ -13,7 +13,7 @@ import static bryg.org.objectweb.asm.Opcodes.IFNE;
 
 public class LogicalNotBooleanExpression extends BooleanExpression {
 
-    // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression.
+    // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression. (Fix in 0.3 with Improved Coercion)
 
     private Expression child;
 
@@ -22,7 +22,7 @@ public class LogicalNotBooleanExpression extends BooleanExpression {
         setLine (childCtx.getStart ().getLine ());
         child = (Expression) context.getParseTreeVisitor ().visit (childCtx);
 
-        if (!child.getType ().equals (Boolean.TYPE)) {
+        if (!child.getType ().similarTo (Boolean.TYPE)) {
             throw new BrygJitException ("The NOT (`not`) operation can only be applied to boolean types.",
                     getLine ());
         }

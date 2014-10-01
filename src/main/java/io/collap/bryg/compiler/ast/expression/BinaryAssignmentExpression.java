@@ -20,8 +20,8 @@ import io.collap.bryg.parser.BrygParser;
 
 public class BinaryAssignmentExpression extends BinaryExpression {
 
-    // TODO: Allow the following: val byte b = 42
-    // TODO: Make the indication of casting easier for these scenarios: (int) (value / 0.5) ; Where value is an int.
+    // TODO: Allow the following: val byte b = 42 (Fix in 0.3 with Improved Coercion)
+    // TODO: Make the indication of casting easier for these scenarios: (int) (value / 0.5) ; Where value is an int. (Fix in 0.3 with Improved Coercion)
 
     /**
      * The right expression does not need to be compiled if the left expression takes care of it.
@@ -70,7 +70,7 @@ public class BinaryAssignmentExpression extends BinaryExpression {
                     leftGet = new AccessExpression (context, accessCtx, AccessMode.get);
                 }
             } catch (NoSuchFieldException e) {
-                e.printStackTrace (); // TODO: Log properly.
+                e.printStackTrace (); // TODO: Log properly. (Fix with Improved Error Handling)
                 throw new BrygJitException ("The field to set either does not exist or is not visible!", getLine ());
             }
         }else {
@@ -121,9 +121,9 @@ public class BinaryAssignmentExpression extends BinaryExpression {
         }
 
         /* Possible coercion. */
-        if (!expectedType.equals (right.getType ())) {
+        if (!expectedType.similarTo (right.getType ())) {
             Type targetType = CoercionUtil.getTargetType (expectedType, right.getType (), getLine ());
-            if (!expectedType.equals (targetType)) {
+            if (!expectedType.similarTo (targetType)) {
                 throw new BrygJitException ("Coercion for assignment failed, please cast manually from '" +
                         targetType + "' to '" + expectedType + "'.", getLine ());
             }

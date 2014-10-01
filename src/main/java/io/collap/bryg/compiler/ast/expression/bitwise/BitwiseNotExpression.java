@@ -8,7 +8,7 @@ import io.collap.bryg.parser.BrygParser;
 
 import static bryg.org.objectweb.asm.Opcodes.IXOR;
 
-// TODO: Promote byte and short?
+// TODO: Promote byte and short? (Consider in 0.3 with Improved Coercion)
 
 public class BitwiseNotExpression extends Expression {
 
@@ -41,7 +41,7 @@ public class BitwiseNotExpression extends Expression {
         child.compile ();
         // -> T
 
-        if (type.equals (Long.TYPE)) {
+        if (type.similarTo (Long.TYPE)) {
             mv.visitLdcInsn (-1L);
         }else { /* byte, short, int */
             mv.visitLdcInsn (-1);

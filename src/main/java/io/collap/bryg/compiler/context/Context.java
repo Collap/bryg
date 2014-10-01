@@ -48,7 +48,7 @@ public class Context {
         currentScope = rootScope;
 
         /* Register parameters in the correct order. */
-        rootScope.registerVariable ("this", null, false); // TODO: Proper type.
+        rootScope.registerVariable ("this", null, false); // TODO: Proper type. (Fix in 0.4 with new template metadata).
         rootScope.registerVariable ("writer", new Type (Writer.class), false);
         rootScope.registerVariable ("model", new Type (Model.class), false);
 

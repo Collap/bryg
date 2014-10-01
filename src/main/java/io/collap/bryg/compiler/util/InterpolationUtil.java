@@ -89,7 +89,7 @@ public class InterpolationUtil {
         if (afterIndex < value.length ()) {
             char after = value.charAt (afterIndex);
             if (after == '{') {
-                // TODO: This technique dictates that no '}' are allowed inside an interpolation!
+                // TODO: This technique dictates that no '}' are allowed inside an interpolation! (Fix in 0.3)
                 int nextRBrace = value.indexOf ('}', afterIndex);
                 return value.substring (afterIndex + 1, nextRBrace);
             }

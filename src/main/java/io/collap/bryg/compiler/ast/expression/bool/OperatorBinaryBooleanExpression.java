@@ -39,7 +39,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
         // -> T, T
 
         if (operandType.getJavaType ().isPrimitive ()) {
-            if (operandType.equals (Boolean.TYPE)) {
+            if (operandType.similarTo (Boolean.TYPE)) {
                 switch (operator) {
                     case BrygLexer.REQ:
                         mv.visitJumpInsn (IF_ICMPNE, nextFalse);
@@ -51,7 +51,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
                     default:
                         throw new BrygJitException ("A boolean can only be compared with req (==) and rne (!=).", getLine ());
                 }
-            }else if (operandType.equals (Integer.TYPE)) {
+            }else if (operandType.similarTo (Integer.TYPE)) {
                 switch (operator) {
                     case BrygLexer.REQ:
                         mv.visitJumpInsn (IF_ICMPNE, nextFalse);
@@ -78,13 +78,13 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
                         throw new BrygJitException ("Unexpected boolean operator!", getLine ());
                 }
             }else {
-                if (operandType.equals (Double.TYPE)) {
+                if (operandType.similarTo (Double.TYPE)) {
                     mv.visitInsn (DCMPG);
                     // d1, d2 -> int
-                }else if (operandType.equals (Float.TYPE)) {
+                }else if (operandType.similarTo (Float.TYPE)) {
                     mv.visitInsn (FCMPG);
                     // f1, f2 -> int
-                }else if (operandType.equals (Long.TYPE)) {
+                }else if (operandType.similarTo (Long.TYPE)) {
                     mv.visitInsn (LCMP);
                     // l1, l2 -> int
                 }else {
@@ -120,7 +120,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
                 }
             }
         }else { /* Objects. */
-            // TODO: With the coercion model above, the object types have to be exactly the same!
+            // TODO: With the coercion model above, the object types have to be exactly the same! (Fix in 0.3 with Improved Coercion)
             // Which disallows using "narrow" references for interfaces or superclasses.
             mv.visitMethodInsn (INVOKEVIRTUAL, AsmTypes.getAsmType (Object.class).getInternalName (),
                     "equals", TypeHelper.generateMethodDesc (

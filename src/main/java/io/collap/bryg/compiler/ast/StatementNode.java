@@ -36,7 +36,7 @@ public class StatementNode extends Node {
         if (child instanceof Expression) {
             Expression expression = (Expression) child;
             Type type = expression.getType ();
-            if (!type.equals (Void.TYPE)) {
+            if (!type.similarTo (Void.TYPE)) {
                 BrygMethodVisitor mv = context.getMethodVisitor ();
                 if (expression instanceof StringLiteralExpression) {
                     /* Append String constants to the constant string writer. */
@@ -58,7 +58,7 @@ public class StatementNode extends Node {
                             expression.compile ();
                             // -> value
 
-                            if (!type.equals (String.class)) {
+                            if (!type.similarTo (String.class)) {
                                 mv.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), "toString",
                                         TypeHelper.generateMethodDesc (null, String.class), false);
                                 // T -> String

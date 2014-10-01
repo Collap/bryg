@@ -48,7 +48,7 @@ public class CoercionUtil {
      */
     public static void attemptBinaryCoercion (Context context, Expression left, Expression right,
                                               Type targetType) {
-        if (left.getType ().equals (right.getType ()) && left.getType ().equals (targetType)) {
+        if (left.getType ().similarTo (right.getType ()) && left.getType ().similarTo (targetType)) {
             left.compile ();
             right.compile ();
             return;
@@ -98,7 +98,7 @@ public class CoercionUtil {
         if (leftType == null) throw new BrygJitException ("Left type is null.", line);
         if (rightType == null) throw new BrygJitException ("Right type is null.", line);
 
-        if (leftType.equals (rightType)) {
+        if (leftType.similarTo (rightType)) {
             return leftType;
         }
 
@@ -128,7 +128,7 @@ public class CoercionUtil {
 
         if (leftType.isIntegralType () && rightType.isIntegralType ()) {
             /* This promotes all integers to longs. */
-            // TODO: What about left: byte and right: int for example?
+            // TODO: What about left: byte and right: int for example? (Fix in 0.3 with Improved Coercion)
             return new Type (Long.TYPE);
         }else if (leftType.isFloatingPointType () && rightType.isFloatingPointType ()) {
             /* This promotes all floats to doubles. */
@@ -146,13 +146,13 @@ public class CoercionUtil {
     @Nullable
     private static Type getTargetIFpType (Type iType, Type fpType) {
         Type targetType = null;
-        if (iType.equals (Integer.TYPE)) {
-            if (fpType.equals (Float.TYPE)) {
+        if (iType.similarTo (Integer.TYPE)) {
+            if (fpType.similarTo (Float.TYPE)) {
                 targetType = new Type (Float.TYPE);
             }else {
                 targetType = new Type (Double.TYPE);
             }
-        }else if (iType.equals (Long.TYPE)) {
+        }else if (iType.similarTo (Long.TYPE)) {
             targetType = new Type (Double.TYPE);
         }
         return targetType;
@@ -187,10 +187,10 @@ public class CoercionUtil {
         int leftConversionOp = NOP;
         int rightConversionOp = NOP;
 
-        if (!left.getType ().equals (targetType)) {
+        if (!left.getType ().similarTo (targetType)) {
             leftConversionOp = getConversionOpcode (left.getType (), targetType, left.getLine ());
         }
-        if (!right.getType ().equals (targetType)) {
+        if (!right.getType ().similarTo (targetType)) {
             rightConversionOp = getConversionOpcode (right.getType (), targetType, right.getLine ());
         }
 
@@ -216,25 +216,25 @@ public class CoercionUtil {
      * @param line Used for error reporting.
      */
     public static int getConversionOpcode (Type from, Type to, int line) {
-        if (from.equals (Integer.TYPE)) {
-            if (to.equals (Long.TYPE)) return I2L;
-            if (to.equals (Float.TYPE)) return I2F;
-            if (to.equals (Double.TYPE)) return I2D;
-            if (to.equals (Byte.TYPE)) return I2B;
-            if (to.equals (Short.TYPE)) return I2S;
-            if (to.equals (Character.TYPE)) return I2C;
-        }else if (from.equals (Long.TYPE)) {
-            if (to.equals (Integer.TYPE)) return L2I;
-            if (to.equals (Float.TYPE)) return L2F;
-            if (to.equals (Double.TYPE)) return L2D;
-        }else if (from.equals (Float.TYPE)) {
-            if (to.equals (Integer.TYPE)) return F2I;
-            if (to.equals (Long.TYPE)) return F2L;
-            if (to.equals (Double.TYPE)) return F2D;
-        }else if (from.equals (Double.TYPE)) {
-            if (to.equals (Integer.TYPE)) return D2I;
-            if (to.equals (Long.TYPE)) return D2L;
-            if (to.equals (Float.TYPE)) return D2F;
+        if (from.similarTo (Integer.TYPE)) {
+            if (to.similarTo (Long.TYPE)) return I2L;
+            if (to.similarTo (Float.TYPE)) return I2F;
+            if (to.similarTo (Double.TYPE)) return I2D;
+            if (to.similarTo (Byte.TYPE)) return I2B;
+            if (to.similarTo (Short.TYPE)) return I2S;
+            if (to.similarTo (Character.TYPE)) return I2C;
+        }else if (from.similarTo (Long.TYPE)) {
+            if (to.similarTo (Integer.TYPE)) return L2I;
+            if (to.similarTo (Float.TYPE)) return L2F;
+            if (to.similarTo (Double.TYPE)) return L2D;
+        }else if (from.similarTo (Float.TYPE)) {
+            if (to.similarTo (Integer.TYPE)) return F2I;
+            if (to.similarTo (Long.TYPE)) return F2L;
+            if (to.similarTo (Double.TYPE)) return F2D;
+        }else if (from.similarTo (Double.TYPE)) {
+            if (to.similarTo (Integer.TYPE)) return D2I;
+            if (to.similarTo (Long.TYPE)) return D2L;
+            if (to.similarTo (Float.TYPE)) return D2F;
         }
 
         throw new BrygJitException ("Conversion from " + from + " to " + to + " is not possible.", line);

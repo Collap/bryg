@@ -98,7 +98,7 @@ public class StandardCompiler implements Compiler {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace (); // TODO: Handle.
+            e.printStackTrace (); // TODO: Handle. (Fix with Improved Error Handling)
         }
 
         if (startContext == null) return null;

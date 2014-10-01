@@ -23,7 +23,7 @@ public class ExpressionBooleanExpression extends BooleanExpression {
         setLine (expression.getLine ());
         this.expression = expression;
 
-        if (!expression.getType ().equals (Boolean.TYPE)) {
+        if (!expression.getType ().similarTo (Boolean.TYPE)) {
             throw new BrygJitException ("Expected a condition, but got an expression that does not return a boolean type",
                 getLine ());
         }

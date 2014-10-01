@@ -30,26 +30,26 @@ public class Type {
     }
 
     /**
-     * @param obj May be a Type or a Class.
+     *  @return Whether the type has the same Java base type as this type.
      */
-    // TODO: Allowing objects of type class is REALLY bending the definition of "equals".
-    @Override
-    public boolean equals (Object obj) {
-        if (obj instanceof Type) {
-            return javaType.equals (((Type) obj).getJavaType ());
-        }else if (obj instanceof Class<?>) {
-            return javaType.equals (obj);
-        }
-        return false;
+    public boolean similarTo (Type type) {
+        return javaType.equals (type.getJavaType ());
+    }
+
+    /**
+     * @return Whether the class is the same as the Java base type of this type.
+     */
+    public boolean similarTo (Class<?> type) {
+        return javaType.equals (type);
     }
 
     public boolean isIntegralType () {
         // Note: Ordered by suspected amount of occurrence.
-        return equals (Integer.TYPE) || equals (Long.TYPE) || equals (Byte.TYPE) || equals (Short.TYPE);
+        return similarTo (Integer.TYPE) || similarTo (Long.TYPE) || similarTo (Byte.TYPE) || similarTo (Short.TYPE);
     }
 
     public boolean isFloatingPointType () {
-        return equals (Double.TYPE) || equals (Float.TYPE);
+        return similarTo (Double.TYPE) || similarTo (Float.TYPE);
     }
 
     public boolean isNumeric () {

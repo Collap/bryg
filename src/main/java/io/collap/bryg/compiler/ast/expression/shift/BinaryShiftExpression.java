@@ -19,7 +19,7 @@ public abstract class BinaryShiftExpression extends BinaryExpression {
     }
 
     private void init () {
-        if (!right.getType ().equals (Integer.TYPE)) {
+        if (!right.getType ().similarTo (Integer.TYPE)) {
             throw new BrygJitException ("The shift amount (right-hand operand) must be an int.", getLine ());
         }
 
