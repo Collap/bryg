@@ -127,35 +127,42 @@ public class CoercionUtil {
         }
 
         if (leftType.isIntegralType () && rightType.isIntegralType ()) {
-            /* This promotes all integers to longs. */
-            // TODO: What about left: byte and right: int for example? (Fix in 0.3 with Improved Coercion)
-            return new Type (Long.TYPE);
+            if (leftType.similarTo (Long.TYPE) || rightType.similarTo (Long.TYPE)) {
+                /* This promotes any integers to longs. */
+                return new Type (Long.TYPE);
+            }else {
+                /* Both type are integers or smaller, so no need for longs.*/
+                System.out.println ("Promote to int!");
+                return new Type (Integer.TYPE);
+            }
         }else if (leftType.isFloatingPointType () && rightType.isFloatingPointType ()) {
             /* This promotes all floats to doubles. */
             return new Type (Double.TYPE);
         }else if (leftType.isIntegralType () && rightType.isFloatingPointType ()) {
-            return getTargetIFpType (leftType, rightType);
+            Type type = getTargetIFpType (leftType, rightType);
+            if (type != null) return type;
         }else if (leftType.isFloatingPointType () && rightType.isIntegralType ()) {
-            return getTargetIFpType (rightType, leftType);
+            Type type = getTargetIFpType (rightType, leftType);
+            if (type != null) return type;
         }
 
         throw new BrygJitException ("Could not coerce " + leftType + " and " + rightType + " as this " +
-                "combination is not currently supported!", line);
+                "combination is not supported!", line);
     }
 
     @Nullable
     private static Type getTargetIFpType (Type iType, Type fpType) {
-        Type targetType = null;
-        if (iType.similarTo (Integer.TYPE)) {
+        if (!iType.isIntegralType ()) return null;
+
+        if (iType.similarTo (Long.TYPE)) {
+            return new Type (Double.TYPE);
+        }else { /* byte, int, short */
             if (fpType.similarTo (Float.TYPE)) {
-                targetType = new Type (Float.TYPE);
+                return new Type (Float.TYPE);
             }else {
-                targetType = new Type (Double.TYPE);
+                return new Type (Double.TYPE);
             }
-        }else if (iType.similarTo (Long.TYPE)) {
-            targetType = new Type (Double.TYPE);
         }
-        return targetType;
     }
 
     /**
@@ -214,14 +221,25 @@ public class CoercionUtil {
     /**
      * Returns the conversion opcode for a number of primitive conversions.
      * @param line Used for error reporting.
+     * @return May return NOP if the "conversion" is implicit.
      */
     public static int getConversionOpcode (Type from, Type to, int line) {
-        if (from.similarTo (Integer.TYPE)) {
+        if (from.similarTo (Byte.TYPE) || from.similarTo (Short.TYPE)) {
+            /* Note: Conversion from byte or short to int is implicit. */
+            if (to.similarTo (Byte.TYPE)) return NOP;
+            if (to.similarTo (Short.TYPE)) return NOP;
+            if (to.similarTo (Integer.TYPE)) return NOP;
+
             if (to.similarTo (Long.TYPE)) return I2L;
             if (to.similarTo (Float.TYPE)) return I2F;
             if (to.similarTo (Double.TYPE)) return I2D;
+            if (to.similarTo (Character.TYPE)) return I2C;
+        }else if (from.similarTo (Integer.TYPE)) {
             if (to.similarTo (Byte.TYPE)) return I2B;
             if (to.similarTo (Short.TYPE)) return I2S;
+            if (to.similarTo (Long.TYPE)) return I2L;
+            if (to.similarTo (Float.TYPE)) return I2F;
+            if (to.similarTo (Double.TYPE)) return I2D;
             if (to.similarTo (Character.TYPE)) return I2C;
         }else if (from.similarTo (Long.TYPE)) {
             if (to.similarTo (Integer.TYPE)) return L2I;
