@@ -48,11 +48,6 @@ public class CoercionUtil {
      */
     public static void attemptBinaryCoercion (Context context, Expression left, Expression right,
                                               Type targetType) {
-        if (left.getType ().similarTo (right.getType ()) && left.getType ().similarTo (targetType)) {
-            left.compile ();
-            right.compile ();
-            return;
-        }
 
         if (!left.getType ().getJavaType ().isPrimitive ()) {
             left = getUnboxingExpressionOrThrowException (context, left);
@@ -60,6 +55,12 @@ public class CoercionUtil {
 
         if (!right.getType ().getJavaType ().isPrimitive ()) {
             right = getUnboxingExpressionOrThrowException (context, right);
+        }
+
+        if (left.getType ().similarTo (right.getType ()) && left.getType ().similarTo (targetType)) {
+            left.compile ();
+            right.compile ();
+            return;
         }
 
         BrygMethodVisitor mv = context.getMethodVisitor ();
@@ -98,10 +99,6 @@ public class CoercionUtil {
         if (leftType == null) throw new BrygJitException ("Left type is null.", line);
         if (rightType == null) throw new BrygJitException ("Right type is null.", line);
 
-        if (leftType.similarTo (rightType)) {
-            return leftType;
-        }
-
         boolean attemptedToCoerceObjects = false;
 
         if (!leftType.getJavaType ().isPrimitive ()) {
@@ -120,6 +117,10 @@ public class CoercionUtil {
             }else {
                 attemptedToCoerceObjects = true;
             }
+        }
+
+        if (leftType.similarTo (rightType)) {
+            return leftType;
         }
 
         if (attemptedToCoerceObjects) {
