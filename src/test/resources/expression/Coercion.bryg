@@ -1,0 +1,69 @@
+val byte b = (byte) 100         ; TODO: Remove cast here (0.3, coercion)
+val short s = (short) 10000     ; TODO: Remove cast here (0.3, coercion)
+val int i = 1000000000
+val long l = 10000000000L
+val float f = 0.5f
+val double d = 1.5              ; TODO: Allow 1.5f here (0.3, coercion)
+
+h2: Values
+ul
+  li: \{b} (byte)
+  li: \{s} (short)
+  li: \{i} (int)
+  li: \{l} (long)
+  li: \{f} (float)
+  li: \{d} (double)
+
+h2: Byte + x
+ul
+  li b + b
+  li b + s
+  li b + i
+  li b + l
+  li b + f
+  li b + d
+
+h2: Short + x
+ul
+  li s + b
+  li s + s
+  li s + i
+  li s + l
+  li s + f
+  li s + d
+
+h2: Int + x
+ul
+  li i + b
+  li i + s
+  li i + i
+  li i + l
+  li i + f
+  li i + d
+
+h2: Long + x
+ul
+  li l + b
+  li l + s
+  li l + i
+  li l + l
+  li l + f
+  li l + d
+
+h2: Float + x
+ul
+  li f + b
+  li f + s
+  li f + i
+  li f + l
+  li f + f
+  li f + d
+
+h2: Double + x
+ul
+  li d + b
+  li d + s
+  li d + i
+  li d + l
+  li d + f
+  li d + d
