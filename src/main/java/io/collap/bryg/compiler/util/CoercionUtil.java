@@ -10,6 +10,9 @@ import javax.annotation.Nullable;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
+// TODO: Replace current dual coercion mechanism (find type first, then attempt coercion in compile method) with
+// a mechanism that wraps expressions in coercion nodes. This should reduce redundant code and computation.
+
 public class CoercionUtil {
 
     private static class UnboxingExpression extends Expression {
@@ -220,43 +223,141 @@ public class CoercionUtil {
     }
 
     /**
+     * Assumes that the expressions have not been compiled yet.
+     * The expressions are guaranteed to be compiled when the method returns properly (i.e. without throwing an exception).
+     *
+     * Unboxes boxed values.
+     *
+     * @throws io.collap.bryg.exception.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
+     *         hence the compilation should be stopped at that point.
+     */
+    public static void attemptUnaryCoercion (Context context, Expression expr, Type targetType) {
+        if (!expr.getType ().getJavaType ().isPrimitive ()) {
+            expr = getUnboxingExpressionOrThrowException (context, expr);
+        }
+
+        int conversionOpcode = getUnaryConversionOpcode (expr, targetType);
+        if (conversionOpcode == NOP - 1) {
+            throw new BrygJitException ("Conversion from " + expr.getType () + " to " + targetType + " is not possible.", expr.getLine ());
+        }
+
+        expr.compile ();
+        // -> T1
+
+        /* Convert if needed. */
+        if (conversionOpcode != NOP) {
+            BrygMethodVisitor mv = context.getMethodVisitor ();
+            mv.visitInsn (conversionOpcode);
+            // T1 -> T2
+        }
+    }
+
+    public static boolean isUnaryCoercionPossible (Context context, Expression expr, Type targetType) {
+        if (!expr.getType ().getJavaType ().isPrimitive ()) {
+            expr = getUnboxingExpressionOrThrowException (context, expr);
+        }
+
+        return getUnaryConversionOpcode (expr, targetType) != NOP - 1;
+    }
+
+    /**
+     * @return NOP - 1 when no opcode has been found. You need to check for this.
+     */
+    private static int getUnaryConversionOpcode (Expression expr, Type target) {
+        if (expr.getType ().similarTo (target)) return NOP;
+
+        if (expr.getType ().similarTo (Integer.TYPE)) {
+            /* Special case: Constant expressions that return the type int and have a value in byte or short bounds
+             * can be demoted to byte or short, respectively. */
+            if (expr.isConstant ()) {
+                int value = ((Integer) expr.getConstantValue ());
+                if (target.similarTo (Byte.TYPE)) {
+                    if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
+                        return I2B;
+                    }
+                } else if (target.similarTo (Short.TYPE)) {
+                    if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
+                        return I2S;
+                    }
+                }
+            }
+        }
+
+        return getPromotionOpcode (expr.getType (), target);
+    }
+
+    /**
      * Returns the conversion opcode for a number of primitive conversions.
      * @param line Used for error reporting.
      * @return May return NOP if the "conversion" is implicit.
      */
     public static int getConversionOpcode (Type from, Type to, int line) {
-        if (from.similarTo (Byte.TYPE) || from.similarTo (Short.TYPE)) {
-            /* Note: Conversion from byte or short to int is implicit. */
-            if (to.similarTo (Byte.TYPE)) return NOP;
-            if (to.similarTo (Short.TYPE)) return NOP;
-            if (to.similarTo (Integer.TYPE)) return NOP;
+        int opcode = getDemotionOpcode (from, to);
+        if (opcode == NOP - 1) {
+            opcode = getPromotionOpcode (from, to);
+        }
 
-            if (to.similarTo (Long.TYPE)) return I2L;
-            if (to.similarTo (Float.TYPE)) return I2F;
-            if (to.similarTo (Double.TYPE)) return I2D;
-            if (to.similarTo (Character.TYPE)) return I2C;
+        if (opcode == NOP - 1) {
+            throw new BrygJitException ("Conversion from " + from + " to " + to + " is not possible.", line);
+        }
+
+        return opcode;
+    }
+
+    /**
+     * @return NOP - 1 if no opcode has been found. You need to check for this.
+     */
+    public static int getDemotionOpcode (Type from, Type to) {
+        if (from.similarTo (Short.TYPE)) {
+            if (to.similarTo (Byte.TYPE)) return I2B;
         }else if (from.similarTo (Integer.TYPE)) {
             if (to.similarTo (Byte.TYPE)) return I2B;
             if (to.similarTo (Short.TYPE)) return I2S;
-            if (to.similarTo (Long.TYPE)) return I2L;
-            if (to.similarTo (Float.TYPE)) return I2F;
-            if (to.similarTo (Double.TYPE)) return I2D;
             if (to.similarTo (Character.TYPE)) return I2C;
         }else if (from.similarTo (Long.TYPE)) {
             if (to.similarTo (Integer.TYPE)) return L2I;
-            if (to.similarTo (Float.TYPE)) return L2F;
-            if (to.similarTo (Double.TYPE)) return L2D;
         }else if (from.similarTo (Float.TYPE)) {
             if (to.similarTo (Integer.TYPE)) return F2I;
             if (to.similarTo (Long.TYPE)) return F2L;
-            if (to.similarTo (Double.TYPE)) return F2D;
         }else if (from.similarTo (Double.TYPE)) {
             if (to.similarTo (Integer.TYPE)) return D2I;
             if (to.similarTo (Long.TYPE)) return D2L;
             if (to.similarTo (Float.TYPE)) return D2F;
         }
 
-        throw new BrygJitException ("Conversion from " + from + " to " + to + " is not possible.", line);
+        return NOP - 1;
+    }
+
+    /**
+     * @return NOP - 1 if no opcode has been found. You need to check for this.
+     */
+    public static int getPromotionOpcode (Type from, Type to) {
+        if (from.similarTo (Byte.TYPE)) {
+            if (to.similarTo (Short.TYPE)) return NOP;
+            if (to.similarTo (Integer.TYPE)) return NOP;
+            if (to.similarTo (Long.TYPE)) return I2L;
+            if (to.similarTo (Float.TYPE)) return I2F;
+            if (to.similarTo (Double.TYPE)) return I2D;
+            if (to.similarTo (Character.TYPE)) return I2C;
+        }else if (from.similarTo (Short.TYPE)) {
+            if (to.similarTo (Integer.TYPE)) return NOP;
+            if (to.similarTo (Long.TYPE)) return I2L;
+            if (to.similarTo (Float.TYPE)) return I2F;
+            if (to.similarTo (Double.TYPE)) return I2D;
+            if (to.similarTo (Character.TYPE)) return I2C;
+        }else if (from.similarTo (Integer.TYPE)) {
+            if (to.similarTo (Long.TYPE)) return I2L;
+            if (to.similarTo (Float.TYPE)) return I2F;
+            if (to.similarTo (Double.TYPE)) return I2D;
+            if (to.similarTo (Character.TYPE)) return I2C;
+        }else if (from.similarTo (Long.TYPE)) {
+            if (to.similarTo (Float.TYPE)) return L2F;
+            if (to.similarTo (Double.TYPE)) return L2D;
+        }else if (from.similarTo (Float.TYPE)) {
+            if (to.similarTo (Double.TYPE)) return F2D;
+        }
+
+        return NOP - 1;
     }
 
 }

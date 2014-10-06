@@ -1,9 +1,9 @@
-val byte b = (byte) 100         ; TODO: Remove cast here (0.3, coercion)
-val short s = (short) 10000     ; TODO: Remove cast here (0.3, coercion)
+val byte b = (byte) 100
+val short s = (short) 10000
 val int i = 1000000000
 val long l = 10000000000L
 val float f = 0.5f
-val double d = 1.5              ; TODO: Allow 1.5f here (0.3, coercion)
+val double d = 1.5
 
 h2: Values
 ul

@@ -6,6 +6,7 @@ import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.compiler.util.CoercionUtil;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
@@ -17,6 +18,7 @@ public class VariableDeclarationNode extends Node {
 
     private Variable variable;
     private Expression expression;
+    private boolean coerceExpression;
 
     public VariableDeclarationNode (Context context, BrygParser.VariableDeclarationContext ctx) {
         super (context);
@@ -45,9 +47,11 @@ public class VariableDeclarationNode extends Node {
                 type = expectedType;
             }else {
                 if (!expression.getType ().similarTo (expectedType)) {
-                    // TODO: Coercion? (Fix in 0.3 with Improved Coercion)
-                    throw new BrygJitException ("The expected type and inferred type do not match for variable '" + name + "'.",
-                        getLine ());
+                    coerceExpression = CoercionUtil.isUnaryCoercionPossible (context, expression, expectedType);
+                    if (!coerceExpression) {
+                        throw new BrygJitException ("The expected type and inferred type do not match for variable '"
+                                + name + "'. Coercion proved and is futile.", getLine ());
+                    }
                 }
                 type = expectedType;
             }
@@ -65,7 +69,11 @@ public class VariableDeclarationNode extends Node {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
         if (expression != null) {
-            expression.compile ();
+            if (coerceExpression) {
+                CoercionUtil.attemptUnaryCoercion (context, expression, variable.getType ());
+            }else {
+                expression.compile ();
+            }
             // -> value
 
             bryg.org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
