@@ -68,7 +68,6 @@ public class HTMLAttributeCompiler {
                     method.loadWriter ();
                     // -> Writer
 
-                    // TODO: Accept all value types and cast if necessary. (Fix in 0.3 with Improved Coercion)
                     if (attribute.getType ().similarTo (String.class)) {
                         attribute.compile ();
                         // -> value
