@@ -21,6 +21,13 @@ You can find a language reference in the [wiki](https://github.com/Collap/bryg/w
 
 ## Compilation
 
+The build currently has two prerequisites:
+
+1. The ANTLR sources need to be generated from `src/main/antlr/` and placed into the folder `gen/` with the package `io.collap.bryg.parser`. You can generate them with ANTLR 4.4.1.
+2. You need to download the `antlr-4.4.1-dev-complete.jar` and put it into the `lib/` folder. This is sadly mandatory, because the public maven repository at maven central does not have ANTLR 4.4.1, but the IntelliJ plugin uses it. 
+
+These prerequisites will either be removed or automated, as far as possible.
+
 Bryg is built with gradle. Just type
 
     gradle build test install

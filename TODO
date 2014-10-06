@@ -14,6 +14,7 @@ Ideas:
     - @Template (post post, integer integer) etc. named arguments are redundant and annoying. Find a way to
       find out the name of the parameter so the user does not have to specify it.
     - Replace System.out.println with a Logger?
+    - Support <!DOCTYPE x> with a function (and possibly an enum).
 
 Absolutely needed improvements:
     - Better ANTLR and AST error reporting (with an error list, instead of aborting the compilation instantly).
@@ -24,3 +25,7 @@ Tests:
 
 API:
     - Make the API easier to use.
+
+Build:
+    - Create a script that generates the ANTLR4 sources
+    - Get the ANTLR 4.4.1 jar from maven
