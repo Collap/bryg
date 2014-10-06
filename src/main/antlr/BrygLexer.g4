@@ -170,6 +170,10 @@ Integer
     :   Number+
     ;
 
+Long
+    :   Number+ ('l' | 'L')
+    ;
+
 String
     :   '\'' ('\\\'' | ~('\'' | '\n' | '\r'))* '\''
     {

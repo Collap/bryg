@@ -177,6 +177,7 @@ argumentPredicate
 literal
     :   String                  # stringLiteral
     |   Integer                 # integerLiteral
+    |   Long                    # longLiteral
     |   Double                  # doubleLiteral
     |   Float                   # floatLiteral
     |   NULL                    # nullLiteral

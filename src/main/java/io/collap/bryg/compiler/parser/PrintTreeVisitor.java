@@ -365,6 +365,12 @@ public class PrintTreeVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
+    public Integer visitLongLiteral (@NotNull BrygParser.LongLiteralContext ctx) {
+        printContext (ctx, ctx.Long ().getText ());
+        return 0;
+    }
+
+    @Override
     public Integer visitDoubleLiteral (@NotNull BrygParser.DoubleLiteralContext ctx) {
         printContext (ctx, ctx.Double ().getText ());
         return 0;

@@ -328,6 +328,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitLongLiteral (@NotNull BrygParser.LongLiteralContext ctx) {
+        return new LongLiteralExpression (context, ctx);
+    }
+
+    @Override
     public DoubleLiteralExpression visitDoubleLiteral (@NotNull BrygParser.DoubleLiteralContext ctx) {
         return new DoubleLiteralExpression (context, ctx);
     }
