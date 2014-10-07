@@ -67,3 +67,18 @@ ul
   li d + l
   li d + f
   li d + d
+
+h2: Negation
+ul
+  li
+    -b
+  li
+    -s
+  li
+    -i
+  li
+    -l
+  li
+    -f
+  li
+    -d

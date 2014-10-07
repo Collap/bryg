@@ -227,13 +227,21 @@ public class CoercionUtil {
      * The expressions are guaranteed to be compiled when the method returns properly (i.e. without throwing an exception).
      *
      * Unboxes boxed values.
+     * Automatically boxes the value if the target type is a box.
      *
      * @throws io.collap.bryg.exception.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
      *         hence the compilation should be stopped at that point.
      */
     public static void attemptUnaryCoercion (Context context, Expression expr, Type targetType) {
+        // TODO: Doubled code (look below, before 1.0)
         if (!expr.getType ().getJavaType ().isPrimitive ()) {
             expr = getUnboxingExpressionOrThrowException (context, expr);
+        }
+
+        Type boxedType = null;
+        if (BoxingUtil.isBoxedType (targetType)) {
+            boxedType = targetType;
+            targetType = BoxingUtil.unboxType (targetType);
         }
 
         int conversionOpcode = getUnaryConversionOpcode (expr, targetType);
@@ -250,6 +258,11 @@ public class CoercionUtil {
             mv.visitInsn (conversionOpcode);
             // T1 -> T2
         }
+
+        /* Box if needed. */
+        if (boxedType != null) {
+            BoxingUtil.compileBoxing (context.getMethodVisitor (), expr, boxedType);
+        }
     }
 
     public static boolean isUnaryCoercionPossible (Context context, Expression expr, Type targetType) {
@@ -257,10 +270,19 @@ public class CoercionUtil {
             expr = getUnboxingExpressionOrThrowException (context, expr);
         }
 
+        System.out.println ("Type: " + targetType.getJavaType ());
+
+        if (BoxingUtil.isBoxedType (targetType)) {
+            System.out.println ("is a boxed type.");
+            targetType = BoxingUtil.unboxType (targetType);
+        }
+
         return getUnaryConversionOpcode (expr, targetType) != NOP - 1;
     }
 
     /**
+     * You need to make sure that all types are properly unboxed.
+     *
      * @return NOP - 1 when no opcode has been found. You need to check for this.
      */
     private static int getUnaryConversionOpcode (Expression expr, Type target) {

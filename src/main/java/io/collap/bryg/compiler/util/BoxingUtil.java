@@ -39,6 +39,13 @@ public class BoxingUtil {
         valueMethodNames.put (Double.class, "doubleValue");
     }
 
+    public static boolean isBoxedType (Type type) {
+        return boxToPrimitive.containsKey (type.getJavaType ());
+    }
+
+    public static boolean isUnboxedType (Type type) {
+        return primitiveToBox.containsKey (type.getJavaType ());
+    }
 
     /**
      * @return A primitive type corresponding to 'type' or null.
@@ -88,6 +95,17 @@ public class BoxingUtil {
      */
     public static void compileBoxing (BrygMethodVisitor mv, Expression expression, Type box) {
         String boxTypeName = box.getAsmType ().getInternalName ();
+        Type paramType = expression.getType ();
+
+        /* There are no conversions from int to short or byte, so we just need to find the right constructor.
+         * This allows to box bytes and shorts from int expressions. */
+        if (paramType.similarTo (Integer.TYPE)) {
+            if (box.similarTo (Byte.class)) {
+                paramType = new Type (Byte.TYPE);
+            }else if (box.similarTo (Short.class)) {
+                paramType = new Type (Short.TYPE);
+            }
+        }
 
         mv.visitTypeInsn (NEW, boxTypeName);
         // -> T
@@ -100,7 +118,7 @@ public class BoxingUtil {
 
         mv.visitMethodInsn (INVOKESPECIAL, boxTypeName, "<init>",
                 TypeHelper.generateMethodDesc (
-                        new Type[] { expression.getType () },
+                        new Type[] { paramType },
                         new Type (Void.TYPE)
                 ),
                 false);
