@@ -7,6 +7,9 @@ import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.parser.BrygParser;
 
+/**
+ * If one of the operands is a String, neither 'left' nor 'right' may be DummyExpressions.
+ */
 public class BinaryAdditionExpression extends BinaryArithmeticExpression {
 
     public BinaryAdditionExpression (Context context, BrygParser.ExpressionContext leftCtx,
