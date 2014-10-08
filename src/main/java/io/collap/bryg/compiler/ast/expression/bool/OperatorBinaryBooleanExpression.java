@@ -1,12 +1,14 @@
 package io.collap.bryg.compiler.ast.expression.bool;
 
 import bryg.org.objectweb.asm.Label;
+import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.util.CoercionUtil;
+import io.collap.bryg.compiler.util.Pair;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
@@ -31,13 +33,16 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
             throw new BrygJitException ("Left or right is null: " + left + ", " + right, getLine ());
         }
 
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (context, left, right);
+        left = result.a;
+        right = result.b;
+        Type operandType = left.getType ();
 
-        Type operandType = CoercionUtil.getTargetType (left.getType (), right.getType (), getLine ());
-        CoercionUtil.attemptBinaryCoercion (context, left, right, operandType);
-
+        left.compile ();
+        right.compile ();
         // -> T, T
 
+        BrygMethodVisitor mv = context.getMethodVisitor ();
         if (operandType.getJavaType ().isPrimitive ()) {
             if (operandType.similarTo (Boolean.TYPE)) {
                 switch (operator) {

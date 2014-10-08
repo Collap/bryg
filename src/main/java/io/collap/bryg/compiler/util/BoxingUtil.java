@@ -3,14 +3,13 @@ package io.collap.bryg.compiler.util;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.ast.expression.coercion.BoxingExpression;
+import io.collap.bryg.compiler.ast.expression.coercion.UnboxingExpression;
+import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
-import io.collap.bryg.compiler.type.TypeHelper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class BoxingUtil {
 
@@ -48,6 +47,32 @@ public class BoxingUtil {
     }
 
     /**
+     * @return null if the expression could not be unboxed.
+     */
+    public static UnboxingExpression createUnboxingExpression (Context context, Expression child) {
+        Type unboxedType = unboxType (child.getType ());
+
+        if (unboxedType == null) {
+            return null;
+        }
+
+        return new UnboxingExpression (context, child, unboxedType);
+    }
+
+    /**
+     * @return null if the expression could not be boxed.
+     */
+    public static BoxingExpression createBoxingExpression (Context context, Expression child) {
+        Type boxedType = boxType (child.getType ());
+
+        if (boxedType == null) {
+            return null;
+        }
+
+        return new BoxingExpression (context, child, boxedType);
+    }
+
+    /**
      * @return A primitive type corresponding to 'type' or null.
      */
     public static Type unboxType (Type type) {
@@ -71,58 +96,6 @@ public class BoxingUtil {
         }
 
         return null;
-    }
-
-    /**
-     * Assumes that the value is already on the stack.
-     */
-    public static void compileUnboxing (BrygMethodVisitor mv, Type box, Type target) {
-        String boxTypeName = box.getAsmType ().getInternalName ();
-        String valueMethodName = valueMethodNames.get (box.getJavaType ());
-
-        mv.visitMethodInsn (INVOKEVIRTUAL, boxTypeName, valueMethodName,
-                TypeHelper.generateMethodDesc (
-                        null,
-                        target
-                ),
-                false
-        );
-        // T -> primitive
-    }
-
-    /**
-     * Compiles the expression.
-     */
-    public static void compileBoxing (BrygMethodVisitor mv, Expression expression, Type box) {
-        String boxTypeName = box.getAsmType ().getInternalName ();
-        Type paramType = expression.getType ();
-
-        /* There are no conversions from int to short or byte, so we just need to find the right constructor.
-         * This allows to box bytes and shorts from int expressions. */
-        if (paramType.similarTo (Integer.TYPE)) {
-            if (box.similarTo (Byte.class)) {
-                paramType = new Type (Byte.TYPE);
-            }else if (box.similarTo (Short.class)) {
-                paramType = new Type (Short.TYPE);
-            }
-        }
-
-        mv.visitTypeInsn (NEW, boxTypeName);
-        // -> T
-
-        mv.visitInsn (DUP);
-        // T -> T, T
-
-        expression.compile ();
-        // -> primitive
-
-        mv.visitMethodInsn (INVOKESPECIAL, boxTypeName, "<init>",
-                TypeHelper.generateMethodDesc (
-                        new Type[] { paramType },
-                        new Type (Void.TYPE)
-                ),
-                false);
-        // T, primitive ->
     }
 
 }

@@ -82,3 +82,10 @@ ul
     -f
   li
     -d
+
+h2: Bitwise NOT
+ul
+  li ~b
+  li ~s
+  li ~i
+  li ~l

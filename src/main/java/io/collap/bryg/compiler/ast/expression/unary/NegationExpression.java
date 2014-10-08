@@ -2,6 +2,7 @@ package io.collap.bryg.compiler.ast.expression.unary;
 
 import bryg.org.objectweb.asm.Opcodes;
 import io.collap.bryg.compiler.ast.expression.Expression;
+import io.collap.bryg.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.util.BoxingUtil;
@@ -10,7 +11,6 @@ import io.collap.bryg.exception.BrygJitException;
 public class NegationExpression extends Expression {
 
     private Expression child;
-    private Type unboxedType;
 
     public NegationExpression (Context context, Expression child, int line) {
         super (context);
@@ -18,10 +18,11 @@ public class NegationExpression extends Expression {
         setLine (line);
 
         if (!child.getType ().isNumeric ()) {
-            unboxedType = BoxingUtil.unboxType (child.getType ());
+            Type unboxedType = BoxingUtil.unboxType (child.getType ());
             if (unboxedType == null) {
                 throw new BrygJitException ("Can only negate numeric primitive types!", line);
             }
+            this.child = new UnboxingExpression (context, child, unboxedType);
             setType (unboxedType);
         }else {
             setType (child.getType ());
@@ -38,15 +39,10 @@ public class NegationExpression extends Expression {
         child.compile ();
         // -> T
 
-        if (unboxedType != null) {
-            BoxingUtil.compileUnboxing (context.getMethodVisitor (), child.getType (), unboxedType);
-        }
-        // T -> T1
-
         /* Negate the value. */
         int op = type.getAsmType ().getOpcode (Opcodes.INEG);
         context.getMethodVisitor ().visitInsn (op);
-        // T1 -> T1
+        // T -> T
     }
 
 }

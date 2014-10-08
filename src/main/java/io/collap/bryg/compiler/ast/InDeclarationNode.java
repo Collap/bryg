@@ -1,6 +1,8 @@
 package io.collap.bryg.compiler.ast;
 
 import bryg.org.objectweb.asm.Label;
+import io.collap.bryg.compiler.ast.expression.DummyExpression;
+import io.collap.bryg.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.scope.Variable;
@@ -62,7 +64,10 @@ public class InDeclarationNode extends Node {
     public void compile () {
         /* Get, check, cast and store variable. */
         loadVariable ();
+        // -> Object
+
         if (!optional) ifNullThrowException ();
+
         castAndStore ();
     }
 
@@ -119,6 +124,7 @@ public class InDeclarationNode extends Node {
         mv.visitLabel (skipException);
     }
 
+    // TODO: Coercion here?
     private void castAndStore () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
@@ -129,7 +135,7 @@ public class InDeclarationNode extends Node {
             mv.visitTypeInsn (CHECKCAST, boxedType.getAsmType ().getInternalName ());
             // Object -> T
 
-            BoxingUtil.compileUnboxing (context.getMethodVisitor (), boxedType, expectedType);
+            new UnboxingExpression (context, new DummyExpression (context, boxedType, getLine ()), expectedType).compile ();
 
             mv.visitVarInsn (expectedType.getAsmType ().getOpcode (ISTORE), parameter.getId ());
             // primitive ->

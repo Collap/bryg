@@ -4,6 +4,7 @@ import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.StandardTemplate;
 import io.collap.bryg.Template;
 import io.collap.bryg.compiler.ast.expression.ArgumentExpression;
+import io.collap.bryg.compiler.ast.expression.coercion.BoxingExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
@@ -100,7 +101,7 @@ public class TemplateFragmentCall extends Node {
             /* Possibly box the argument. */
             Type boxedType = BoxingUtil.boxType (argument.getType ());
             if (boxedType != null) {
-                BoxingUtil.compileBoxing (mv, argument, boxedType);
+                new BoxingExpression (context, argument, boxedType).compile ();
                 // -> T
             }else {
                 argument.compile ();

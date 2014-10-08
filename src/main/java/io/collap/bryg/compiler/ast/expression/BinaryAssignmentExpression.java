@@ -8,7 +8,6 @@ import io.collap.bryg.compiler.ast.expression.bitwise.BinaryBitwiseXorExpression
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedLeftShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
 import io.collap.bryg.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
-import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.type.Type;
@@ -20,7 +19,6 @@ import io.collap.bryg.parser.BrygParser;
 
 public class BinaryAssignmentExpression extends BinaryExpression {
 
-    // TODO: Allow the following: val byte b = 42 (Fix in 0.3 with Improved Coercion)
     // TODO: Make the indication of casting easier for these scenarios: (int) (value / 0.5) ; Where value is an int. (Fix in 0.3 with Improved Coercion)
 
     /**
@@ -122,14 +120,7 @@ public class BinaryAssignmentExpression extends BinaryExpression {
 
         /* Possible coercion. */
         if (!expectedType.similarTo (right.getType ())) {
-            Type targetType = CoercionUtil.getTargetType (expectedType, right.getType (), getLine ());
-            if (!expectedType.similarTo (targetType)) {
-                throw new BrygJitException ("Coercion for assignment failed, please cast manually from '" +
-                        targetType + "' to '" + expectedType + "'.", getLine ());
-            }
-
-            /* Add cast expression on top. */
-            right = new CastExpression (context, targetType, right, getLine ());
+            right = CoercionUtil.applyUnaryCoercion (context, right, expectedType);
         }
 
         /* In this case 'left' takes care of compiling 'right'. */
