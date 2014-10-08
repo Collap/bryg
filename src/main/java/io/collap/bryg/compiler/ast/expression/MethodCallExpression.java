@@ -71,8 +71,7 @@ public class MethodCallExpression extends Expression {
     }
 
     private boolean parameterTypesFit (List<Class<?>> searchedTypes, Class<?>[] actualTypes) {
-        // TODO: Incorporate coercion and unboxing/boxing in a second run, after the exact       (Fix in 0.3 with Improved Coercion)
-        // matching function has not been found.
+        // TODO: Incorporate coercion and unboxing/boxing in a second run, after the exact matching function has not been found. (Fix in 0.3 with Improved Coercion)
 
         if (searchedTypes.size () != actualTypes.length) return false;
 
