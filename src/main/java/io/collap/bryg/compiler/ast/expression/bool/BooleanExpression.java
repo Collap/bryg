@@ -24,11 +24,13 @@ public abstract class BooleanExpression extends Expression {
     public void compile () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
+        Label nextTrue = new Label ();
         Label nextFalse = new Label ();
         Label skipFalse = new Label ();
 
-        compile (nextFalse, null, true);
+        compile (nextFalse, nextTrue, true);
 
+        mv.visitLabel (nextTrue);
         mv.visitLdcInsn (1); /* true */
         // -> I
         mv.visitJumpInsn (GOTO, skipFalse);
