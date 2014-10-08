@@ -8,6 +8,7 @@ import io.collap.bryg.compiler.ast.expression.bool.ExpressionBooleanExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;
@@ -27,11 +28,10 @@ public class IfStatement extends Node {
         StandardVisitor ptv = context.getParseTreeVisitor ();
 
         Expression conditionOrExpression = (Expression) ptv.visit (ctx.expression ());
-        // TODO: Automate this "node boxing". (Fix in 0.3 with Improved Coercion)
         if (conditionOrExpression instanceof BooleanExpression) {
             condition = (BooleanExpression) conditionOrExpression;
         }else {
-            condition = new ExpressionBooleanExpression (context, conditionOrExpression);
+            throw new BrygJitException ("The condition is not a BooleanExpression", getLine ());
         }
 
         BrygParser.StatementContext ifStatementCtx = ctx.statement ();

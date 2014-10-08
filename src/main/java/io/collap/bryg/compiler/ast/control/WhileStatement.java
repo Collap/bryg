@@ -8,6 +8,7 @@ import io.collap.bryg.compiler.ast.expression.bool.ExpressionBooleanExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import static bryg.org.objectweb.asm.Opcodes.GOTO;
@@ -42,11 +43,10 @@ public class WhileStatement extends Node {
         /* Condition. */
         mv.visitLabel (conditionLabel);
         BooleanExpression booleanExpression;
-        // TODO: Automate this "node boxing". (Fix in 0.3 with Improved Coercion)
         if (condition instanceof BooleanExpression) {
             booleanExpression = ((BooleanExpression) condition);
         }else {
-            booleanExpression = new ExpressionBooleanExpression (context, condition);
+            throw new BrygJitException ("The condition is not a BooleanExpression", getLine ());
         }
         booleanExpression.compile (endLabel, null, true);
 

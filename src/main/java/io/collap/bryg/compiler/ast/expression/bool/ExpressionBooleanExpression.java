@@ -4,6 +4,7 @@ import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.util.BoxingUtil;
 import io.collap.bryg.exception.BrygJitException;
 
 import javax.annotation.Nullable;
@@ -13,6 +14,10 @@ import static bryg.org.objectweb.asm.Opcodes.IFEQ;
 /**
  * This boolean expression evaluates an arbitrary expression, which must return a boolean, but is not required to be a
  * subtype of BooleanExpression.
+ *
+ * Automatically unboxes Boolean boxes.
+ *
+ * Expressions that return a boolean value are automatically wrapped in this node by the StandardVisitor.
  */
 public class ExpressionBooleanExpression extends BooleanExpression {
 
@@ -24,8 +29,16 @@ public class ExpressionBooleanExpression extends BooleanExpression {
         this.expression = expression;
 
         if (!expression.getType ().similarTo (Boolean.TYPE)) {
-            throw new BrygJitException ("Expected a condition, but got an expression that does not return a boolean type",
-                getLine ());
+            /* Attempt unboxing. */
+            Expression unboxedExpression = null;
+            if (expression.getType ().similarTo (Boolean.class)) {
+                unboxedExpression = BoxingUtil.createUnboxingExpression (context, expression);
+            }
+            if (unboxedExpression == null) {
+                throw new BrygJitException ("Expected a condition, but got an expression that does not return a boolean type",
+                        getLine ());
+            }
+            this.expression = unboxedExpression;
         }
     }
 
@@ -36,8 +49,10 @@ public class ExpressionBooleanExpression extends BooleanExpression {
         expression.compile ();
         // -> boolean
 
-        mv.visitJumpInsn (IFEQ, nextFalse); /* Jump to false label when the boolean value is 0. */
+        /* Jump to false label when the boolean value is 0. */
+        mv.visitJumpInsn (IFEQ, nextFalse);
 
+        /* Handle nextTrue. */
         super.compile (nextFalse, nextTrue, lastExpressionInChain);
     }
 

@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 
 public class LogicalOrBinaryBooleanExpression extends BinaryBooleanExpression {
 
-    // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression. (Fix in 0.3 with Improved Coercion)
-
     public LogicalOrBinaryBooleanExpression (Context context, BrygParser.BinaryLogicalOrExpressionContext ctx) {
         super (context, ctx.expression (0), ctx.expression (1));
         setLine (ctx.getStart ().getLine ());
@@ -19,10 +17,10 @@ public class LogicalOrBinaryBooleanExpression extends BinaryBooleanExpression {
     public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
         /* Go to the right hand test only when the left hand test failed (hence or). */
         Label rightTest = new Label ();
-        ((BinaryBooleanExpression) left).compile (rightTest, nextTrue, false);
+        ((BooleanExpression) left).compile (rightTest, nextTrue, false);
 
         context.getMethodVisitor ().visitLabel (rightTest);
-        ((BinaryBooleanExpression) right).compile (nextFalse, nextTrue, lastExpressionInChain);
+        ((BooleanExpression) right).compile (nextFalse, nextTrue, lastExpressionInChain);
     }
 
 }

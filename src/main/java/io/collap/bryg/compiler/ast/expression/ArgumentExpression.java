@@ -41,11 +41,10 @@ public class ArgumentExpression extends Expression {
         BrygParser.ArgumentPredicateContext predicateContext = ctx.argumentPredicate ();
         if (predicateContext != null) {
             Expression predicateExpression = (Expression) context.getParseTreeVisitor ().visit (predicateContext);
-            // TODO: Automate this "node boxing". (Fix in 0.3 with Improved Coercion)
             if (predicateExpression instanceof BooleanExpression) {
                 predicate = (BooleanExpression) predicateExpression;
             }else {
-                predicate = new ExpressionBooleanExpression (context, predicateExpression);
+                throw new BrygJitException ("The condition is not a BooleanExpression", getLine ());
             }
         }else {
             predicate = null;

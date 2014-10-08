@@ -29,6 +29,7 @@ import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.parser.BrygParserBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import javax.annotation.Nullable;
 
@@ -44,6 +45,21 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     //
     //  General
     //
+
+    @Override
+    public Node visit (@NotNull ParseTree tree) {
+        Node node = super.visit (tree);
+        if (node instanceof Expression) {
+            Expression expression = (Expression) node;
+
+            /* Wrap appropriate expressions in a ExpressionBooleanExpression.*/
+            if ((expression.getType ().similarTo (Boolean.TYPE) || expression.getType ().similarTo (Boolean.class))
+                    && !(expression instanceof BooleanExpression)) {
+                node = new ExpressionBooleanExpression (context, expression);
+            }
+        }
+        return node;
+    }
 
     @Override
     public RootNode visitStart (@NotNull BrygParser.StartContext ctx) {

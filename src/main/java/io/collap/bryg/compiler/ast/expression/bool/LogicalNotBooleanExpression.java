@@ -13,8 +13,6 @@ import static bryg.org.objectweb.asm.Opcodes.IFNE;
 
 public class LogicalNotBooleanExpression extends BooleanExpression {
 
-    // TODO: Wrap expressions that are not BooleanExpressions in ExpressionBooleanExpression. (Fix in 0.3 with Improved Coercion)
-
     private Expression child;
 
     public LogicalNotBooleanExpression (Context context, BrygParser.ExpressionContext childCtx) {
