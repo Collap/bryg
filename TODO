@@ -22,6 +22,7 @@ Absolutely needed improvements:
 Tests:
     - Test the tab to indentation translation of the lexer.
     - Make benchmark test functions optional.
+    - Write Boolean test (With boxing/unboxing).
 
 API:
     - Make the API easier to use.
