@@ -31,6 +31,16 @@ public class CoercionUtil {
         if (left == null) throw new BrygJitException ("The left is null. This is an internal compiler issue.", -1); // TODO: Get line...
         if (right == null) throw new BrygJitException ("The right type is null. This is an internal compiler issue.", -1);
 
+        /* Immediately return objects that have the same type, like Strings.
+           Ignore primitives and boxes. */
+        if (!left.getType ().getJavaType ().isPrimitive () && !right.getType ().getJavaType ().isPrimitive ()) {
+            Type leftUnboxed = BoxingUtil.unboxType (left.getType ());
+            Type rightUnboxed = BoxingUtil.unboxType (right.getType ());
+            if (leftUnboxed == null && rightUnboxed == null) {
+                return new Pair<> (left, right);
+            }
+        }
+
         /* Attempt unboxing. */
         if (!left.getType ().getJavaType ().isPrimitive ()) {
             left = getUnboxingExpressionOrThrowException (context, left);
