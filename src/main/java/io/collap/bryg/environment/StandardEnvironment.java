@@ -130,6 +130,9 @@ public class StandardEnvironment implements Environment {
                     templateType.setConstructor (cl.getConstructor ());
                 }
 
+                /* Remove reference to temporary compilation data. */
+                templateType.setCompilationData (null);
+
                 // System.out.println ("Loading took " + ((System.nanoTime () - start) / 1.0e9) + "s.");
                 System.out.println ();
             } catch (ClassNotFoundException | NoSuchMethodException e) {
