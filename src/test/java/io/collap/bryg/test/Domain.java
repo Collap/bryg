@@ -51,7 +51,7 @@ public class Domain {
 
         io.collap.bryg.compiler.Compiler compiler = new StandardCompiler (configuration, library, classResolver, commonModel);
 
-        environment = new StandardEnvironment (new TemplateClassLoader (compiler, sourceLoader), commonModel);
+        environment = new StandardEnvironment (compiler, sourceLoader, commonModel);
 
         System.setOut (originalOut);
     }

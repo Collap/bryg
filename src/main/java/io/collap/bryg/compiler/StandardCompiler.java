@@ -4,7 +4,7 @@ import bryg.org.objectweb.asm.ClassVisitor;
 import bryg.org.objectweb.asm.ClassWriter;
 import bryg.org.objectweb.asm.MethodVisitor;
 import bryg.org.objectweb.asm.util.TraceClassVisitor;
-import io.collap.bryg.StandardTemplate;
+import io.collap.bryg.*;
 import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.RootNode;
 import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
@@ -14,7 +14,10 @@ import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.parser.PrintTreeVisitor;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.compiler.type.AsmTypes;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.TypeInterpreter;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.GlobalVariableModel;
@@ -26,6 +29,7 @@ import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.io.*;
+import java.util.List;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
@@ -51,8 +55,9 @@ public class StandardCompiler implements Compiler {
         this.globalVariableModel = globalVariableModel;
     }
 
+
     @Override
-    public byte[] compile (String name, String source) {
+    public TemplateType parse (String name, String source) {
         long parseStart = System.nanoTime ();
 
         boolean usedSLL = false;
@@ -111,6 +116,28 @@ public class StandardCompiler implements Compiler {
 
         double parseTime = (System.nanoTime () - parseStart) / 1.0e9;
 
+        TemplateInfo info = new TemplateInfo ();
+        parseParameters (info, startContext);
+        CompilationData compilationData = new CompilationData (startContext);
+
+        System.out.println ("Parsing with " + (usedSLL ? "SLL(*)" : "LL(*)") +
+                " took " + parseTime + "s.");
+
+        return new TemplateType (name, info, compilationData);
+    }
+
+    private void parseParameters (TemplateInfo info, BrygParser.StartContext startContext) {
+        List<BrygParser.InDeclarationContext> contexts = startContext.inDeclaration ();
+        for (BrygParser.InDeclarationContext context : contexts) {
+            String name = IdUtil.idToString (context.id ());
+            Type type = new TypeInterpreter (classResolver).interpretType (context.type ());
+            boolean optional = context.qualifier.getType () == BrygLexer.OPT;
+            info.addParameter (new ParameterInfo (name, type, optional));
+        }
+    }
+
+    @Override
+    public byte[] compile (TemplateType templateType) {
         long jitStart = System.nanoTime ();
 
         ClassWriter classWriter = new ClassWriter (ClassWriter.COMPUTE_FRAMES);
@@ -121,15 +148,13 @@ public class StandardCompiler implements Compiler {
             parentVisitor = classWriter;
         }
         BrygClassVisitor brygClassVisitor = new BrygClassVisitor (parentVisitor);
-        compile (brygClassVisitor, name, startContext);
+        compile (brygClassVisitor, templateType.getName (), templateType.getCompilationData ().getStartContext ());
         if (configuration.shouldPrintBytecode ()) {
             System.out.println ();
         }
 
         double jitTime = (System.nanoTime () - jitStart) / 1.0e9;
 
-        System.out.println ("Parsing with " + (usedSLL ? "SLL(*)" : "LL(*)") +
-                " took " + parseTime + "s.");
         System.out.println ("The JIT took " + jitTime + "s.");
 
         return classWriter.toByteArray ();

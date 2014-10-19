@@ -1,6 +1,8 @@
 package io.collap.bryg.loader;
 
+import io.collap.bryg.TemplateType;
 import io.collap.bryg.compiler.Compiler;
+import io.collap.bryg.environment.Environment;
 
 public class TemplateClassLoader extends ClassLoader {
 
@@ -10,17 +12,18 @@ public class TemplateClassLoader extends ClassLoader {
      */
     public static final String templateClassPrefix = "template.";
 
+    private Environment environment;
     private io.collap.bryg.compiler.Compiler compiler;
-    private SourceLoader sourceLoader;
 
-    public TemplateClassLoader (Compiler compiler, SourceLoader sourceLoader) {
-        this (TemplateClassLoader.class.getClassLoader (), compiler, sourceLoader);
+
+    public TemplateClassLoader (Environment environment, Compiler compiler) {
+        this (environment, TemplateClassLoader.class.getClassLoader (), compiler);
     }
 
-    public TemplateClassLoader (ClassLoader parent, Compiler compiler, SourceLoader sourceLoader) {
+    public TemplateClassLoader (Environment environment, ClassLoader parent, Compiler compiler) {
         super (parent);
+        this.environment = environment;
         this.compiler = compiler;
-        this.sourceLoader = sourceLoader;
     }
 
     @Override
@@ -35,8 +38,12 @@ public class TemplateClassLoader extends ClassLoader {
         /* Remove prefix. */
         String name = prefixedName.substring (templateClassPrefix.length ());
 
-        String source = sourceLoader.getTemplateSource (name);
-        byte[] bytecode = compiler.compile (name, source);
+        TemplateType templateType = environment.getTemplateType (name);
+        if (templateType == null) {
+            throw new ClassNotFoundException ("Template type for '" + name + "' could not be found.");
+        }
+
+        byte[] bytecode = compiler.compile (templateType);
         return defineClass (name, bytecode, 0, bytecode.length);
     }
 

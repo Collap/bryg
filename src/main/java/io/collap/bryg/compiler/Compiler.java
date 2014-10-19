@@ -1,13 +1,15 @@
 package io.collap.bryg.compiler;
 
+import io.collap.bryg.TemplateType;
+
 public interface Compiler {
 
     /**
-     * TODO: Comment.
-     * @param name
-     * @param source
-     * @return
+     * Parses the file and initializes the TemplateType, but
+     * does not compile the code yet.
      */
-    public byte[] compile (String name, String source);
+    public TemplateType parse (String name, String source);
+
+    public byte[] compile (TemplateType templateType);
 
 }
