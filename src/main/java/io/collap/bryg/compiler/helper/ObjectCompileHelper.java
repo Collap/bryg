@@ -9,7 +9,7 @@ import java.util.List;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
-public abstract class ObjectCompileHelper extends CompileHelper {
+public class ObjectCompileHelper extends CompileHelper {
 
     protected Type type;
 

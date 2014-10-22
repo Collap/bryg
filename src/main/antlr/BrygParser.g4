@@ -48,7 +48,6 @@ statement
                                    like a - 7 would be interpreted as a statementFunctionCall with an arithmetic
                                    negation (that leads to the number -7) instead of a binary subtraction. */
     |   templateFragmentCall
-        NEWLINE
     ;
 
 /**
@@ -56,6 +55,13 @@ statement
  */
 interpolation
     :   expression NEWLINE
+    ;
+
+closure
+    :   INDENT
+        (inDeclaration | NEWLINE)*
+        (statement | NEWLINE)*
+        DEDENT
     ;
 
 expression
@@ -164,6 +170,7 @@ statementFunctionCall
 /* Calls functions of other templates. By default, 'render' is called. */
 templateFragmentCall
     :   templateId argumentList?
+        NEWLINE closure?
     ;
 
 templateId

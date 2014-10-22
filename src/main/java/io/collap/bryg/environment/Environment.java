@@ -1,34 +1,46 @@
 package io.collap.bryg.environment;
 
-import io.collap.bryg.Template;
-import io.collap.bryg.TemplateType;
-import io.collap.bryg.model.Model;
+import io.collap.bryg.compiler.Configuration;
+import io.collap.bryg.compiler.library.Library;
+import io.collap.bryg.compiler.resolver.ClassResolver;
+import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.template.Template;
+import io.collap.bryg.template.TemplateType;
 
 import javax.annotation.Nullable;
 
 /**
- * An implementation of Environment <b>must</b> be thread-safe. It must also be guaranteed that any SourceLoader or
- * Compiler instances are used in a thread-safe manner, as these classes are not expected to be thread-safe
- * themselves.
+ * An implementation of Environment <b>must</b> be thread-safe.
  */
 public interface Environment {
 
-    public @Nullable TemplateType getTemplateType (String name);
+    public @Nullable TemplateType getTemplateType (String prefixlessName);
+
+    /**
+     * This method is intended to be used by bryg internally.
+     */
+    public @Nullable TemplateType getTemplateTypePrefixed (String name);
 
     /**
      * Returns a <b>new</b> instance of the template each time the method is called.
      * Also loads and compiles the template if it is not already loaded.
      */
-    public @Nullable Template getTemplate (String name);
+    public @Nullable Template getTemplate (String prefixlessName);
 
     /**
-     * The common model holds variables that are defined in all models created with createModel ().
+     * This method is intended to be used by bryg internally.
      */
-    public Model getCommonModel ();
+    public @Nullable Template getTemplatePrefixed (String name);
+
+    public Configuration getConfiguration ();
+    public Library getLibrary ();
+    public ClassResolver getClassResolver ();
 
     /**
-     * Creates a new Model that includes the variables defined in the common model.
+     * The global variable model holds all global variables declared in the environment.
      */
-    public Model createModel ();
+    public GlobalVariableModel getGlobalVariableModel ();
+
+    public ClassCache getClassCache ();
 
 }

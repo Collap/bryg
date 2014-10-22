@@ -12,9 +12,13 @@ public class RootNode extends InnerNode {
     private List<InDeclarationNode> inDeclarations = new ArrayList<> ();
 
     public RootNode (Context context, BrygParser.StartContext ctx) {
+        this (context, ctx.inDeclaration (), ctx.statement ());
+    }
+
+    public RootNode (Context context, List<BrygParser.InDeclarationContext> inDeclarationContexts,
+                     List<BrygParser.StatementContext> statementContexts) {
         super (context);
 
-        List<BrygParser.InDeclarationContext> inDeclarationContexts = ctx.inDeclaration ();
         for (BrygParser.InDeclarationContext idc : inDeclarationContexts) {
             InDeclarationNode node = context.getParseTreeVisitor ().visitInDeclaration (idc);
             if (node != null) {
@@ -22,7 +26,6 @@ public class RootNode extends InnerNode {
             }
         }
 
-        List<BrygParser.StatementContext> statementContexts = ctx.statement ();
         for (BrygParser.StatementContext sc : statementContexts) {
             children.add (new StatementNode (context, sc));
         }
@@ -30,7 +33,7 @@ public class RootNode extends InnerNode {
 
     public void addGlobalVariableInDeclarations (RootScope scope) {
         for (String globalVariableName : scope.getGlobalVariablesUsed ()) {
-            inDeclarations.add (new InDeclarationNode (context, scope.getVariable (globalVariableName), false, -1));
+            inDeclarations.add (new InDeclarationNode (context, scope.getVariable (globalVariableName), false, -1, true));
         }
     }
 

@@ -26,7 +26,7 @@ public class VariableDeclarationNode extends Node {
         String name = IdUtil.idToString (ctx.id ());
         Type expectedType = null;
         if (ctx.type () != null) {
-            expectedType = new TypeInterpreter (context.getClassResolver ()).interpretType (ctx.type ());
+            expectedType = new TypeInterpreter (context.getEnvironment ().getClassResolver ()).interpretType (ctx.type ());
         }
 
         expression = null;

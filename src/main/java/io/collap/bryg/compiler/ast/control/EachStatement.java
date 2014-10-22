@@ -5,7 +5,7 @@ import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.visitor.StandardVisitor;
 import io.collap.bryg.compiler.scope.Scope;
 import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.type.Type;
@@ -48,7 +48,7 @@ public class EachStatement extends Node {
         BrygParser.TypeContext typeContext = headCtx.type ();
         Type declaredElementType = null;
         if (typeContext != null) {
-            declaredElementType = new TypeInterpreter (context.getClassResolver ()).interpretType (typeContext);
+            declaredElementType = new TypeInterpreter (context.getEnvironment ().getClassResolver ()).interpretType (typeContext);
         }
         Type elementType = null;
 

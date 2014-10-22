@@ -1,4 +1,4 @@
-package io.collap.bryg.compiler.parser;
+package io.collap.bryg.compiler.visitor;
 
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.parser.BrygParser;

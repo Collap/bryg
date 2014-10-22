@@ -1,8 +1,8 @@
-package io.collap.bryg;
+package io.collap.bryg.unit;
 
 import io.collap.bryg.compiler.type.Type;
 
-public class ParameterInfo {
+public final class ParameterInfo {
 
     private final String name;
     private final Type type;
@@ -20,6 +20,10 @@ public class ParameterInfo {
 
     public Type getType () {
         return type;
+    }
+
+    public boolean isOptional () {
+        return optional;
     }
 
 }

@@ -14,8 +14,11 @@ import io.collap.bryg.compiler.util.BoxingUtil;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.exception.InvalidInputParameterException;
+import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
+import io.collap.bryg.unit.StandardUnit;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
@@ -23,6 +26,7 @@ public class InDeclarationNode extends Node {
 
     private Variable parameter;
     private Variable model;
+    private boolean isGlobalVariable;
 
     /**
      * An optional ('opt') input parameter may be null.
@@ -33,7 +37,7 @@ public class InDeclarationNode extends Node {
         this (
                 context,
                 IdUtil.idToString (ctx.id ()),
-                new TypeInterpreter (context.getClassResolver ()).interpretType (ctx.type ()),
+                new TypeInterpreter (context.getEnvironment ().getClassResolver ()).interpretType (ctx.type ()),
                 ctx.qualifier.getType () == BrygLexer.OPT,
                 ctx.getStart ().getLine ()
         );
@@ -43,15 +47,19 @@ public class InDeclarationNode extends Node {
         /**
          * In declarations are always immutable.
          */
-        this (context, context.getCurrentScope ().registerVariable (name, type, true), optional, line);
+        this (context, context.getCurrentScope ().registerVariable (name, type, true), optional, line, false);
     }
 
-    public InDeclarationNode (Context context, Variable parameter, boolean optional, int line) {
+    /**
+     * @param isGlobalVariable Whether the variable needs to be loaded from the global variable model.
+     */
+    public InDeclarationNode (Context context, Variable parameter, boolean optional, int line, boolean isGlobalVariable) {
         super (context);
         setLine (line);
 
         this.optional = optional;
         this.parameter = parameter;
+        this.isGlobalVariable = isGlobalVariable;
         model = context.getCurrentScope ().getVariable ("model");
 
         /* A primitive may not be optional. */
@@ -74,8 +82,21 @@ public class InDeclarationNode extends Node {
     private void loadVariable () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
-        mv.visitVarInsn (ALOAD, model.getId ());
-        // -> Model
+        if (isGlobalVariable) {
+            mv.visitVarInsn (ALOAD, 0);
+            // -> this
+
+            mv.visitFieldInsn (GETFIELD, new Type (StandardUnit.class).getAsmType ().getInternalName (),
+                    "globalVariableModel", new Type (GlobalVariableModel.class).getAsmType ().getDescriptor ());
+            // this -> GlobalVariableModel
+
+            // TODO: Is this cast even needed?
+            // mv.visitTypeInsn (CHECKCAST, new Type (Model.class).getAsmType ().getInternalName ());
+            // GlobalVariableModel -> Model
+        }else {
+            mv.visitVarInsn (ALOAD, model.getId ());
+            // -> Model
+        }
 
         mv.visitLdcInsn (parameter.getName ());
         // -> String

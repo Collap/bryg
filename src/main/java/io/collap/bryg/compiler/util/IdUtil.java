@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.util;
 
 import io.collap.bryg.parser.BrygParser;
+import io.collap.bryg.unit.UnitClassLoader;
 
 public class IdUtil {
 
@@ -14,17 +15,34 @@ public class IdUtil {
         return text;
     }
 
+    /**
+     * Prefixes the name if necessary. Assumes that the parentPackage is already prefixed.
+     */
     public static String templateIdToString (BrygParser.TemplateIdContext ctx, String parentPackage) {
         if (ctx == null) return null;
 
-        String packageName = ctx.getText ().substring (1); /* Omit the AT (@). */
+        String fullName = ctx.getText ().substring (1); /* Omit the AT (@). */
 
         /* Check if the parent package needs to be prepended. */
         if (ctx.currentPackage != null) {
-            packageName = parentPackage + packageName;
+            fullName = parentPackage + fullName;
+        }else {
+            fullName = UnitClassLoader.getPrefixedName (fullName);
         }
 
-        return packageName;
+        return fullName;
+    }
+
+    public static String createGetterName (String fieldName) {
+        return "get" + capitalizeFirstLetter (fieldName);
+    }
+
+    public static String createSetterName (String fieldName) {
+        return "set" + capitalizeFirstLetter (fieldName);
+    }
+
+    private static String capitalizeFirstLetter (String str) {
+        return str.substring (0, 1).toUpperCase () + str.substring (1);
     }
 
 }

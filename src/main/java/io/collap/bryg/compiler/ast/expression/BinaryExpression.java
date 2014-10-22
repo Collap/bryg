@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.visitor.StandardVisitor;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 

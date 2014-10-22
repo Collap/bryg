@@ -79,9 +79,8 @@ public class AccessExpression extends Expression {
         if (Modifier.isPublic (field.getModifiers ())) {
             getterOrSetter = null;
         }else {
-            String fieldNameCapitalized = fieldName.substring (0, 1).toUpperCase () + fieldName.substring (1);
             if (mode == AccessMode.get) {
-                String getterName = "get" + fieldNameCapitalized;
+                String getterName = IdUtil.createGetterName (fieldName);
                 try {
                     Method localGetter = childType.getJavaType ().getMethod (getterName);
                     if (localGetter.getReturnType ().equals (field.getType ())) {
@@ -98,7 +97,7 @@ public class AccessExpression extends Expression {
                     System.out.println ("Info: Getter " + getterName + " of type " + field.getType () + " not found.");
                 }
             }else if (mode == AccessMode.set) {
-                String setterName = "set" + fieldNameCapitalized;
+                String setterName = IdUtil.createSetterName (fieldName);
                 try {
                     Method localSetter = childType.getJavaType ().getMethod (setterName, field.getType ());
                     if (Modifier.isPublic (localSetter.getModifiers ())) {

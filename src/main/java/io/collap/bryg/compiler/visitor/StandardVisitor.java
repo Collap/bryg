@@ -1,4 +1,4 @@
-package io.collap.bryg.compiler.parser;
+package io.collap.bryg.compiler.visitor;
 
 import io.collap.bryg.compiler.ast.*;
 import io.collap.bryg.compiler.ast.control.EachStatement;
@@ -64,6 +64,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public RootNode visitStart (@NotNull BrygParser.StartContext ctx) {
         return new RootNode (context, ctx);
+    }
+
+    @Override
+    public Node visitClosure (@NotNull BrygParser.ClosureContext ctx) {
+        return new RootNode (context, ctx.inDeclaration (), ctx.statement ());
     }
 
     @Override
@@ -222,7 +227,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
             if (variable != null) {
                 return new VariableExpression (context, variable, AccessMode.get, ctx.getStart ().getLine ());
             }else { /* The variable is probably a function. */
-                Function function = context.getLibrary ().getFunction (id);
+                Function function = context.getEnvironment ().getLibrary ().getFunction (id);
                 if (function != null) {
                     return new FunctionCallExpression (context, function, ctx.getStart ().getLine ());
                 }

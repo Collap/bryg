@@ -3,4 +3,7 @@ in int n
 mut i = 0
 while i < n
   @control.While (iterations n)
+    in String name
+    p: Hello, \{name}! - Closure
+    p: Captured variable: \{i}
   discard ++i

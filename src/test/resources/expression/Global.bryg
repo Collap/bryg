@@ -1,0 +1,4 @@
+; This test uses a global variable.
+; TODO: Expand the test.
+
+globalString

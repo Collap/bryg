@@ -1,15 +1,14 @@
 package io.collap.bryg.compiler;
 
-import io.collap.bryg.TemplateType;
+import io.collap.bryg.unit.UnitType;
 
-public interface Compiler {
+/**
+ * A compiler must be created for one unit and then discarded.
+ */
+public interface Compiler<T extends UnitType> {
 
-    /**
-     * Parses the file and initializes the TemplateType, but
-     * does not compile the code yet.
-     */
-    public TemplateType parse (String name, String source);
+    public byte[] compile ();
 
-    public byte[] compile (TemplateType templateType);
+    public T getUnitType ();
 
 }

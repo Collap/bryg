@@ -28,4 +28,8 @@ public class TypeHelper {
         return builder.toString ();
     }
 
+    public static String toInternalName (String fullName) {
+        return fullName.replace ('.', '/');
+    }
+
 }

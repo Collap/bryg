@@ -18,7 +18,7 @@ public class CastExpression extends Expression {
     public CastExpression (Context context, BrygParser.CastExpressionContext ctx) {
         this (
                 context,
-                new TypeInterpreter (context.getClassResolver ()).interpretType (ctx.type ()),
+                new TypeInterpreter (context.getEnvironment ().getClassResolver ()).interpretType (ctx.type ()),
                 (Expression) context.getParseTreeVisitor ().visit (ctx.expression ()),
                 ctx.getStart ().getLine ()
         );

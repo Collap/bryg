@@ -1,13 +1,17 @@
 package io.collap.bryg.environment;
 
-import io.collap.bryg.StandardTemplate;
-import io.collap.bryg.Template;
-import io.collap.bryg.TemplateType;
-import io.collap.bryg.compiler.Compiler;
+import io.collap.bryg.compiler.Configuration;
+import io.collap.bryg.compiler.TemplateCompiler;
+import io.collap.bryg.compiler.TemplateParser;
+import io.collap.bryg.compiler.library.Library;
+import io.collap.bryg.compiler.resolver.ClassResolver;
+import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.template.Template;
+import io.collap.bryg.template.TemplateType;
 import io.collap.bryg.loader.SourceLoader;
-import io.collap.bryg.loader.TemplateClassLoader;
-import io.collap.bryg.model.BasicModel;
-import io.collap.bryg.model.Model;
+import io.collap.bryg.template.TemplateClassLoader;
+import io.collap.bryg.unit.StandardUnit;
+import io.collap.bryg.unit.UnitClassLoader;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
@@ -24,28 +28,35 @@ public class StandardEnvironment implements Environment {
 
     private Map<String, TemplateType> templateTypes = Collections.synchronizedMap (new HashMap<String, TemplateType> ());
 
-    private Compiler compiler;
+    private Configuration configuration;
+    private Library library;
+    private ClassResolver classResolver;
     private SourceLoader sourceLoader;
-    private TemplateClassLoader templateClassLoader;
-    private Model commonModel;
+    private GlobalVariableModel globalVariableModel;
+    private ClassCache classCache;
 
-    public StandardEnvironment (Compiler compiler, SourceLoader sourceLoader, ClassLoader parentClassLoader) {
-        this (compiler, sourceLoader, parentClassLoader, new BasicModel ());
+    public StandardEnvironment (Configuration configuration, Library library, ClassResolver classResolver,
+                                SourceLoader sourceLoader) {
+        this (configuration, library, classResolver, sourceLoader, new GlobalVariableModel ());
     }
 
-    public StandardEnvironment (Compiler compiler, SourceLoader sourceLoader, Model commonModel) {
-        this (compiler, sourceLoader, null, commonModel);
-    }
-
-    public StandardEnvironment (Compiler compiler, SourceLoader sourceLoader, ClassLoader parentClassLoader, Model commonModel) {
-        this.compiler = compiler;
+    public StandardEnvironment (Configuration configuration, Library library, ClassResolver classResolver,
+                                SourceLoader sourceLoader, GlobalVariableModel globalVariableModel) {
+        this.configuration = configuration;
+        this.library = library;
+        this.classResolver = classResolver;
         this.sourceLoader = sourceLoader;
-        this.commonModel = commonModel;
-        templateClassLoader = new TemplateClassLoader (this, parentClassLoader, compiler);
+        this.globalVariableModel = globalVariableModel;
+        this.classCache = new ClassCache ();
     }
 
     @Override
-    public @Nullable TemplateType getTemplateType (String name) {
+    public @Nullable TemplateType getTemplateType (String prefixlessName) {
+        return getTemplateTypePrefixed (UnitClassLoader.getPrefixedName (prefixlessName));
+    }
+
+    @Override
+    public @Nullable TemplateType getTemplateTypePrefixed (String name) {
         TemplateType templateType = templateTypes.get (name);
 
         if (templateType == null) {
@@ -55,9 +66,15 @@ public class StandardEnvironment implements Environment {
         return templateType;
     }
 
+
     @Override
-    public @Nullable Template getTemplate (String name) {
-        TemplateType templateType = getTemplateType (name);
+    public @Nullable Template getTemplate (String prefixlessName) {
+        return getTemplatePrefixed (UnitClassLoader.getPrefixedName (prefixlessName));
+    }
+
+    @Override
+    public @Nullable Template getTemplatePrefixed (String name) {
+        TemplateType templateType = getTemplateTypePrefixed (name);
 
         if (templateType == null) {
             return null;
@@ -93,7 +110,9 @@ public class StandardEnvironment implements Environment {
             System.out.println ("Parsing template: " + name);
 
             String source = sourceLoader.getTemplateSource (name);
-            templateType = compiler.parse (name, source);
+            TemplateParser parser = new TemplateParser (this, name, source);
+
+            templateType = parser.parse ();
             if (templateType != null) {
                 templateTypes.put (name, templateType);
             }
@@ -118,20 +137,27 @@ public class StandardEnvironment implements Environment {
            The check ensures that the template is not compiled again. */
         if (templateType.getConstructor () == null) {
             try {
+                String className = templateType.getFullName ();
+
                 System.out.println ();
-                System.out.println ("Compiling template: " + templateType.getName ());
+                System.out.println ("Compiling template: " + className);
                 // long start = System.nanoTime ();
 
-                Class<? extends Template> cl = (Class<? extends Template>)
-                        templateClassLoader.loadClass (TemplateClassLoader.templateClassPrefix + templateType.getName ());
-                if (StandardTemplate.class.isAssignableFrom (cl)) {
+                TemplateCompiler compiler = new TemplateCompiler (this, templateType);
+                TemplateClassLoader templateClassLoader = new TemplateClassLoader (this, compiler);
+
+                Class<? extends Template> cl = (Class<? extends Template>) templateClassLoader.loadClass (className);
+                if (StandardUnit.class.isAssignableFrom (cl)) {
                     templateType.setConstructor (cl.getConstructor (Environment.class));
                 }else {
                     templateType.setConstructor (cl.getConstructor ());
                 }
 
-                /* Remove reference to temporary compilation data. */
-                templateType.setCompilationData (null);
+                /* Cache class. */
+                classCache.cacheClass (className, cl);
+
+                /* Remove references to temporary compilation data. */
+                templateType.setStartContext (null);
 
                 // System.out.println ("Loading took " + ((System.nanoTime () - start) / 1.0e9) + "s.");
                 System.out.println ();
@@ -146,13 +172,28 @@ public class StandardEnvironment implements Environment {
     }
 
     @Override
-    public Model getCommonModel () {
-        return commonModel;
+    public Configuration getConfiguration () {
+        return configuration;
     }
 
     @Override
-    public Model createModel () {
-        return new BasicModel (commonModel);
+    public Library getLibrary () {
+        return library;
+    }
+
+    @Override
+    public ClassResolver getClassResolver () {
+        return classResolver;
+    }
+
+    @Override
+    public GlobalVariableModel getGlobalVariableModel () {
+        return globalVariableModel;
+    }
+
+    @Override
+    public ClassCache getClassCache () {
+        return classCache;
     }
 
 }

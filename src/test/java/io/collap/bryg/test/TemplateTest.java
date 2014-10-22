@@ -1,6 +1,7 @@
 package io.collap.bryg.test;
 
-import io.collap.bryg.Template;
+import io.collap.bryg.model.BasicModel;
+import io.collap.bryg.template.Template;
 import io.collap.bryg.model.Model;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public abstract class TemplateTest {
         fileWriter.close ();
     }
 
-    @Test
+    // @Test
     public void benchmark () throws IOException {
         final int iterations = 10000;
         final Model model = createModel ();
@@ -60,7 +61,7 @@ public abstract class TemplateTest {
     }
 
     private Model createModel () {
-        Model model = Domain.getEnvironment ().createModel ();
+        Model model = new BasicModel ();
         configureModel (model);
         return model;
     }

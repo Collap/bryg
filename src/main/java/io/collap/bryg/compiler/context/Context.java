@@ -1,26 +1,25 @@
 package io.collap.bryg.compiler.context;
 
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.library.Library;
-import io.collap.bryg.compiler.parser.StandardVisitor;
-import io.collap.bryg.compiler.resolver.ClassResolver;
+import io.collap.bryg.compiler.visitor.StandardVisitor;
 import io.collap.bryg.compiler.scope.RootScope;
 import io.collap.bryg.compiler.scope.Scope;
 import io.collap.bryg.compiler.type.Type;
-import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.environment.Environment;
 import io.collap.bryg.model.Model;
+import io.collap.bryg.unit.UnitType;
 
+import javax.annotation.Nullable;
 import java.io.Writer;
 
 public class Context {
 
+    private Environment environment;
+    private UnitType unitType;
     private StandardVisitor parseTreeVisitor;
     private BrygMethodVisitor methodVisitor;
     private RootScope rootScope;
-    private Library library;
-    private ClassResolver classResolver;
-    private GlobalVariableModel globalVariableModel;
-    private String templatePackage;
+    private int closureBlockId;
 
     //
     //  Compiler states
@@ -37,24 +36,41 @@ public class Context {
      */
     private int discardsOpen = 0;
 
-    public Context (BrygMethodVisitor methodVisitor, Library library, ClassResolver classResolver,
-                    GlobalVariableModel globalVariableModel) {
+    /**
+     * @param methodVisitor May be null, but should be set before compiling any nodes.
+     */
+    public Context (Environment environment, UnitType unitType,
+                    @Nullable BrygMethodVisitor methodVisitor, RootScope rootScope) {
+        this.environment = environment;
+        this.unitType = unitType;
         this.parseTreeVisitor = new StandardVisitor ();
         this.methodVisitor = methodVisitor;
-        this.library = library;
-        this.classResolver = classResolver;
-        this.globalVariableModel = globalVariableModel;
-        rootScope = new RootScope (globalVariableModel);
+        this.rootScope = rootScope;
         currentScope = rootScope;
+        closureBlockId = 0;
 
         /* Register parameters in the correct order. */
-        rootScope.registerVariable ("this", null, false); // TODO: Proper type. (Fix in 0.4 with new template metadata).
+        rootScope.registerVariable ("this", null, false); /* Unless we change the way how types are handled by the
+                                                             compiler, we can not assign a proper type here. */
         rootScope.registerVariable ("writer", new Type (Writer.class), false);
         rootScope.registerVariable ("model", new Type (Model.class), false);
 
         /* Set context instance for the parameters. */
         parseTreeVisitor.setContext (this);
-        methodVisitor.setContext (this);
+        if (methodVisitor != null) methodVisitor.setContext (this);
+    }
+
+    /**
+     * This name is already prefixed.
+     */
+    public String getUniqueClosureName () {
+        return unitType.getFullName () + "$Closure" + nextClosureBlockId ();
+    }
+
+    private int nextClosureBlockId () {
+        int id = closureBlockId;
+        ++closureBlockId;
+        return id;
     }
 
     public boolean shouldDiscardPrintOutput () {
@@ -69,8 +85,21 @@ public class Context {
         --discardsOpen;
     }
 
+    public Environment getEnvironment () {
+        return environment;
+    }
+
+    public UnitType getUnitType () {
+        return unitType;
+    }
+
     public StandardVisitor getParseTreeVisitor () {
         return parseTreeVisitor;
+    }
+
+    public void setMethodVisitor (BrygMethodVisitor methodVisitor) {
+        methodVisitor.setContext (this);
+        this.methodVisitor = methodVisitor;
     }
 
     public BrygMethodVisitor getMethodVisitor () {
@@ -81,32 +110,12 @@ public class Context {
         return rootScope;
     }
 
-    public Library getLibrary () {
-        return library;
-    }
-
-    public ClassResolver getClassResolver () {
-        return classResolver;
-    }
-
     public Scope getCurrentScope () {
         return currentScope;
     }
 
     public void setCurrentScope (Scope currentScope) {
         this.currentScope = currentScope;
-    }
-
-    public GlobalVariableModel getGlobalVariableModel () {
-        return globalVariableModel;
-    }
-
-    public String getTemplatePackage () {
-        return templatePackage;
-    }
-
-    public void setTemplatePackage (String templatePackage) {
-        this.templatePackage = templatePackage;
     }
 
 }

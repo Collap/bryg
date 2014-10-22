@@ -1,5 +1,7 @@
 package io.collap.bryg.compiler.resolver;
 
+import io.collap.bryg.closure.Closure;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +50,9 @@ public class ClassResolver {
         /* java.lang */
         rootPackageFilter.addSubpackageFilter ("java.lang");
         rootPackageFilter.addSubpackageFilter ("java.util");
+
+        /* Bryg specific language features. */
+        setResolvedClass ("Closure", Closure.class.getName ());
 
         /* Include Java runtime in the jar files. */
         includedJarFiles.add ("rt.jar");

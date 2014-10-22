@@ -10,7 +10,10 @@ public class BlockNode extends InnerNode {
     public BlockNode (Context context, BrygParser.BlockContext ctx) {
         super (context);
 
-        Scope scope = context.getCurrentScope ().createSubScope ();
+        addChildrenWithScope (ctx, context.getCurrentScope ().createSubScope ());
+    }
+
+    protected void addChildrenWithScope (BrygParser.BlockContext ctx, Scope scope) {
         context.setCurrentScope (scope);
 
         for (ParseTree tree : ctx.children) {

@@ -1,5 +1,7 @@
 package io.collap.bryg.loader;
 
+import io.collap.bryg.unit.UnitClassLoader;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,7 +22,8 @@ public class FileSourceLoader implements SourceLoader {
 
     @Override
     public String getTemplateSource (String name) {
-        String path = name.replace ('.', File.separatorChar) + fileExtension;
+        String prefixlessName = UnitClassLoader.getPrefixlessName (name);
+        String path = prefixlessName.replace ('.', File.separatorChar) + fileExtension;
 
         File sourceFile = new File (templateDirectory, path);
 
@@ -31,7 +34,7 @@ public class FileSourceLoader implements SourceLoader {
             stream.read (data);
             source = new String (data, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException ("Template '" + name + "' not found.", e);
+            throw new RuntimeException ("Template '" + name + "' not found at '" + path + "'.", e);
         }
         return source;
     }

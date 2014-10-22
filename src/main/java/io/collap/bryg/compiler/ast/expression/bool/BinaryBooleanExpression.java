@@ -2,7 +2,7 @@ package io.collap.bryg.compiler.ast.expression.bool;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.parser.StandardVisitor;
+import io.collap.bryg.compiler.visitor.StandardVisitor;
 import io.collap.bryg.parser.BrygParser;
 
 import java.io.PrintStream;

@@ -12,6 +12,20 @@ import io.collap.bryg.compiler.util.OperationUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
+// TODO: Omit DUP if the value of the expression is not needed (in case of discards, for example).
+/* The bytecode for
+
+        ++i
+
+   currently looks like this:
+
+        DUP
+        ISTORE i
+        POP
+
+   Which is, obviously, suboptimal.
+ */
+
 public class IncDecExpression extends Expression {
 
     private boolean isIncrement; /* Otherwise: decrement. */
