@@ -19,7 +19,7 @@ import io.collap.bryg.parser.BrygParser;
 
 public class BinaryAssignmentExpression extends BinaryExpression {
 
-    // TODO: Make the indication of casting easier for these scenarios: (int) (value / 0.5) ; Where value is an int. (Fix in 0.3 with Improved Coercion)
+    // TODO: Make the indication of casting easier for these scenarios: (int) (value / 0.5) ; Where value is an int. (Maybe fix)
 
     /**
      * The right expression does not need to be compiled if the left expression takes care of it.

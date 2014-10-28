@@ -11,28 +11,26 @@ import javax.annotation.Nullable;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
-// TODO: Replace current dual coercion mechanism (find type first, then attempt coercion in compile method) with
-// a mechanism that wraps expressions in coercion nodes. This should reduce redundant code and computation.
-
 public class CoercionUtil {
 
     /**
-     *  Takes 'left' and 'right' and tries to generate expressions that cast, unbox and box them.
+     * Takes 'left' and 'right' and tries to generate expressions that cast, unbox and box them.
      *
      * Returns a pair of expressions, with 'left' being a child of or being the first element of the tuple,
      * and 'right' being a child of or being the second element of the tuple.
      *
      * Unboxes boxed values.
      *
+     * Does nothing with objects.
+     *
      * @throws io.collap.bryg.exception.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
      *         hence the compilation should be stopped at that point.
      */
     public static Pair<Expression, Expression> applyBinaryCoercion (Context context, Expression left, Expression right) {
-        if (left == null) throw new BrygJitException ("The left is null. This is an internal compiler issue.", -1); // TODO: Get line...
-        if (right == null) throw new BrygJitException ("The right type is null. This is an internal compiler issue.", -1);
+        if (left == null) throw new BrygJitException ("The left is null. This is probably an internal compiler issue.", -1); // TODO: Get line...
+        if (right == null) throw new BrygJitException ("The right type is null. This is probably an internal compiler issue.", -1);
 
-        /* Immediately return objects that have the same type, like Strings.
-           Ignore primitives and boxes. */
+        /* Immediately return objects, like Strings. Ignore primitives and boxes. */
         if (!left.getType ().getJavaType ().isPrimitive () && !right.getType ().getJavaType ().isPrimitive ()) {
             Type leftUnboxed = BoxingUtil.unboxType (left.getType ());
             Type rightUnboxed = BoxingUtil.unboxType (right.getType ());
