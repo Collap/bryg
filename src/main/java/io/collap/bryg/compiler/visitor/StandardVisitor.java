@@ -273,9 +273,6 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         final int line = ctx.getStart ().getLine ();
         if (op == BrygLexer.MINUS) {
             return new NegationExpression (context, (Expression) visit (ctx.expression ()), line);
-        }else if (op == BrygLexer.PLUS) {
-            return super.visitUnaryPrefixExpression (ctx); /* A unary plus does nothing, so let the
-                                                              visitor check the child. */
         }else {
             return new IncDecExpression (context, ctx.expression (), op == BrygLexer.INC, true, line);
         }

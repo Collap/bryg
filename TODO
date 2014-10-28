@@ -1,7 +1,6 @@
 - More boxing and unboxing in method and function calls.
 - Add coercion to method and function calls.
 - Expand object type coercion.
-- Possibly remove the unary + operator, which does essentially nothing.
 - What about Java enums and their values?
 
 Upcoming features:

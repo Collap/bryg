@@ -73,7 +73,7 @@ expression
     |   variable                                            # variableExpression
     |   '(' type ')' expression                             # castExpression
     |   expression op=('++' | '--')                         # unaryPostfixExpression
-    |   op=('+' | '-' | '++' | '--') expression             # unaryPrefixExpression
+    |   op=('-' | '++' | '--') expression                   # unaryPrefixExpression
     |   op=('~' | NOT) expression                           # unaryOperationExpression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
     |   expression op=('+' | '-') expression                # binaryAddSubExpression
