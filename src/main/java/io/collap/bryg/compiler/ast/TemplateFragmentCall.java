@@ -225,6 +225,10 @@ public class TemplateFragmentCall extends Node {
     }
 
     private void compileClosure () {
+        if (calledTemplate == null) {
+            throw new BrygJitException ("Currently only templates can be called with closures.", getLine ());
+        }
+
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
         mv.visitInsn (DUP);

@@ -14,6 +14,8 @@ Ideas:
       find out the name of the parameter so the user does not have to specify it.
     - Replace System.out.println with a Logger?
     - Support <!DOCTYPE x> with a function (and possibly an enum).
+    - Allow closures to receive a closure input parameter. This requires that the parameter name for the closure
+      can be specified when calling the closure.
 
 Absolutely needed improvements:
     - Better ANTLR and AST error reporting (with an error list, instead of aborting the compilation instantly).
