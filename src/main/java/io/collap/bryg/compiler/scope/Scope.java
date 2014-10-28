@@ -15,7 +15,7 @@ public class Scope {
         this.parent = parent;
     }
 
-    public Variable getVariable (String name) {
+    public @Nullable Variable getVariable (String name) {
         Variable variable = variables.get (name);
         if (variable == null) {
             variable = parent.getVariable (name);
@@ -23,9 +23,12 @@ public class Scope {
         return variable;
     }
 
-    public Variable registerVariable (String name, Type type, boolean isMutable) {
-        Variable variable = new Variable (type, name, calculateNextId (type), isMutable);
-        variables.put (name, variable);
+    /**
+     * @return The same object, for chaining.
+     */
+    public Variable registerVariable (Variable variable) {
+        variable.setId (calculateNextId (variable.getType ()));
+        variables.put (variable.getName (), variable);
         return variable;
     }
 

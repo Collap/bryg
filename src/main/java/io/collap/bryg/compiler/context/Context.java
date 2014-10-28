@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.context;
 
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.visitor.StandardVisitor;
 import io.collap.bryg.compiler.scope.RootScope;
 import io.collap.bryg.compiler.scope.Scope;
@@ -50,10 +51,12 @@ public class Context {
         closureBlockId = 0;
 
         /* Register parameters in the correct order. */
-        rootScope.registerVariable ("this", null, false); /* Unless we change the way how types are handled by the
-                                                             compiler, we can not assign a proper type here. */
-        rootScope.registerVariable ("writer", new Type (Writer.class), false);
-        rootScope.registerVariable ("model", new Type (Model.class), false);
+
+        /* Unless we change the way how types are handled by the ‚compiler, we can not assign a proper type here. */
+        rootScope.registerVariable (new Variable (new Type (Object.class), "this", false));
+
+        rootScope.registerVariable (new Variable (new Type (Writer.class), "writer", false));
+        rootScope.registerVariable (new Variable (new Type (Model.class), "model", false));
 
         /* Set context instance for the parameters. */
         parseTreeVisitor.setContext (this);

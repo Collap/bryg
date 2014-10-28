@@ -1,21 +1,19 @@
 package io.collap.bryg.compiler.ast;
 
-import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.ast.expression.DummyExpression;
 import io.collap.bryg.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.scope.Variable;
-import io.collap.bryg.compiler.type.AsmTypes;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.BoxingUtil;
 import io.collap.bryg.compiler.util.IdUtil;
+import io.collap.bryg.compiler.util.OperationUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.GlobalVariableModel;
-import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.unit.StandardUnit;
@@ -47,7 +45,8 @@ public class InDeclarationNode extends Node {
         /**
          * In declarations are always immutable.
          */
-        this (context, context.getCurrentScope ().registerVariable (name, type, true), optional, line, false);
+        this (context, context.getCurrentScope ().registerVariable (new Variable (type, name, false, optional)),
+                optional, line, false);
     }
 
     /**
@@ -113,36 +112,9 @@ public class InDeclarationNode extends Node {
     }
 
     private void ifNullThrowException () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
-
-        mv.visitInsn (DUP);
-        // Object -> Object, Object
-
-        Label skipException = new Label ();
-        mv.visitJumpInsn (IFNONNULL, skipException); /* Jump only when the reference is not null. */
-        // Object ->
-
-        /* Throw exception when the null check failed. */
-        String exceptionInternalName = AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName ();
-        mv.visitTypeInsn (NEW, exceptionInternalName);
-        mv.visitInsn (DUP);
-        // -> InvalidParameterException, InvalidParameterException
-
-        mv.visitLdcInsn (parameter.getName () + " could not be loaded!");
-        // -> String
-
-        mv.visitMethodInsn (INVOKESPECIAL, exceptionInternalName, "<init>",
-                TypeHelper.generateMethodDesc (
-                        new Class<?>[] { String.class },
-                        Void.TYPE
-                ),
-                false);
-        // InvalidParameterException, String ->
-
-        mv.visitInsn (ATHROW);
-        // InvalidParameterException ->
-
-        mv.visitLabel (skipException);
+        OperationUtil.compileIfNullThrowException (context.getMethodVisitor (),
+                new Type (InvalidInputParameterException.class),
+                parameter.getName () + " could not be loaded!");
     }
 
     // TODO: Coercion here?

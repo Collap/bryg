@@ -15,24 +15,6 @@ public class IdUtil {
         return text;
     }
 
-    /**
-     * Prefixes the name if necessary. Assumes that the parentPackage is already prefixed.
-     */
-    public static String templateIdToString (BrygParser.TemplateIdContext ctx, String parentPackage) {
-        if (ctx == null) return null;
-
-        String fullName = ctx.getText ().substring (1); /* Omit the AT (@). */
-
-        /* Check if the parent package needs to be prepended. */
-        if (ctx.currentPackage != null) {
-            fullName = parentPackage + fullName;
-        }else {
-            fullName = UnitClassLoader.getPrefixedName (fullName);
-        }
-
-        return fullName;
-    }
-
     public static String createGetterName (String fieldName) {
         return "get" + capitalizeFirstLetter (fieldName);
     }

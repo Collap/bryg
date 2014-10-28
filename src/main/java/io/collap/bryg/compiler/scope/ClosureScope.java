@@ -2,6 +2,7 @@ package io.collap.bryg.compiler.scope;
 
 import io.collap.bryg.model.GlobalVariableModel;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ClosureScope extends RootScope {
     }
 
     @Override
-    public Variable getVariable (String name) {
+    public @Nullable Variable getVariable (String name) {
         Variable variable = variables.get (name);
         if (variable == null) {
             Variable targetVariable = target.getVariable (name);
@@ -39,7 +40,8 @@ public class ClosureScope extends RootScope {
                 /* Declare variable in this scope.
                    All captured variables are declared immutable, because changing
                    them would not affect the captured variables outside the closure. */
-                variable = registerVariable (name, targetVariable.getType (), false);
+                variable = new Variable (targetVariable.getType (), name, false, targetVariable.isNullable ());
+                registerVariable (variable);
             }
         }
         return variable;

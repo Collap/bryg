@@ -1,10 +1,11 @@
 package io.collap.bryg.compiler.util;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.helper.ExceptionCompileHelper;
 import io.collap.bryg.compiler.type.Type;
 
-import static bryg.org.objectweb.asm.Opcodes.DUP;
-import static bryg.org.objectweb.asm.Opcodes.DUP2;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class OperationUtil {
 
@@ -14,6 +15,23 @@ public class OperationUtil {
         }else {
             mv.visitInsn (DUP);
         }
+    }
+
+    /**
+     * Accepts a reference on the stack and throws an exception should the reference be null.
+     */
+    public static void compileIfNullThrowException (BrygMethodVisitor mv, Type exceptionType, String message) {
+        mv.visitInsn (DUP);
+        // Object -> Object, Object
+
+        Label skipException = new Label ();
+        mv.visitJumpInsn (IFNONNULL, skipException); /* Jump only when the reference is not null. */
+        // Object ->
+
+        /* Throws the exception. */
+        new ExceptionCompileHelper (mv, exceptionType).compileThrow (message);
+
+        mv.visitLabel (skipException);
     }
 
 }

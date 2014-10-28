@@ -4,5 +4,7 @@ opt Closure closure
 ul
   mut i = 0
   while i < iterations
-    li: Iteration number \{i}!
+    li
+      p: Iteration number \{i}!
+      p @closure(name 'While')
     discard ++i

@@ -74,7 +74,7 @@ public class ClosureCompiler implements Compiler<ClosureType> {
             createFields (classVisitor);
             createConstructor (classVisitor);
 
-            BrygMethodVisitor mv = (BrygMethodVisitor) classVisitor.visitMethod (ACC_PUBLIC, "execute",
+            BrygMethodVisitor mv = (BrygMethodVisitor) classVisitor.visitMethod (ACC_PUBLIC, "render",
                     TypeHelper.generateMethodDesc (
                             new Class<?>[] { Writer.class, Model.class },
                             Void.TYPE

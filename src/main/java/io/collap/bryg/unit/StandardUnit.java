@@ -2,11 +2,16 @@ package io.collap.bryg.unit;
 
 import io.collap.bryg.Unit;
 import io.collap.bryg.environment.Environment;
+import io.collap.bryg.model.EmptyModel;
 import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.model.Model;
 
+import java.io.IOException;
 import java.io.Writer;
 
 public abstract class StandardUnit implements Unit {
+
+    private static final Model emptyModel = new EmptyModel ();
 
     /**
      * The name is referenced in {@link io.collap.bryg.compiler.ast.TemplateFragmentCall}.
@@ -24,8 +29,8 @@ public abstract class StandardUnit implements Unit {
     }
 
     @Override
-    public void render (Writer writer) {
-        render (writer, null);
+    public void render (Writer writer) throws IOException {
+        render (writer, emptyModel);
     }
 
 }

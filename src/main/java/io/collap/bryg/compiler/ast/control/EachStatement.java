@@ -83,17 +83,19 @@ public class EachStatement extends Node {
 
         /* Register variable(s). */
         if (!isArray) {
+            /* Register iterator out of scope. */
             Type iteratorType = new Type (Iterator.class);
-            iterator = new Variable (iteratorType, "", context.getRootScope ().calculateNextId (iteratorType), false); /* Immutable. */
+            iterator = new Variable (iteratorType, "", false); /* Immutable. */
+            iterator.setId (context.getRootScope ().calculateNextId (iteratorType));
         }
 
         String variableName = IdUtil.idToString (headCtx.element);
-        element = scope.registerVariable (variableName, elementType, false); /* Immutable. */
+        element = scope.registerVariable (new Variable (elementType, variableName, false)); /* Immutable. */
 
         BrygParser.IdContext indexCtx = headCtx.index;
         if (indexCtx != null) {
             String indexName = IdUtil.idToString (indexCtx);
-            index = scope.registerVariable (indexName, new Type (Integer.TYPE), false); /* Immutable. */
+            index = scope.registerVariable (new Variable (new Type (Integer.TYPE), indexName, false)); /* Immutable. */
         }
 
         BrygParser.StatementOrBlockContext statementOrBlockCtx = ctx.statementOrBlock ();

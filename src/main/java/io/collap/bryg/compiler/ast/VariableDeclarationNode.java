@@ -56,7 +56,8 @@ public class VariableDeclarationNode extends Node {
             throw new BrygJitException ("Could not get type for variable '" + name + "'.", getLine ());
         }
 
-        variable = context.getCurrentScope ().registerVariable (name, type, ctx.mutability.getType () == BrygLexer.MUT);
+        variable = new Variable (type, name, ctx.mutability.getType () == BrygLexer.MUT);
+        context.getCurrentScope ().registerVariable (variable);
     }
 
     @Override
