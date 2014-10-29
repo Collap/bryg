@@ -23,7 +23,7 @@ You can find a language reference in the [wiki](https://github.com/Collap/bryg/w
 
 Bryg is built with gradle. Just type
 
-    gradle build test install
+    gradle build install
     
 into your favorite command line while being in the root folder of bryg. This command will generate the parser sources 
 with ANTLR, build the bryg sources and test sources, execute the tests and install the jar to the local maven repository.
