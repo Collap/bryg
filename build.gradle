@@ -16,20 +16,30 @@ repositories {
 
 configurations {
     repackage
+    antlr4
 }
+
+ext.antlr = [
+    source: "${rootDir}/src/main/antlr",
+    dest: "${rootDir}/gen",
+    generated: ['BrygLexer.java', 'BrygLexer.tokens', 'BrygParser.java', 'BrygParser.tokens',
+                'BrygParserBaseListener.java', 'BrygParserBaseVisitor.java', 'BrygParserListener.java',
+                'BrygParserVisitor.java']
+]
 
 dependencies {
     compile 'junit:junit:4.11'
     compile 'com.google.code.findbugs:jsr305:3.0.0'
-    // compile 'org.antlr:antlr4:4.3'
     compile 'org.reflections:reflections:0.9.9-RC1'
-    compile files ('lib/antlr-4.4.1-dev-complete.jar')
     compile files ('lib/asm-5.0.3.patched.jar')
 
     repackage 'org.ow2.asm:asm:5.0.3'
     repackage 'org.ow2.asm:asm-tree:5.0.3'
     repackage 'org.ow2.asm:asm-util:5.0.3'
     repackage 'com.googlecode.jarjar:jarjar:1.3'
+
+    compile 'org.antlr:antlr4-runtime:4.3'
+    antlr4 'org.antlr:antlr4:4.3'
 }
 
 project.ext.set ("shouldRepackage", { !new File ('lib/asm-5.0.3.patched.jar').exists () })
@@ -62,12 +72,36 @@ task cleanupRepackageLibs (type: Delete, dependsOn: 'applyRepackage') {
 }
 compileJava.dependsOn (cleanupRepackageLibs)
 
-test {
-    /* Multiple forks lead to multiple separate Environments to be created, so be
-       careful how high you choose the number.
-       In normal (non-benchmarking) cases, it does not need to be higher than 1. */
-    setMaxParallelForks (1)
+
+task antlrDest {
+    mkdir (antlr.dest)
 }
+
+/* Generate ANTLR4 sources. */
+task antlrGenerate (type: JavaExec, dependsOn: antlrDest) {
+    inputs.dir file (antlr.source)
+    outputs.dir file (antlr.dest)
+
+    String pkg = 'io/collap/bryg/parser'
+
+    outputs.upToDateWhen {
+        boolean upToDate = true
+        antlr.generated.each { String name ->
+            if (!file (antlr.dest + '/' + pkg + '/' + name).exists ()) {
+                upToDate = false
+            }
+        }
+        return upToDate
+    }
+
+    def grammars = fileTree (antlr.source).include('**/*.g4')
+
+    main = 'org.antlr.v4.Tool'
+    classpath configurations.antlr4
+    args = ["-o", "${antlr.dest}/${pkg}", "-visitor", grammars.files].flatten ()
+}
+
+compileJava.dependsOn antlrGenerate
 
 sourceSets {
     main {
@@ -78,11 +112,19 @@ sourceSets {
     }
 }
 
+
+clean {
+    delete antlr.dest
+}
+
+test {
+    /* Multiple forks lead to multiple separate Environments to be created, so be
+       careful how high you choose the number.
+       In normal (non-benchmarking) cases, it does not need to be higher than 1. */
+    setMaxParallelForks (1)
+}
+
 jar {
     destinationDir = file ("$rootDir")
-    from files ('lib/antlr-4.4.1-dev-complete.jar', 'lib/asm-5.0.3.patched.jar').collect { it.isDirectory() ? it : zipTree(it) }
-    manifest {
-        attributes 'Implementation-Title': archivesBaseName,
-                   'Implementation-Version': version
-    }
+    from files ('lib/asm-5.0.3.patched.jar').collect { it.isDirectory() ? it : zipTree(it) }
 }
