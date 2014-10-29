@@ -1,5 +1,3 @@
-- More boxing and unboxing in method and function calls.
-- Add coercion to method and function calls.
 - Expand object type coercion.
 - What about Java enums and their values?
 

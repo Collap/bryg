@@ -2,3 +2,10 @@ in TestObject obj
 
 p obj.testString (10)
 p obj.testString (1)
+
+; Test coercion.
+val Integer i = 15
+p obj.testString (i)
+
+val Byte b = 5
+p obj.testString (b)

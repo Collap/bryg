@@ -141,6 +141,19 @@ public class CoercionUtil {
     }
 
     /**
+     * This method catches any exceptions thrown by {@link #applyUnaryCoercion(io.collap.bryg.compiler.context.Context,
+     * io.collap.bryg.compiler.ast.expression.Expression, io.collap.bryg.compiler.type.Type)} and returns null
+     * in those cases.
+     */
+    public static Expression tryUnaryCoercion (Context context, Expression expr, Type targetType) {
+        try {
+            return applyUnaryCoercion (context, expr, targetType);
+        }catch (BrygJitException ex) {
+            return null;
+        }
+    }
+
+    /**
      * Returns 'expr' or a new Expression with 'expr' as a child.
      *
      * Unboxes boxed values.
