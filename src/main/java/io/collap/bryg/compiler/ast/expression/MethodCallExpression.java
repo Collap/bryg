@@ -9,6 +9,7 @@ import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
+import javax.annotation.Nullable;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -18,6 +19,16 @@ import static bryg.org.objectweb.asm.Opcodes.INVOKEINTERFACE;
 import static bryg.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 public class MethodCallExpression extends Expression {
+
+    private class CoercionResult {
+        public Method method;
+        public List<Expression> arguments;
+
+        private CoercionResult (Method method, List<Expression> arguments) {
+            this.method = method;
+            this.arguments = arguments;
+        }
+    }
 
     private Expression operandExpression;
     private List<Expression> argumentExpressions;
@@ -33,8 +44,6 @@ public class MethodCallExpression extends Expression {
         if (objectType.isPrimitive ()) {
             throw new BrygJitException ("Methods can not be invoked on primitives.", getLine ());
         }
-
-        String methodName = IdUtil.idToString (ctx.functionCall ().id ());
 
         /* Init argument expressions. */
         List<ArgumentExpression> arguments = FunctionUtil.parseArgumentList (context, ctx.functionCall ().argumentList ());
@@ -55,70 +64,80 @@ public class MethodCallExpression extends Expression {
         }
 
         /* Find method. */
-        Method[] methods = objectType.getMethods ();
-        for (Method supposedMethod : methods) {
-            if (supposedMethod.getName ().equals (methodName)) {
-                Class<?>[] parameterTypes = supposedMethod.getParameterTypes ();
-                if (checkParameters (parameterTypes) || checkParametersAndCoerce (parameterTypes)) {
-                    method = supposedMethod;
-                }
-            }
-        }
-
-        if (method == null) {
-            throw new BrygJitException ("Method " + methodName + " could not be found.", getLine ());
-        }
-
+        findMethod (IdUtil.idToString (ctx.functionCall ().id ()), objectType);
         setType (new Type (method.getReturnType ()));
     }
 
-    private boolean checkParameters (Class<?>[] actualTypes) {
-        return checkParametersAndMaybeCoerce (actualTypes, false);
+    private void findMethod (String methodName, Class<?> objectType) {
+        Method[] methods = objectType.getMethods ();
+        List<CoercionResult> results = findMethods (methodName, methods, false);
+
+        /* If method was not found, try with coercion. */
+        if (results.size () == 0) {
+            System.out.println ("Try with coercion!");
+            results = findMethods (methodName, methods, true);
+        }
+
+        if (results.size () == 0) {
+            throw new BrygJitException ("Method " + methodName + " could not be found for the argument types.", getLine ());
+        }else if (results.size () > 1) {
+            // TODO: List coercion results.
+            throw new BrygJitException ("Coercion of argument types with method " + methodName + " leads to ambiguous results.", getLine ());
+        }
+
+        CoercionResult result = results.get (0);
+        method = result.method;
+        if (result.arguments != null) {
+            argumentExpressions = result.arguments;
+        }
     }
 
-    private boolean checkParametersAndCoerce (Class<?>[] actualTypes) {
-        return checkParametersAndMaybeCoerce (actualTypes, true);
+    private List<CoercionResult> findMethods (String methodName, Method[] methods, boolean coerce) {
+        List<CoercionResult> results = new ArrayList<> ();
+        for (Method method : methods) {
+            if (method.getName ().equals (methodName)) {
+                CoercionResult coercionResult = checkMethod (method, coerce);
+                if (coercionResult != null) {
+                    results.add (coercionResult);
+                }
+            }
+        }
+        return results;
     }
 
-    // TODO: Return an error if multiple matches have been found (Fix before 1.0).
-    private boolean checkParametersAndMaybeCoerce (Class<?>[] actualTypes, boolean coerce) {
-        final int numParams = actualTypes.length;
+    private @Nullable CoercionResult checkMethod (Method method, boolean coerce) {
+        final Class<?>[] parameterTypes = method.getParameterTypes ();
+        final int numParams = parameterTypes.length;
 
-        if (argumentExpressions.size () != numParams) return false;
+        if (argumentExpressions.size () != numParams) return null;
 
-        Expression[] coercionExpressions = null;
+        List<Expression> arguments = null;
         if (coerce) {
-            coercionExpressions = new Expression[numParams];
+            arguments = new ArrayList<> (numParams);
         }
 
         /* Check if the types match. */
         for (int i = 0; i < numParams; ++i) {
-            Class<?> actualType = actualTypes[i];
+            Class<?> paramType = parameterTypes[i];
             Expression expression = argumentExpressions.get (i);
-            if (!actualType.isAssignableFrom (expression.getType ().getJavaType ())) {
+            if (!paramType.isAssignableFrom (expression.getType ().getJavaType ())) {
                 if (coerce) {
-                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion (context, expression, new Type (actualType));
+                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion (context, expression, new Type (paramType));
                     if (coercionExpression == null) {
-                        return false;
+                        return null;
                     }
-                    coercionExpressions[i] = coercionExpression;
+                    arguments.add (coercionExpression);
                 }else {
-                    return false;
+                    return null;
+                }
+            }else {
+                if (coerce) {
+                    arguments.add (expression);
                 }
             }
         }
 
-        /* Replace argument expressions with coercion expressions. */
-        if (coerce) {
-            for (int i = 0; i < numParams; ++i) {
-                Expression ce = coercionExpressions[i];
-                if (ce != null) {
-                    argumentExpressions.set (i, ce);
-                }
-            }
-        }
-
-        return true;
+        return new CoercionResult (method, arguments);
     }
 
     @Override

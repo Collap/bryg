@@ -16,7 +16,7 @@ Ideas:
       can be specified when calling the closure.
 
 Absolutely needed improvements:
-    - Better ANTLR and AST error reporting (with an error list, instead of aborting the compilation instantly).
+    - Better ANTLR and JIT error reporting (with an error list, instead of aborting the compilation instantly).
 
 Tests:
     - Test the tab to indentation translation of the lexer.
@@ -26,6 +26,6 @@ Tests:
 API:
     - Make the API easier to use.
 
-Build:
-    - Create a script that generates the ANTLR4 sources
-    - Get the ANTLR 4.4.1 jar from maven
+Language Compatibility:
+    - This is possible in Java, but not bryg:
+        Object obj = 15
