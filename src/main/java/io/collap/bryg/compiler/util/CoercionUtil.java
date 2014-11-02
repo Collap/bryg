@@ -11,6 +11,8 @@ import javax.annotation.Nullable;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
+// TODO: Add widening reference coercion (object coercion to super types).
+
 public class CoercionUtil {
 
     /**
