@@ -1,18 +1,19 @@
 package io.collap.bryg.compiler.ast.expression.unary;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
+import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.CoercionUtil;
-import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
-import static bryg.org.objectweb.asm.Opcodes.NOP;
+import static bryg.org.objectweb.asm.Opcodes.*;
 
 public class CastExpression extends Expression {
 
     private Expression child;
+    private boolean isPrimitiveCast;
     private int conversionOpcode;
 
     public CastExpression (Context context, BrygParser.CastExpressionContext ctx) {
@@ -34,8 +35,9 @@ public class CastExpression extends Expression {
         Type to = type;
         if (from.getJavaType ().isPrimitive () && to.getJavaType ().isPrimitive ()) {
             conversionOpcode = CoercionUtil.getConversionOpcode (from, to, getLine ());
+            isPrimitiveCast = true;
         }else {
-            throw new BrygJitException ("Only casts between primitive types are currently supported", getLine ());
+            isPrimitiveCast = false;
         }
     }
 
@@ -43,17 +45,25 @@ public class CastExpression extends Expression {
         super (context);
         this.child = child;
         this.conversionOpcode = conversionOpcode;
+        isPrimitiveCast = true;
         setType (targetType);
         setLine (line);
     }
 
     @Override
     public void compile () {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+
         child.compile ();
         // -> from
 
-        if (conversionOpcode != NOP) {
-            context.getMethodVisitor ().visitInsn (conversionOpcode);
+        if (isPrimitiveCast) {
+            if (conversionOpcode != NOP) {
+                mv.visitInsn (conversionOpcode);
+                // from -> to
+            }
+        }else { /* Object cast. */
+            mv.visitTypeInsn (CHECKCAST, type.getAsmType ().getInternalName ());
             // from -> to
         }
     }
