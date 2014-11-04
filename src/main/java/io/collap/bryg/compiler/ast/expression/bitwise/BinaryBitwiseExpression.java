@@ -23,16 +23,15 @@ public abstract class BinaryBitwiseExpression extends BinaryExpression {
     }
 
     private void init () {
-        if (!left.getType ().isIntegralType () || !right.getType ().isIntegralType ()) {
-            throw new BrygJitException ("Bitwise operands must have integral types (byte, short, int, long).",
-                    getLine ());
-        }
-
-
         Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (context, left, right);
         left = result.a;
         right = result.b;
         setType (left.getType ());
+
+        if (!type.isIntegralType ()) {
+            throw new BrygJitException ("Bitwise operands must have integral types (byte, short, int, long).",
+                    getLine ());
+        }
     }
 
     @Override

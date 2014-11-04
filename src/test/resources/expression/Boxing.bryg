@@ -28,3 +28,11 @@ ul
     -f
   li
     -d
+
+h2: Bitwise OR
+  li b | b
+  li s | s
+  li i | i
+  li l | l
+  li b | l
+  li i | l
