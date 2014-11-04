@@ -11,8 +11,6 @@ import javax.annotation.Nullable;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
-// TODO: Add widening reference coercion (object coercion to super types).
-
 public class CoercionUtil {
 
     /**
@@ -37,6 +35,7 @@ public class CoercionUtil {
             Type leftUnboxed = BoxingUtil.unboxType (left.getType ());
             Type rightUnboxed = BoxingUtil.unboxType (right.getType ());
             if (leftUnboxed == null && rightUnboxed == null) {
+                // TODO: Widening reference conversion here? The current use cases don't need it.
                 return new Pair<> (left, right);
             }
         }
@@ -156,7 +155,7 @@ public class CoercionUtil {
     }
 
     /**
-     * Returns 'expr' or a new Expression with 'expr' as a child.
+     * Returns 'expr' or a new Expression with 'expr' as an (indirect) child.
      *
      * Unboxes boxed values.
      * Automatically boxes the value if the target type is a box.
@@ -165,29 +164,57 @@ public class CoercionUtil {
      *         hence the compilation should be stopped at that point.
      */
     public static Expression applyUnaryCoercion (Context context, Expression expr, Type targetType) {
+        if (expr.getType ().similarTo (targetType)) {
+            return expr;
+        }
+
         if (!expr.getType ().getJavaType ().isPrimitive ()) {
-            expr = getUnboxingExpressionOrThrowException (context, expr);
+            Type unboxedType = BoxingUtil.unboxType (expr.getType ());
+            if (unboxedType == null) {
+                /* Try widening reference conversion. */
+                Expression cast = tryWideningReferenceConversion (context, expr, targetType);
+                if (cast != null) {
+                    return cast;
+                }else {
+                    throw new BrygJitException ("Widening reference conversion not possible!", expr.getLine ());
+                }
+            }else {
+                expr = new UnboxingExpression (context, expr, unboxedType);
+            }
         }
 
         Type boxedType = null;
+        Type conversionTargetType = null;
         if (BoxingUtil.isBoxedType (targetType)) {
             boxedType = targetType;
-            targetType = BoxingUtil.unboxType (targetType);
+            conversionTargetType = BoxingUtil.unboxType (targetType);
+        }else if (targetType.similarTo (Object.class)) {
+            /* In this case, the value needs to be boxed and then promoted to Object. */
+            boxedType = BoxingUtil.boxType (expr.getType ());
         }
 
-        int conversionOpcode = getUnaryConversionOpcode (expr, targetType);
-        if (conversionOpcode == NOP - 1) {
-            throw new BrygJitException ("Conversion from " + expr.getType () + " to " + targetType + " is not possible.", expr.getLine ());
-        }
+        if (conversionTargetType != null) {
+            int conversionOpcode = getUnaryConversionOpcode (expr, conversionTargetType);
+            if (conversionOpcode == NOP - 1) {
+                throw new BrygJitException ("Conversion from " + expr.getType () + " to " + conversionOpcode + " is not possible.", expr.getLine ());
+            }
 
         /* Convert if needed. */
-        if (conversionOpcode != NOP) {
-            expr = new CastExpression (context, targetType, expr, conversionOpcode, expr.getLine ());
+            if (conversionOpcode != NOP) {
+                expr = new CastExpression (context, conversionTargetType, expr, conversionOpcode, expr.getLine ());
+            }
         }
 
         /* Box if needed. */
         if (boxedType != null) {
             expr = BoxingUtil.createBoxingExpression (context, expr);
+
+            /* Possibly convert to Object. */
+            Expression cast = tryWideningReferenceConversion (context, expr, targetType);
+            if (cast == null) {
+                throw new BrygJitException ("Widening reference conversion from " + expr.getType () + " to "
+                    + targetType + " is not possible", expr.getLine ());
+            }
 
             if (!boxedType.similarTo (expr.getType ())) {
                 throw new BrygJitException ("Boxed types do not match: " + boxedType.getJavaType () + ", "
@@ -196,6 +223,17 @@ public class CoercionUtil {
         }
 
         return expr;
+    }
+
+    private static Expression tryWideningReferenceConversion (Context context, Expression expr, Type targetType) {
+        if (targetType.similarTo (expr.getType ())) return expr;
+
+        if (targetType.getJavaType ().isAssignableFrom (expr.getType ().getJavaType ())) {
+            System.out.println ("Widening reference cast from " + expr.getType () + " to " + targetType);
+            return new CastExpression (context, targetType, expr, expr.getLine ());
+        }else {
+            return null;
+        }
     }
 
     /**

@@ -7,7 +7,7 @@ public class CoercionTest extends TemplateTest {
 
     @Override
     protected void configureModel (Model model) {
-
+        model.setVariable ("obj", new TestObject ());
     }
 
     @Override

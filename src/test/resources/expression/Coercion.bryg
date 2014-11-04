@@ -1,3 +1,5 @@
+in TestObject obj
+
 val byte b = (byte) 100
 val short s = (short) 10000
 val int i = 1000000000
@@ -89,3 +91,12 @@ ul
   li ~s
   li ~i
   li ~l
+
+val Byte bo = b
+val Integer io = i
+
+h2: TestObject.objectToString(Object obj)
+ul
+  li obj.objectToString('Hello Coercion')
+  li obj.objectToString(bo)
+  li obj.objectToString(io)

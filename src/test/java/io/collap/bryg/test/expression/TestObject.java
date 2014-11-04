@@ -16,4 +16,12 @@ public class TestObject {
         return str;
     }
 
+    /**
+     * This method is supposed to be called with any class except Object to
+     * reference widening coercion.
+     */
+    public String objectToString (Object obj) {
+        return obj.toString ();
+    }
+
 }

@@ -120,7 +120,7 @@ public class MethodCallExpression extends Expression {
         for (int i = 0; i < numParams; ++i) {
             Class<?> paramType = parameterTypes[i];
             Expression expression = argumentExpressions.get (i);
-            if (!paramType.isAssignableFrom (expression.getType ().getJavaType ())) {
+            if (!expression.getType ().similarTo (paramType)) { /* Check if the exact types match. */
                 if (coerce) {
                     Expression coercionExpression = CoercionUtil.tryUnaryCoercion (context, expression, new Type (paramType));
                     if (coercionExpression == null) {
