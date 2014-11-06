@@ -1,0 +1,7 @@
+in String name
+
+; @head ()
+: Welcome, \{name}!
+
+frag head
+  h2 name

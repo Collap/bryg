@@ -26,6 +26,7 @@ options {
 start
     :   (inDeclaration | NEWLINE)*
         (statement | NEWLINE)*
+        (fragmentFunction | NEWLINE)*
         EOF // EOF is needed for SLL(*) parsing! Otherwise no exception is thrown, which is needed to induce LL(*) parsing.
     ;
 
@@ -56,6 +57,20 @@ statement
 interpolation
     :   expression NEWLINE
     ;
+
+
+fragmentFunction
+    :   FRAG id NEWLINE
+        fragmentBlock
+    ;
+
+fragmentBlock
+    :   INDENT
+        (inDeclaration | NEWLINE)*
+        (statement | NEWLINE)*
+        DEDENT
+    ;
+
 
 closure
     :   INDENT
@@ -169,7 +184,7 @@ statementFunctionCall
 
 /* Calls functions of other templates. By default, 'render' is called. */
 templateFragmentCall
-    :   templateId argumentList?
+    :   templateId frag=id? argumentList?
         NEWLINE closure?
     ;
 

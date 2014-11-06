@@ -2,18 +2,22 @@ package io.collap.bryg.closure;
 
 import io.collap.bryg.compiler.scope.ClosureScope;
 import io.collap.bryg.parser.BrygParser;
+import io.collap.bryg.template.TemplateType;
 import io.collap.bryg.unit.UnitType;
 
 public class ClosureType extends UnitType {
 
+    private TemplateType parentTemplateType;
     private ClosureScope closureScope;
     private BrygParser.ClosureContext closureContext;
 
     private Class<? extends Closure> closureClass;
     private String constructorDesc;
 
-    public ClosureType (String className, ClosureScope closureScope, BrygParser.ClosureContext closureContext) {
+    public ClosureType (TemplateType parentTemplateType, String className, ClosureScope closureScope,
+                        BrygParser.ClosureContext closureContext) {
         super (className);
+        this.parentTemplateType = parentTemplateType;
         this.closureScope = closureScope;
         this.closureContext = closureContext;
     }
@@ -40,6 +44,11 @@ public class ClosureType extends UnitType {
 
     public void setConstructorDesc (String constructorDesc) {
         this.constructorDesc = constructorDesc;
+    }
+
+    @Override
+    public TemplateType getParentTemplateType () {
+        return parentTemplateType;
     }
 
 }

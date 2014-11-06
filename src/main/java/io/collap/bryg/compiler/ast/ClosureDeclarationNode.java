@@ -2,6 +2,7 @@ package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.closure.Closure;
 import io.collap.bryg.closure.ClosureClassLoader;
+import io.collap.bryg.closure.ClosureFragmentInfo;
 import io.collap.bryg.closure.ClosureType;
 import io.collap.bryg.compiler.ClosureCompiler;
 import io.collap.bryg.compiler.ast.expression.VariableExpression;
@@ -33,7 +34,8 @@ public class ClosureDeclarationNode extends Node {
 
         String className = context.getUniqueClosureName ();
         try {
-            closureType = new ClosureType (className, closureScope, ctx);
+            closureType = new ClosureType (context.getUnitType ().getParentTemplateType (), className, closureScope, ctx);
+            closureType.addFragment (new ClosureFragmentInfo ("render"));
             ClosureCompiler compiler = new ClosureCompiler (context, closureType);
             ClosureClassLoader closureClassLoader = new ClosureClassLoader (context.getEnvironment (), compiler);
             Class<? extends Closure> closureClass = (Class<? extends Closure>) closureClassLoader.loadClass (className);

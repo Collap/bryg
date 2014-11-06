@@ -152,6 +152,7 @@ VAL                 : 'val';
 NULL                : 'null';
 TRUE                : 'true';
 FALSE               : 'false';
+FRAG                : 'frag';
 
 Identifier
     :   Letter

@@ -1,13 +1,17 @@
 package io.collap.bryg.unit;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.collap.bryg.template.TemplateType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class UnitType {
 
     protected String fullName;
     protected String classPackage;
-    protected List<ParameterInfo> parameters = new ArrayList<> ();
+    protected Map<String, FragmentInfo> fragments = new HashMap<> ();
+
+    private String jvmName;
 
     public UnitType (String fullName) {
         this.fullName = fullName;
@@ -21,6 +25,13 @@ public abstract class UnitType {
         }
     }
 
+    public String getJvmName () {
+        if (jvmName == null) {
+            jvmName = fullName.replaceAll ("\\.", "/");
+        }
+        return jvmName;
+    }
+
     public String getFullName () {
         return fullName;
     }
@@ -29,12 +40,18 @@ public abstract class UnitType {
         return classPackage;
     }
 
-    public void addParameter (ParameterInfo parameter) {
-        parameters.add (parameter);
+    public void addFragment (FragmentInfo fragment) {
+        fragments.put (fragment.getName (), fragment);
     }
 
-    public List<ParameterInfo> getParameters () {
-        return parameters;
+    public FragmentInfo getFragment (String name) {
+        return fragments.get (name);
     }
+
+    /**
+     * Every UnitType (template or closure) must have at least one corresponding template type, which is itself in the
+     * case of templates and the owning template in the case of closures.
+     */
+    public abstract TemplateType getParentTemplateType ();
 
 }

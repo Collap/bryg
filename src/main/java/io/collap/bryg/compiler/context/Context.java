@@ -8,6 +8,7 @@ import io.collap.bryg.compiler.scope.Scope;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.model.Model;
+import io.collap.bryg.unit.FragmentInfo;
 import io.collap.bryg.unit.UnitType;
 
 import javax.annotation.Nullable;
@@ -16,6 +17,7 @@ import java.io.Writer;
 public class Context {
 
     private Environment environment;
+    private FragmentInfo fragmentInfo;
     private UnitType unitType;
     private StandardVisitor parseTreeVisitor;
     private BrygMethodVisitor methodVisitor;
@@ -40,9 +42,10 @@ public class Context {
     /**
      * @param methodVisitor May be null, but should be set before compiling any nodes.
      */
-    public Context (Environment environment, UnitType unitType,
+    public Context (Environment environment, FragmentInfo fragmentInfo, UnitType unitType,
                     @Nullable BrygMethodVisitor methodVisitor, RootScope rootScope) {
         this.environment = environment;
+        this.fragmentInfo = fragmentInfo;
         this.unitType = unitType;
         this.parseTreeVisitor = new StandardVisitor ();
         this.methodVisitor = methodVisitor;
@@ -67,7 +70,7 @@ public class Context {
      * This name is already prefixed.
      */
     public String getUniqueClosureName () {
-        return unitType.getFullName () + "$Closure" + nextClosureBlockId ();
+        return unitType.getFullName () + "$" + fragmentInfo.getName () + "_Closure" + nextClosureBlockId ();
     }
 
     private int nextClosureBlockId () {
@@ -119,6 +122,10 @@ public class Context {
 
     public void setCurrentScope (Scope currentScope) {
         this.currentScope = currentScope;
+    }
+
+    public FragmentInfo getFragmentInfo () {
+        return fragmentInfo;
     }
 
 }

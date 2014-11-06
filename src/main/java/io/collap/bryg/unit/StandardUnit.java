@@ -2,6 +2,7 @@ package io.collap.bryg.unit;
 
 import io.collap.bryg.Unit;
 import io.collap.bryg.environment.Environment;
+import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.EmptyModel;
 import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;
@@ -31,6 +32,11 @@ public abstract class StandardUnit implements Unit {
     @Override
     public void render (Writer writer) throws IOException {
         render (writer, emptyModel);
+    }
+
+    @Override
+    public void call (String name, Writer writer) throws IOException, InvalidInputParameterException, ClassCastException {
+        call (name, writer, emptyModel);
     }
 
 }

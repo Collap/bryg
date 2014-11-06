@@ -26,4 +26,8 @@ public interface Unit {
      */
     public void render (Writer writer, Model model) throws IOException, InvalidInputParameterException, ClassCastException;
 
+    public void call (String name, Writer writer) throws IOException, InvalidInputParameterException, ClassCastException;
+
+    public void call (String name, Writer writer, Model model) throws IOException, InvalidInputParameterException, ClassCastException;
+
 }

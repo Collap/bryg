@@ -3,8 +3,10 @@ package io.collap.bryg.compiler.ast;
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.Unit;
 import io.collap.bryg.closure.Closure;
+import io.collap.bryg.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.compiler.helper.ObjectCompileHelper;
 import io.collap.bryg.compiler.scope.Variable;
+import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.compiler.util.OperationUtil;
 import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.template.Template;
@@ -20,11 +22,9 @@ import io.collap.bryg.environment.Environment;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygParser;
+import io.collap.bryg.template.TemplateFragmentInfo;
 import io.collap.bryg.template.TemplateType;
-import io.collap.bryg.unit.ParameterInfo;
-import io.collap.bryg.unit.StandardUnit;
-import io.collap.bryg.unit.UnitClassLoader;
-import io.collap.bryg.unit.UnitType;
+import io.collap.bryg.unit.*;
 
 import javax.annotation.Nullable;
 import java.io.Writer;
@@ -36,10 +36,12 @@ import static bryg.org.objectweb.asm.Opcodes.*;
 public class TemplateFragmentCall extends Node {
 
     /**
-     * Either of these two must be 'null'.
+     * Only one may be set.
      */
-    private TemplateType calledTemplate;
+    private TemplateFragmentInfo calledFragment;
     private Variable calledClosure;
+
+    private boolean isFragmentInternal;
 
     private @Nullable List<ArgumentExpression> argumentExpressions;
     private ClosureDeclarationNode closure;
@@ -48,6 +50,7 @@ public class TemplateFragmentCall extends Node {
         super (context);
         setLine (ctx.getStart ().getLine ());
 
+        isFragmentInternal = false;
         findCalledUnit (ctx);
 
         /* Get argument expressions. */
@@ -58,10 +61,10 @@ public class TemplateFragmentCall extends Node {
         if (ctx.closure () != null) {
             closure = new ClosureDeclarationNode (context, ctx.closure ());
         }else {
-            if (calledTemplate != null) {
+            if (calledFragment != null) {
                 /* Check if closure is expected. */
                 boolean closureExpected = false;
-                List<ParameterInfo> parameters = calledTemplate.getParameters ();
+                List<ParameterInfo> parameters = calledFragment.getAllParameters ();
                 for (ParameterInfo parameterInfo : parameters) {
                     if (parameterInfo.getType ().similarTo (Closure.class) && !parameterInfo.isOptional ()) {
                         closureExpected = true;
@@ -70,7 +73,8 @@ public class TemplateFragmentCall extends Node {
                 }
 
                 if (closureExpected) {
-                    throw new BrygJitException ("Template '" + calledTemplate.getFullName () + "' expects a closure.", getLine ());
+                    throw new BrygJitException ("Fragment '" + calledFragment.getOwner ().getFullName () +
+                            ":" + calledFragment.getName () + "' expects a closure.", getLine ());
                 }
             }
         }
@@ -83,8 +87,20 @@ public class TemplateFragmentCall extends Node {
         Variable variable = context.getCurrentScope ().getVariable (fullName);
         if (variable != null) {
             calledClosure = variable;
-            calledTemplate = null;
+            calledFragment = null;
             return;
+        }
+
+        /* Check if there is a local fragment function. */
+        UnitType unitType = context.getUnitType ();
+        if (unitType instanceof TemplateType) {
+            TemplateType templateType = ((TemplateType) unitType);
+            TemplateFragmentInfo fragmentInfo = templateType.getFragment (fullName);
+            if (fragmentInfo != null) {
+                calledClosure = null;
+                calledFragment = fragmentInfo;
+                isFragmentInternal = true;
+            }
         }
 
         /* Check if the parent package needs to be prepended. */
@@ -94,52 +110,84 @@ public class TemplateFragmentCall extends Node {
             fullName = UnitClassLoader.getPrefixedName (fullName);
         }
 
-        calledTemplate = context.getEnvironment ().getTemplateTypePrefixed (fullName);
+        /* Get the name for the fragment. */
+        String fragName;
+        if (ctx.frag != null) {
+            fragName = IdUtil.idToString (ctx.frag);
+        }else {
+            fragName = "render"; // TODO: Make this a universal constant.
+        }
+
+        TemplateType templateType = context.getEnvironment ().getTemplateTypePrefixed (fullName);
+        if (templateType == null) {
+            throw new BrygJitException ("Template " + fullName + " not found for template call!", getLine ());
+        }
+
+        calledFragment = templateType.getFragment (fragName);
+        if (calledFragment == null) {
+            throw new BrygJitException ("Fragment " + fullName + ":" + fragName + " not found for template call!", getLine ());
+        }
+
+        calledClosure = null;
     }
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
-
-        if (calledTemplate != null) {
-            compileTemplateFetch ();
+        if (calledFragment != null) {
+            compileFragmentCall ();
         }else if (calledClosure != null) {
-            compileClosureFetch ();
+            compileClosureCall ();
         }else {
-            throw new BrygJitException ("The ID does not refer to a template or a closure.", getLine ());
+            throw new BrygJitException ("The ID does not refer to a template, fragment or a closure.", getLine ());
         }
-
-        /* Load writer. (Argument 0) */
-        mv.visitVarInsn (ALOAD, context.getRootScope ().getVariable ("writer").getId ());
-        // -> Writer
-
-        /* Create model. (Argument 1) */
-        new ObjectCompileHelper (mv, new Type (BasicModel.class)).compileNew ();
-
-        /* Compile arguments and set model variables. */
-        compileArguments ();
-
-        /* Compile closure and set closure parameter. */
-        if (closure != null) {
-            compileClosure ();
-        }
-
-        /* Invoke render method. */
-        mv.visitMethodInsn (INVOKEINTERFACE, new Type (Unit.class).getAsmType ().getInternalName (),
-                "render", TypeHelper.generateMethodDesc (
-                        new Class[] { Writer.class, Model.class },
-                        Void.TYPE
-                ), true);
-        // Template, Writer, Model ->
     }
 
+    private void compileFragmentCall () {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+
+        if (isFragmentInternal) {
+            loadThis ();
+            // -> T extends Template
+        }else {
+            compileTemplateFetch ();
+        }
+        // -> T extends Template
+
+        loadWriter ();
+        // -> Writer
+
+        if (isFragmentInternal) {
+            /* Pass the current model as a parent of a new model and add the new arguments. */
+            new ObjectCompileHelper (mv, new Type (BasicModel.class)).compileNew (
+                    TypeHelper.generateMethodDesc (
+                            new Class[]{Model.class},
+                            Void.TYPE
+                    ),
+                    new ArrayList<Node> () {{
+                        add (new VariableExpression (context, context.getRootScope ().getVariable ("model"),
+                                AccessMode.get, getLine ()));
+                    }}
+            );
+        }else {
+            /* Just create a new model. */
+            new ObjectCompileHelper (mv, new Type (BasicModel.class)).compileNew ();
+        }
+        // -> BasicModel
+
+        compileArguments ();
+        // Model -> Model
+
+        TemplateType owner = calledFragment.getOwner ();
+        context.getUnitType ().getParentTemplateType ().getReferencedTemplates ().add (owner);
+        compileFragmentInvocation (calledFragment.getName (), owner.getJvmName (), false);
+    }
 
     private void compileTemplateFetch () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
         Type environmentType = new Type (Environment.class);
 
         /* Get environment. */
-        mv.visitVarInsn (ALOAD, context.getRootScope ().getVariable ("this").getId ());
+        loadThis ();
         // -> StandardTemplate
 
         mv.visitFieldInsn (GETFIELD, new Type (StandardUnit.class).getAsmType ().getInternalName (),
@@ -154,7 +202,7 @@ public class TemplateFragmentCall extends Node {
         mv.visitVarInsn (ASTORE, environmentVariableId);
         // Environment ->
 
-        mv.visitLdcInsn (calledTemplate.getFullName ());
+        mv.visitLdcInsn (calledFragment.getOwner ().getFullName ());
         // -> String
 
         /* This assumes that the full name of the unit type is already prefixed. */
@@ -164,9 +212,33 @@ public class TemplateFragmentCall extends Node {
                         Template.class
                 ), true);
         // Environment, String -> Template
+
+        mv.visitTypeInsn (CHECKCAST, calledFragment.getOwner ().getJvmName ());
+        // Template -> T extends Template
+    }
+
+    private void compileClosureCall () {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+
+        compileClosureFetch ();
+
+         /* Load writer. (Argument 0) */
+        loadWriter ();
+        // -> Writer
+
+        /* Create model. (Argument 1) */
+        new ObjectCompileHelper (mv, new Type (BasicModel.class)).compileNew ();
+
+        /* Compile arguments and set model variables. */
+        compileArguments ();
+
+        /* Invoke render method. */
+        compileFragmentInvocation ("render", new Type (Unit.class).getAsmType ().getInternalName (), true);
     }
 
     /**
+     * ->
+     *
      * This method only checks whether the closure is null if the variable is declared optional.
      */
     private void compileClosureFetch () {
@@ -182,6 +254,11 @@ public class TemplateFragmentCall extends Node {
         }
     }
 
+    /**
+     * Model -> Model
+     *
+     * Also compiles the closure argument, if applicable.
+     */
     private void compileArguments () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
@@ -191,7 +268,7 @@ public class TemplateFragmentCall extends Node {
                     throw new BrygJitException ("All arguments to a template must be named.", getLine ());
                 }
 
-            /* Compile predicate. */
+                /* Compile predicate. */
                 Label afterArgument = argument.compilePredicate ();
 
                 mv.visitInsn (DUP);
@@ -200,7 +277,7 @@ public class TemplateFragmentCall extends Node {
                 mv.visitLdcInsn (argument.getName ());
                 // -> String
 
-            /* Possibly box the argument. */
+                /* Possibly box the argument. */
                 Type boxedType = BoxingUtil.boxType (argument.getType ());
                 if (boxedType != null) {
                     new BoxingExpression (context, argument, boxedType).compile ();
@@ -222,11 +299,15 @@ public class TemplateFragmentCall extends Node {
                 }
             }
         }
+
+        if (closure != null) {
+            compileClosure ();
+        }
     }
 
     private void compileClosure () {
-        if (calledTemplate == null) {
-            throw new BrygJitException ("Currently only templates can be called with closures.", getLine ());
+        if (calledFragment == null) {
+            throw new BrygJitException ("Currently only fragments can be called with closures.", getLine ());
         }
 
         BrygMethodVisitor mv = context.getMethodVisitor ();
@@ -234,20 +315,15 @@ public class TemplateFragmentCall extends Node {
         mv.visitInsn (DUP);
         // Model -> Model, Model
 
-        ParameterInfo closureParameter = null;
-        for (ParameterInfo parameterInfo : calledTemplate.getParameters ()) {
-            if (parameterInfo.getType ().similarTo (Closure.class)) {
-                if (closureParameter == null) {
-                    closureParameter = parameterInfo;
-                } else {
-                    throw new BrygJitException ("Found two or more closure parameters: "
-                            + closureParameter.getName () + ", " + parameterInfo.getName (), getLine ());
-                }
-            }
+        ParameterInfo closureParameter = findClosureParameter (calledFragment.getLocalParameters ());
+        if (closureParameter == null) {
+            closureParameter = findClosureParameter (calledFragment.getGeneralParameters ());
         }
 
         if (closureParameter == null) {
-            throw new BrygJitException ("Expected closure parameter for template '" + calledTemplate.getFullName () + "'", getLine ());
+            throw new BrygJitException ("Expected closure parameter for fragment '" +
+                    calledFragment.getOwner ().getFullName () +
+                    ":" + calledFragment.getName () + "'", getLine ());
         }
 
         mv.visitLdcInsn (closureParameter.getName ());
@@ -262,6 +338,42 @@ public class TemplateFragmentCall extends Node {
                         Void.TYPE
                 ), true);
         // Model, String, Closure ->
+    }
+
+    private ParameterInfo findClosureParameter (List<ParameterInfo> parameters) {
+        ParameterInfo closureParameter = null;
+        for (ParameterInfo parameter : parameters) {
+            if (parameter.getType ().similarTo (Closure.class)) {
+                if (closureParameter == null) {
+                    closureParameter = parameter;
+                } else {
+                    throw new BrygJitException ("Found two or more closure parameters: "
+                            + closureParameter.getName () + ", " + parameter.getName (), getLine ());
+                }
+            }
+        }
+
+        return closureParameter;
+    }
+
+    private void loadThis () {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+        mv.visitVarInsn (ALOAD, context.getRootScope ().getVariable ("this").getId ());
+    }
+
+    private void loadWriter () {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+        mv.visitVarInsn (ALOAD, context.getRootScope ().getVariable ("writer").getId ());
+    }
+
+    private void compileFragmentInvocation (String name, String ownerName, boolean isInterfaceCall) {
+        context.getMethodVisitor ().visitMethodInsn (
+                isInterfaceCall ? INVOKEINTERFACE : INVOKEVIRTUAL, ownerName,
+                name, TypeHelper.generateMethodDesc (
+                        new Class[] { Writer.class, Model.class },
+                        Void.TYPE
+                ), isInterfaceCall);
+        // Template, Writer, Model ->
     }
 
 }

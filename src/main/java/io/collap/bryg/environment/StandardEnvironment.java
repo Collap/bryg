@@ -10,15 +10,13 @@ import io.collap.bryg.template.Template;
 import io.collap.bryg.template.TemplateType;
 import io.collap.bryg.loader.SourceLoader;
 import io.collap.bryg.template.TemplateClassLoader;
-import io.collap.bryg.unit.StandardUnit;
 import io.collap.bryg.unit.UnitClassLoader;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * This implementation can only handle templates without constructor parameters or
@@ -26,7 +24,8 @@ import java.util.Map;
  */
 public class StandardEnvironment implements Environment {
 
-    private Map<String, TemplateType> templateTypes = Collections.synchronizedMap (new HashMap<String, TemplateType> ());
+    private final Map<String, TemplateType> templateTypes = Collections.synchronizedMap (new HashMap<String, TemplateType> ());
+    private final HashMap<String, Future<Boolean>> currentCompilations = new HashMap<> ();
 
     private Configuration configuration;
     private Library library;
@@ -80,7 +79,7 @@ public class StandardEnvironment implements Environment {
             return null;
         }
 
-        if (templateType.getConstructor () == null) {
+        if (!templateType.isCompiled ()) {
             boolean success = compileTemplate (templateType);
             if (!success) {
                 return null;
@@ -135,7 +134,7 @@ public class StandardEnvironment implements Environment {
              3. The first call finishes.
              4. The second call can now enter compileTemplate and *compiles the template again*.
            The check ensures that the template is not compiled again. */
-        if (templateType.getConstructor () == null) {
+        if (!templateType.isCompiled ()) {
             try {
                 String className = templateType.getFullName ();
 
@@ -147,22 +146,22 @@ public class StandardEnvironment implements Environment {
                 TemplateClassLoader templateClassLoader = new TemplateClassLoader (this, compiler);
 
                 Class<? extends Template> cl = (Class<? extends Template>) templateClassLoader.loadClass (className);
-                if (StandardUnit.class.isAssignableFrom (cl)) {
-                    templateType.setConstructor (cl.getConstructor (Environment.class));
-                }else {
-                    templateType.setConstructor (cl.getConstructor ());
-                }
-
+                templateType.setTemplateClass (cl);
                 /* Cache class. */
                 classCache.cacheClass (className, cl);
 
+                /* Compile all referenced templates. */
+                for (TemplateType referencedTemplate : templateType.getReferencedTemplates ()) {
+                    compileTemplate (referencedTemplate);
+                }
+
                 /* Remove references to temporary compilation data. */
-                templateType.setStartContext (null);
+                templateType.clearCompilationData ();
 
                 // System.out.println ("Loading took " + ((System.nanoTime () - start) / 1.0e9) + "s.");
                 System.out.println ();
-            } catch (ClassNotFoundException | NoSuchMethodException e) {
-                System.out.println ("Constructor could not be loaded: ");
+            } catch (ClassNotFoundException e) {
+                System.out.println ("Template " + templateType.getFullName () + " could not be loaded: ");
                 e.printStackTrace ();
                 return false;
             }

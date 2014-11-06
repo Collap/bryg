@@ -9,6 +9,8 @@ import io.collap.bryg.template.TemplateType;
 
 import javax.annotation.Nullable;
 
+// TODO: Some of these methods really don't fit to a public API. Potentially put these in StandardEnvironment.
+
 /**
  * An implementation of Environment <b>must</b> be thread-safe.
  */

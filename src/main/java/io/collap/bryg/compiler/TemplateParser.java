@@ -5,9 +5,13 @@ import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.compiler.visitor.PrintTreeVisitor;
 import io.collap.bryg.environment.StandardEnvironment;
+import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
+import io.collap.bryg.template.TemplateFragmentCompileInfo;
+import io.collap.bryg.template.TemplateFragmentInfo;
 import io.collap.bryg.template.TemplateType;
+import io.collap.bryg.unit.FragmentInfo;
 import io.collap.bryg.unit.ParameterInfo;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
@@ -16,6 +20,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TemplateParser implements Parser<TemplateType> {
@@ -90,8 +95,26 @@ public class TemplateParser implements Parser<TemplateType> {
 
         double parseTime = (System.nanoTime () - parseStart) / 1.0e9;
 
-        TemplateType templateType = new TemplateType (className, startContext);
-        parseParameters (templateType, startContext);
+        /* The render fragment only has general parameters. */
+        ArrayList<BrygParser.InDeclarationContext> renderParamContexts = new ArrayList<> ();
+        TemplateFragmentInfo renderFragment = new TemplateFragmentInfo ("render", parseParameters (renderParamContexts));
+        TemplateFragmentCompileInfo renderCompileInfo = new TemplateFragmentCompileInfo (renderFragment,
+                renderParamContexts,
+                startContext.statement ());
+
+        List<TemplateFragmentCompileInfo> compileInfos = new ArrayList<> ();
+        compileInfos.add (renderCompileInfo);
+
+        List<BrygParser.FragmentFunctionContext> fragmentContexts = startContext.fragmentFunction ();
+        for (BrygParser.FragmentFunctionContext fragCtx : fragmentContexts) {
+            compileInfos.add (parseFragment (fragCtx));
+        }
+
+        TemplateType templateType = new TemplateType (className,
+                parseParameters (startContext.inDeclaration ()), /* General parameters. */
+                compileInfos,
+                startContext.inDeclaration ()
+        );
 
         System.out.println ("Parsing with " + (usedSLL ? "SLL(*)" : "LL(*)") +
                 " took " + parseTime + "s.");
@@ -99,15 +122,22 @@ public class TemplateParser implements Parser<TemplateType> {
         return templateType;
     }
 
-    private void parseParameters (TemplateType templateType, BrygParser.StartContext startContext) {
-        List<BrygParser.InDeclarationContext> contexts = startContext.inDeclaration ();
-        for (BrygParser.InDeclarationContext context : contexts) {
-            String name = IdUtil.idToString (context.id ());
-            Type type = new TypeInterpreter (environment.getClassResolver ()).interpretType (context.type ());
-            boolean optional = context.qualifier.getType () == BrygLexer.OPT;
-            templateType.addParameter (new ParameterInfo (name, type, optional));
-        }
+    private TemplateFragmentCompileInfo parseFragment (BrygParser.FragmentFunctionContext ctx) {
+        BrygParser.FragmentBlockContext fragBlockCtx = ctx.fragmentBlock ();
+        List<ParameterInfo> parameters = parseParameters (fragBlockCtx.inDeclaration ());
+        TemplateFragmentInfo fragmentInfo = new TemplateFragmentInfo (IdUtil.idToString (ctx.id ()), parameters);
+        return new TemplateFragmentCompileInfo (fragmentInfo, fragBlockCtx.inDeclaration (), fragBlockCtx.statement ());
     }
 
+    private List<ParameterInfo> parseParameters (List<BrygParser.InDeclarationContext> ctxs) {
+        List<ParameterInfo> parameters = new ArrayList<> ();
+        for (BrygParser.InDeclarationContext ctx : ctxs) {
+            String name = IdUtil.idToString (ctx.id ());
+            Type type = new TypeInterpreter (environment.getClassResolver ()).interpretType (ctx.type ());
+            boolean optional = ctx.qualifier.getType () == BrygLexer.OPT;
+            parameters.add (new ParameterInfo (name, type, optional));
+        }
+        return parameters;
+    }
 
 }

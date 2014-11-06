@@ -20,6 +20,8 @@ import io.collap.bryg.unit.StandardUnit;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
+// TODO: Only compile if parameter is actually used.
+
 public class InDeclarationNode extends Node {
 
     private Variable parameter;

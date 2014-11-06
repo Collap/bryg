@@ -66,7 +66,8 @@ public class ClosureCompiler implements Compiler<ClosureType> {
                 new Type (StandardUnit.class).getAsmType ().getInternalName (),
                 new String[] { new Type (Closure.class).getAsmType ().getInternalName () });
         {
-            Context context = new Context (parentContext.getEnvironment (), closureType, null, closureType.getClosureScope ());
+            Context context = new Context (parentContext.getEnvironment (), closureType.getFragment ("render"),
+                closureType, null, closureType.getClosureScope ());
             Node node = context.getParseTreeVisitor ().visit (closureType.getClosureContext ());
 
             /* Make sure the node is created before these methods are called, so every captured variable
@@ -107,8 +108,8 @@ public class ClosureCompiler implements Compiler<ClosureType> {
     private void createFields (ClassVisitor classVisitor) {
         List<Variable> capturedVariables = closureType.getClosureScope ().getCapturedVariables ();
         for (Variable variable : capturedVariables) {
-            FieldVisitor fieldVisitor = classVisitor.visitField (Opcodes.ACC_PRIVATE, variable.getName (), variable.getType ().getAsmType ().getDescriptor (),
-                    null, null);
+            FieldVisitor fieldVisitor = classVisitor.visitField (Opcodes.ACC_PRIVATE, variable.getName (),
+                    variable.getType ().getAsmType ().getDescriptor (), null, null);
             fieldVisitor.visitEnd ();
 
             /* Create setter. */
