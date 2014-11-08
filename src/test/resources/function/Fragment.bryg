@@ -1,6 +1,6 @@
 in String name
 
-; @head ()
+@head ()
 : Welcome, \{name}!
 
 frag head

@@ -100,6 +100,7 @@ public class TemplateFragmentCall extends Node {
                 calledClosure = null;
                 calledFragment = fragmentInfo;
                 isFragmentInternal = true;
+                return;
             }
         }
 
