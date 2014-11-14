@@ -38,7 +38,6 @@ public class ClosureCompiler implements Compiler<ClosureType> {
     public byte[] compile () {
         long jitStart = System.nanoTime ();
 
-
         ClassWriter classWriter = new ClassWriter (ClassWriter.COMPUTE_FRAMES);
         ClassVisitor parentVisitor;
         // if (.shouldPrintBytecode ()) {
@@ -106,6 +105,14 @@ public class ClosureCompiler implements Compiler<ClosureType> {
     }
 
     private void createFields (ClassVisitor classVisitor) {
+        FieldVisitor parentField = classVisitor.visitField (Opcodes.ACC_PRIVATE, ClosureType.PARENT_FIELD_NAME,
+                closureType.getParentTemplateType ().getDescriptor (), null, null);
+        parentField.visitEnd ();
+
+        FieldVisitor parentModelField = classVisitor.visitField (Opcodes.ACC_PRIVATE, ClosureType.PARENT_MODEL_FIELD_NAME,
+                new Type (Model.class).getAsmType ().getDescriptor (), null, null);
+        parentModelField.visitEnd ();
+
         List<Variable> capturedVariables = closureType.getClosureScope ().getCapturedVariables ();
         for (Variable variable : capturedVariables) {
             FieldVisitor fieldVisitor = classVisitor.visitField (Opcodes.ACC_PRIVATE, variable.getName (),
@@ -127,15 +134,18 @@ public class ClosureCompiler implements Compiler<ClosureType> {
 
     private void createConstructor (ClassVisitor classVisitor) {
         List<Variable> capturedVariables = closureType.getClosureScope ().getCapturedVariables ();
-        int parameterCount = capturedVariables.size () + 1;
+        int parameterCount = capturedVariables.size () + 2;
 
-        List<Class<?>> parameterTypes = new ArrayList<> (parameterCount);
-        parameterTypes.add (Environment.class); /* This is the only parameter for the StandardUnit. */
+        List<String> parameterDescs = new ArrayList<> (parameterCount);
+        parameterDescs.add (new Type (Environment.class).getAsmType ().getDescriptor ()); /* This is the only parameter for the StandardUnit. */
+        parameterDescs.add (closureType.getParentTemplateType ().getDescriptor ()); /* parent template */
+        parameterDescs.add (new Type (Model.class).getAsmType ().getDescriptor ()); /* parent template model */
         for (Variable variable : capturedVariables) {
-            parameterTypes.add (variable.getType ().getJavaType ());
+            parameterDescs.add (variable.getType ().getAsmType ().getDescriptor ());
         }
 
-        String desc = TypeHelper.generateMethodDesc (parameterTypes.toArray (new Class<?>[parameterCount]), Void.TYPE);
+        String desc = TypeHelper.generateMethodDesc (parameterDescs.toArray (new String[parameterCount]),
+                new Type (Void.TYPE).getAsmType ().getDescriptor ());
         closureType.setConstructorDesc (desc);
         MethodVisitor constructor = classVisitor.visitMethod (ACC_PUBLIC, "<init>", desc, null, null);
 
@@ -149,10 +159,23 @@ public class ClosureCompiler implements Compiler<ClosureType> {
                         Void.TYPE
                 ), false);
 
+        /* Set __parent field. */
+        constructor.visitVarInsn (ALOAD, 0); /* this */
+        constructor.visitVarInsn (ALOAD, 2); /* parent */
+        constructor.visitFieldInsn (PUTFIELD, TypeHelper.toInternalName (closureType.getFullName ()),
+                ClosureType.PARENT_FIELD_NAME, closureType.getParentTemplateType ().getDescriptor ());
+
+        /* Set __parent_model field. */
+        constructor.visitVarInsn (ALOAD, 0); /* this */
+        constructor.visitVarInsn (ALOAD, 3); /* parent_model */
+        constructor.visitFieldInsn (PUTFIELD, TypeHelper.toInternalName (closureType.getFullName ()),
+                ClosureType.PARENT_MODEL_FIELD_NAME, new Type (Model.class).getAsmType ().getDescriptor ());
+
+
         /* Set fields. */
         for (int i = 0; i < capturedVariables.size (); ++i) {
             Variable variable = capturedVariables.get (i);
-            int id = i + 2;
+            int id = i + 4;
             bryg.org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
 
             constructor.visitVarInsn (ALOAD, 0); /* this */
@@ -167,8 +190,13 @@ public class ClosureCompiler implements Compiler<ClosureType> {
     }
 
     private void initializeLocalClosureVariables (Context context) {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
         ClosureScope closureScope = closureType.getClosureScope ();
+
+        Variable parentVariable = closureScope.getVariable (ClosureType.PARENT_FIELD_NAME);
+        initClosureVariable (context, parentVariable, closureType.getParentTemplateType ().getDescriptor (), ASTORE);
+
+        Variable parentModelVariable = closureScope.getVariable (ClosureType.PARENT_MODEL_FIELD_NAME);
+        initClosureVariable (context, parentModelVariable, new Type (Model.class).getAsmType ().getDescriptor (), ASTORE);
 
         List<Variable> capturedVariables = closureScope.getCapturedVariables ();
         for (Variable capturedVariable : capturedVariables) {
@@ -177,11 +205,18 @@ public class ClosureCompiler implements Compiler<ClosureType> {
             Variable closureVariable = closureScope.getVariable (name);
             bryg.org.objectweb.asm.Type asmType = closureVariable.getType ().getAsmType ();
 
-            mv.visitVarInsn (ALOAD, 0); /* this */
-            mv.visitFieldInsn (GETFIELD, TypeHelper.toInternalName (closureType.getFullName ()),
-                name, asmType.getDescriptor ());
-            mv.visitVarInsn (asmType.getOpcode (ISTORE), closureVariable.getId ());
+            initClosureVariable (context, closureVariable, asmType.getDescriptor (), asmType.getOpcode (ISTORE));
         }
+    }
+
+    private void initClosureVariable (Context context, Variable localVariable,
+                                      String typeDesc, int storeOpcode) {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+
+        mv.visitVarInsn (ALOAD, 0); /* this */
+        mv.visitFieldInsn (GETFIELD, TypeHelper.toInternalName (closureType.getFullName ()),
+                localVariable.getName (), typeDesc);
+        mv.visitVarInsn (storeOpcode, localVariable.getId ());
     }
 
     @Override

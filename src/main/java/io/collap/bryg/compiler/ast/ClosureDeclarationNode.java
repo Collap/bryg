@@ -66,6 +66,14 @@ public class ClosureDeclarationNode extends Node {
             }
         });
 
+        /* Load "this" as "__parent" parameter. */
+        arguments.add (new VariableExpression (context, context.getRootScope ().getVariable ("this"),
+                AccessMode.get, getLine ()));
+
+        /* Load "model" as "__parent_model" parameter. */
+        arguments.add (new VariableExpression (context, context.getRootScope ().getVariable ("model"),
+                AccessMode.get, getLine ()));
+
         /* "Load" captured variables. */
         for (Variable capturedVariable : closureType.getClosureScope ().getCapturedVariables ()) {
             arguments.add (new VariableExpression (context, capturedVariable, AccessMode.get, getLine ()));

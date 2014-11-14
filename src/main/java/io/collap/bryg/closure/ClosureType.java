@@ -7,6 +7,10 @@ import io.collap.bryg.unit.UnitType;
 
 public class ClosureType extends UnitType {
 
+    // TODO: Find a way to make these fields optional (only compiled if needed), for obvious performance reasons.
+    public static final String PARENT_FIELD_NAME = "__parent";
+    public static final String PARENT_MODEL_FIELD_NAME = "__parent_model";
+
     private TemplateType parentTemplateType;
     private ClosureScope closureScope;
     private BrygParser.ClosureContext closureContext;

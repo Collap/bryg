@@ -16,15 +16,26 @@ public class TypeHelper {
     }
 
     public static String generateMethodDesc (@Nullable Type[] argumentTypes, Type returnType) {
+        String[] descs = null;
+        if (argumentTypes != null) {
+            descs = new String[argumentTypes.length];;
+            for (int i = 0; i < argumentTypes.length; i++) {
+                descs[i] = argumentTypes[i].getAsmType ().getDescriptor ();
+            }
+        }
+        return generateMethodDesc (descs, returnType.getAsmType ().getDescriptor ());
+    }
+
+    public static String generateMethodDesc (@Nullable String[] argumentDescs, String returnDesc) {
         StringBuilder builder = new StringBuilder (32);
         builder.append ('(');
-        if (argumentTypes != null) {
-            for (Type type : argumentTypes) {
-                builder.append (type.getAsmType ().getDescriptor ());
+        if (argumentDescs != null) {
+            for (String desc : argumentDescs) {
+                builder.append (desc);
             }
         }
         builder.append (')');
-        builder.append (returnType.getAsmType ().getDescriptor ());
+        builder.append (returnDesc);
         return builder.toString ();
     }
 

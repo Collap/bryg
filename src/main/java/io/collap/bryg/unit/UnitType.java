@@ -12,6 +12,7 @@ public abstract class UnitType {
     protected Map<String, FragmentInfo> fragments = new HashMap<> ();
 
     private String jvmName;
+    private String descriptor;
 
     public UnitType (String fullName) {
         this.fullName = fullName;
@@ -30,6 +31,13 @@ public abstract class UnitType {
             jvmName = fullName.replaceAll ("\\.", "/");
         }
         return jvmName;
+    }
+
+    public String getDescriptor () {
+        if (descriptor == null) {
+            descriptor = "L" + getJvmName () + ";";
+        }
+        return descriptor;
     }
 
     public String getFullName () {

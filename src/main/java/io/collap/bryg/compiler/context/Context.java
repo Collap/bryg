@@ -53,14 +53,6 @@ public class Context {
         currentScope = rootScope;
         closureBlockId = 0;
 
-        /* Register parameters in the correct order. */
-
-        /* Unless we change the way how types are handled by the ‚compiler, we can not assign a proper type here. */
-        rootScope.registerVariable (new Variable (new Type (Object.class), "this", false));
-
-        rootScope.registerVariable (new Variable (new Type (Writer.class), "writer", false));
-        rootScope.registerVariable (new Variable (new Type (Model.class), "model", false));
-
         /* Set context instance for the parameters. */
         parseTreeVisitor.setContext (this);
         if (methodVisitor != null) methodVisitor.setContext (this);

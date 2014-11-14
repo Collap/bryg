@@ -1,6 +1,9 @@
 package io.collap.bryg.compiler.scope;
 
+import io.collap.bryg.closure.ClosureType;
+import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.model.Model;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -25,6 +28,10 @@ public class ClosureScope extends RootScope {
     public ClosureScope (Scope target) {
         super (new GlobalVariableModel ()); /* Provide an empty global variable model. */
         this.target = target;
+
+        /* Register __parent variable. */
+        registerVariable (new Variable (new Type (Object.class), ClosureType.PARENT_FIELD_NAME, false));
+        registerVariable (new Variable (new Type (Model.class), ClosureType.PARENT_MODEL_FIELD_NAME, false));
     }
 
     @Override

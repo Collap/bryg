@@ -2,8 +2,10 @@ package io.collap.bryg.compiler.scope;
 
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.model.Model;
 
 import javax.annotation.Nullable;
+import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +19,11 @@ public class RootScope extends Scope {
     public RootScope (GlobalVariableModel globalVariableModel) {
         super (null);
         this.globalVariableModel = globalVariableModel;
+
+        /* Unless we change the way how types are handled by the compiler, we can not assign a proper type here. */
+        registerVariable (new Variable (new Type (Object.class), "this", false));
+        registerVariable (new Variable (new Type (Writer.class), "writer", false));
+        registerVariable (new Variable (new Type (Model.class), "model", false));
     }
 
     @Override

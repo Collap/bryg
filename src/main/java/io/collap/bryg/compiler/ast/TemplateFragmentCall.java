@@ -3,6 +3,7 @@ package io.collap.bryg.compiler.ast;
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.Unit;
 import io.collap.bryg.closure.Closure;
+import io.collap.bryg.closure.ClosureType;
 import io.collap.bryg.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.compiler.helper.ObjectCompileHelper;
 import io.collap.bryg.compiler.scope.Variable;
@@ -42,6 +43,7 @@ public class TemplateFragmentCall extends Node {
     private Variable calledClosure;
 
     private boolean isFragmentInternal;
+    private boolean isCallInClosure;
 
     private @Nullable List<ArgumentExpression> argumentExpressions;
     private ClosureDeclarationNode closure;
@@ -50,6 +52,7 @@ public class TemplateFragmentCall extends Node {
         super (context);
         setLine (ctx.getStart ().getLine ());
 
+        isCallInClosure = context.getUnitType () instanceof ClosureType;
         isFragmentInternal = false;
         findCalledUnit (ctx);
 
@@ -92,9 +95,8 @@ public class TemplateFragmentCall extends Node {
         }
 
         /* Check if there is a local fragment function. */
-        UnitType unitType = context.getUnitType ();
-        if (unitType instanceof TemplateType) {
-            TemplateType templateType = ((TemplateType) unitType);
+        {
+            TemplateType templateType = context.getUnitType ().getParentTemplateType ();
             TemplateFragmentInfo fragmentInfo = templateType.getFragment (fullName);
             if (fragmentInfo != null) {
                 calledClosure = null;
@@ -147,7 +149,11 @@ public class TemplateFragmentCall extends Node {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
         if (isFragmentInternal) {
-            loadThis ();
+            if (isCallInClosure) {
+                mv.visitVarInsn (ALOAD, context.getRootScope ().getVariable (ClosureType.PARENT_FIELD_NAME).getId ());
+            }else {
+                loadThis ();
+            }
             // -> T extends Template
         }else {
             compileTemplateFetch ();
@@ -165,8 +171,13 @@ public class TemplateFragmentCall extends Node {
                             Void.TYPE
                     ),
                     new ArrayList<Node> () {{
-                        add (new VariableExpression (context, context.getRootScope ().getVariable ("model"),
-                                AccessMode.get, getLine ()));
+                        Variable model;
+                        if (isCallInClosure) {
+                            model = context.getRootScope ().getVariable (ClosureType.PARENT_MODEL_FIELD_NAME);
+                        }else {
+                            model = context.getRootScope ().getVariable ("model");
+                        }
+                        add (new VariableExpression (context, model, AccessMode.get, getLine ()));
                     }}
             );
         }else {
