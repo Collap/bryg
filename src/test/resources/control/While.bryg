@@ -6,5 +6,6 @@ ul
   while i < iterations
     li
       p: Iteration number \{i}!
-      p @closure(name 'While')
+      if closure !== null
+        p @closure (name 'While')
     discard ++i
