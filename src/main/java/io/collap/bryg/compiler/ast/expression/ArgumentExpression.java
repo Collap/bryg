@@ -29,6 +29,10 @@ public class ArgumentExpression extends Expression {
             name = id.getText ();
         }
 
+        if (ctx.expression () == null) {
+            throw new BrygJitException ("Expression parse tree context is null!", getLine ());
+        }
+
         expression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
 
         if (expression.getType ().similarTo (Void.TYPE)) {
@@ -78,6 +82,10 @@ public class ArgumentExpression extends Expression {
 
     public @Nullable String getName () {
         return name;
+    }
+
+    public void setName (@Nullable String name) {
+        this.name = name;
     }
 
     @Override
