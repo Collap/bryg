@@ -60,30 +60,32 @@ public class TemplateFragmentCall extends Node {
         if (ctx.argumentList () != null) {
             argumentExpressions = FunctionUtil.parseArgumentList (context, ctx.argumentList ());
 
-            /* Infer parameter/argument names. */
-            boolean shouldInfer = false;
+            if (calledFragment != null) {
+                /* Infer parameter/argument names. */
+                boolean shouldInfer = false;
 
-            /* Check first whether to infer or not, because we need to check whether the
-               order of arguments is correct even if some arguments are named. */
-            for (ArgumentExpression argumentExpression : argumentExpressions) {
-                if (argumentExpression.getName () == null) {
-                    shouldInfer = true;
-                    break;
+                /* Check first whether to infer or not, because we need to check whether the
+                   order of arguments is correct even if some arguments are named. */
+                for (ArgumentExpression argumentExpression : argumentExpressions) {
+                    if (argumentExpression.getName () == null) {
+                        shouldInfer = true;
+                        break;
+                    }
                 }
-            }
 
-            if (shouldInfer) {
-                List<ParameterInfo> localParameters = calledFragment.getLocalParameters ();
-                for (int i = 0; i < argumentExpressions.size (); ++i) {
-                    ArgumentExpression argumentExpression = argumentExpressions.get (i);
-                    ParameterInfo localParameter = localParameters.get (i);
-                    if (argumentExpression.getName () != null) {
-                        if (!localParameter.getName ().equals (argumentExpression.getName ())) {
-                            throw new BrygJitException ("Argument " + i + " is invalid: Expected name '" +
-                                localParameter.getName () + "' but read '" + argumentExpression.getName () + "'.", getLine ());
+                if (shouldInfer) {
+                    List<ParameterInfo> localParameters = calledFragment.getLocalParameters ();
+                    for (int i = 0; i < argumentExpressions.size (); ++i) {
+                        ArgumentExpression argumentExpression = argumentExpressions.get (i);
+                        ParameterInfo localParameter = localParameters.get (i);
+                        if (argumentExpression.getName () != null) {
+                            if (!localParameter.getName ().equals (argumentExpression.getName ())) {
+                                throw new BrygJitException ("Argument " + i + " is invalid: Expected name '" +
+                                        localParameter.getName () + "' but read '" + argumentExpression.getName () + "'.", getLine ());
+                            }
+                        } else {
+                            argumentExpression.setName (localParameter.getName ());
                         }
-                    }else {
-                        argumentExpression.setName (localParameter.getName ());
                     }
                 }
             }
@@ -305,7 +307,7 @@ public class TemplateFragmentCall extends Node {
         if (argumentExpressions != null) {
             for (ArgumentExpression argument : argumentExpressions) {
                 if (argument.getName () == null) {
-                    throw new BrygJitException ("All arguments to a template must be named.", getLine ());
+                    throw new BrygJitException ("Argument name was neither supplied nor inferred.", getLine ());
                 }
 
                 /* Compile predicate. */
