@@ -74,17 +74,28 @@ public class TemplateFragmentCall extends Node {
                 }
 
                 if (shouldInfer) {
-                    List<ParameterInfo> localParameters = calledFragment.getLocalParameters ();
+                    List<ParameterInfo> parameters;
+                    if (isFragmentInternal) {
+                        parameters = calledFragment.getLocalParameters ();
+                    }else {
+                        parameters = calledFragment.getAllParameters ();
+                    }
+
+                    if (parameters.size () < argumentExpressions.size ()) {
+                        throw new BrygJitException ("The fragment call has more arguments than parameters expected by" +
+                                " the fragment", getLine ());
+                    }
+
                     for (int i = 0; i < argumentExpressions.size (); ++i) {
                         ArgumentExpression argumentExpression = argumentExpressions.get (i);
-                        ParameterInfo localParameter = localParameters.get (i);
+                        ParameterInfo parameter = parameters.get (i);
                         if (argumentExpression.getName () != null) {
-                            if (!localParameter.getName ().equals (argumentExpression.getName ())) {
+                            if (!parameter.getName ().equals (argumentExpression.getName ())) {
                                 throw new BrygJitException ("Argument " + i + " is invalid: Expected name '" +
-                                        localParameter.getName () + "' but read '" + argumentExpression.getName () + "'.", getLine ());
+                                        parameter.getName () + "' but read '" + argumentExpression.getName () + "'.", getLine ());
                             }
                         } else {
-                            argumentExpression.setName (localParameter.getName ());
+                            argumentExpression.setName (parameter.getName ());
                         }
                     }
                 }
