@@ -1,7 +1,0 @@
-in boolean odd
-in String term
-in Object result
-
-tr(class 'odd' if odd)
-  td term
-  td result
