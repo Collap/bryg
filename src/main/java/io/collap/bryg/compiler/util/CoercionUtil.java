@@ -311,6 +311,7 @@ public class CoercionUtil {
      */
     public static int getPromotionOpcode (Type from, Type to) {
         if (from.similarTo (Byte.TYPE)) {
+            if (to.similarTo (Byte.TYPE)) return NOP;
             if (to.similarTo (Short.TYPE)) return NOP;
             if (to.similarTo (Integer.TYPE)) return NOP;
             if (to.similarTo (Long.TYPE)) return I2L;
@@ -318,21 +319,27 @@ public class CoercionUtil {
             if (to.similarTo (Double.TYPE)) return I2D;
             if (to.similarTo (Character.TYPE)) return I2C;
         }else if (from.similarTo (Short.TYPE)) {
+            if (to.similarTo (Short.TYPE)) return NOP;
             if (to.similarTo (Integer.TYPE)) return NOP;
             if (to.similarTo (Long.TYPE)) return I2L;
             if (to.similarTo (Float.TYPE)) return I2F;
             if (to.similarTo (Double.TYPE)) return I2D;
             if (to.similarTo (Character.TYPE)) return I2C;
         }else if (from.similarTo (Integer.TYPE)) {
+            if (to.similarTo (Integer.TYPE)) return NOP;
             if (to.similarTo (Long.TYPE)) return I2L;
             if (to.similarTo (Float.TYPE)) return I2F;
             if (to.similarTo (Double.TYPE)) return I2D;
             if (to.similarTo (Character.TYPE)) return I2C;
         }else if (from.similarTo (Long.TYPE)) {
+            if (to.similarTo (Long.TYPE)) return NOP;
             if (to.similarTo (Float.TYPE)) return L2F;
             if (to.similarTo (Double.TYPE)) return L2D;
         }else if (from.similarTo (Float.TYPE)) {
+            if (to.similarTo (Float.TYPE)) return NOP;
             if (to.similarTo (Double.TYPE)) return F2D;
+        }else if (from.similarTo (Double.TYPE)) {
+            if (to.similarTo (Double.TYPE)) return NOP;
         }
 
         return NOP - 1;
