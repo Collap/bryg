@@ -72,18 +72,12 @@ ul
 
 h2: Negation
 ul
-  li
-    -b
-  li
-    -s
-  li
-    -i
-  li
-    -l
-  li
-    -f
-  li
-    -d
+  li (-b)
+  li (-s)
+  li (-i)
+  li (-l)
+  li (-f)
+  li (-d)
 
 h2: Bitwise NOT
 ul

@@ -2,18 +2,6 @@ parser grammar BrygParser;
 
 // TODO: Find a way to do: if (...) a else b
 
-// TODO: Currently, a statement li -b is interpreted as a subtraction. (Before 1.0)
-//  Parentheses give the hint to the compiler that li is a normal function call with -b as a parameter:
-//      li (-b)
-//  The only feasible way to fix this is
-//      li
-//        -b
-//  which is not intuitive.
-//  Maybe we can supply the parser with additional information about declared variables and functions,
-//  to allow the compiler to decide whether it is a variable or a function?
-//  Alternative: Change the binary subtraction node to a function call with negation as a statement,
-//  if the compiler finds that binary subtraction is not possible, because either expression's type is 'void'.
-
 options {
     tokenVocab = BrygLexer;
 }
@@ -88,7 +76,9 @@ expression
     |   variable                                            # variableExpression
     |   '(' type ')' expression                             # castExpression
     |   expression op=('++' | '--')                         # unaryPostfixExpression
-    |   op=('-' | '++' | '--') expression                   # unaryPrefixExpression
+    |   (   op=('++' | '--') expression
+        |   '(' op='-' expression ')'
+        )                                                   # unaryPrefixExpression
     |   op=('~' | NOT) expression                           # unaryOperationExpression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
     |   expression op=('+' | '-') expression                # binaryAddSubExpression

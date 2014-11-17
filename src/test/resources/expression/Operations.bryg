@@ -1,14 +1,6 @@
 ; This does of course not replace proper tests,
 ; but it is a start for now!
 
-; Old but noteworthy code:
-; tr
-  ; td: -16 >> 2
-  ; td              ; We need to qualify td as a proper block function call, because
-    ; -16 >> 2      ; the compiler prefers subtraction and trivial function calls
-                    ; over statement function calls in this context.
-
-
 in Format format
 in int a
 in int b
@@ -98,13 +90,13 @@ frag body
         @row (odd false, 'a + 0.0 + b', a + 0.0 + b)
 
       @section ('Subtraction')
-        @row (odd false, '5 - a', (5 - a))          ; TODO: This is another problem; The unary minus induces complete chaos.
-        @row (odd true, 'b - 7', (b - 7))
-        @row (odd false, 'a - b', (a - b))
-        @row (odd true, 'a - a - b', (a - a - b))
-        @row (odd false, 'a - 1.0f', (a - 1.0f))
-        @row (odd true, '1.0 - b', (1.0 - b))
-        @row (odd false, 'a - 0.0 - b', (a - 0.0 - b))
+        @row (odd false, '5 - a', 5 - a)          ; TODO: This is another problem; The unary minus induces complete chaos.
+        @row (odd true, 'b - 7', b - 7)
+        @row (odd false, 'a - b', a - b)
+        @row (odd true, 'a - a - b', a - a - b)
+        @row (odd false, 'a - 1.0f', a - 1.0f)
+        @row (odd true, '1.0 - b', 1.0 - b)
+        @row (odd false, 'a - 0.0 - b', a - 0.0 - b)
 
       @section ('Multiplication')
         @row (odd false, '5 * a', 5 * a)
@@ -156,9 +148,9 @@ frag body
       @section ('Shift')
         @row (odd false, '1 << 3', 1 << 3)
         @row (odd true, '16 >> 2', 16 >> 2)
-        @row (odd false, '-16 >> 2', -16 >> 2)
+        @row (odd false, '-16 >> 2', (-16) >> 2)
         @row (odd true, '16 >>> 2', 16 >>> 2)
-        @row (odd false, '-16 >>> 2', -16 >>> 2)
+        @row (odd false, '-16 >>> 2', (-16) >>> 2)
 
       @section ('Assignment')
         mut int value = 0
