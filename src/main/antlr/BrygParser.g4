@@ -232,6 +232,7 @@ id
         |   NULL
         |   TRUE
         |   FALSE
+        |   FRAG
         )
         '`'
     ;
