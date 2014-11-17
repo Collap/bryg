@@ -61,7 +61,7 @@ public class FunctionCallExpression extends Expression {
     private void initFunction (String name) {
         function = context.getEnvironment ().getLibrary ().getFunction (name);
         if (function == null) {
-            throw new BrygJitException ("Function " + name + " not found!", getLine ());
+            throw new BrygJitException ("Function '" + name + "' not found!", getLine ());
         }
 
         setType (function.getReturnType ());
