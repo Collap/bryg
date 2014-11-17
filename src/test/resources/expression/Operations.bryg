@@ -90,7 +90,7 @@ frag body
         @row (odd false, 'a + 0.0 + b', a + 0.0 + b)
 
       @section ('Subtraction')
-        @row (odd false, '5 - a', 5 - a)          ; TODO: This is another problem; The unary minus induces complete chaos.
+        @row (odd false, '5 - a', 5 - a)
         @row (odd true, 'b - 7', b - 7)
         @row (odd false, 'a - b', a - b)
         @row (odd true, 'a - a - b', a - a - b)

@@ -34,7 +34,7 @@ public class TemplateType extends UnitType {
      * current template is executed. This does not lead to any circular dependencies, as said templates are compiled
      * after this template has been registered in the class cache already.
      */
-    private Set<TemplateType> referencedTemplates; // TODO: Potentially delete the field after compilation is done.
+    private Set<TemplateType> referencedTemplates;
 
     public TemplateType (String className) {
         this (className, new ArrayList<ParameterInfo> (), new ArrayList<TemplateFragmentCompileInfo> (),
