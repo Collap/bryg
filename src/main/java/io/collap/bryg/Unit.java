@@ -1,5 +1,6 @@
 package io.collap.bryg;
 
+import io.collap.bryg.exception.FragmentCallException;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.Model;
 
@@ -26,8 +27,14 @@ public interface Unit {
      */
     public void render (Writer writer, Model model) throws IOException, InvalidInputParameterException, ClassCastException;
 
-    public void call (String name, Writer writer) throws IOException, InvalidInputParameterException, ClassCastException;
+    /**
+     * @see Unit#call(java.lang.String, java.io.Writer, io.collap.bryg.model.Model)
+     */
+    public void call (String name, Writer writer) throws FragmentCallException;
 
-    public void call (String name, Writer writer, Model model) throws IOException, InvalidInputParameterException, ClassCastException;
+    /**
+     * Calls the fragment function referenced by 'name'.
+     */
+    public void call (String name, Writer writer, Model model) throws FragmentCallException;
 
 }

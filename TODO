@@ -22,6 +22,11 @@ Tests:
 
 API:
     - Make the API easier to use.
+    - Allow the programmer to add specific interfaces to each individual template,
+      which can then be used to call methods of the template directly instead of
+      having to go through Unit.call and reflection. The compiler would also check
+      whether the interface that is supplied is actually satisfied by the implementation
+      of the currently compiled template.
 
 Language Compatibility:
     - This is possible in Java, but not bryg:

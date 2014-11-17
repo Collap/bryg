@@ -13,7 +13,7 @@ import java.io.StringWriter;
 
 public abstract class TemplateTest {
 
-    private Template template;
+    protected Template template;
 
     @Before
     public void init () {

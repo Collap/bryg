@@ -1,7 +1,6 @@
 package io.collap.bryg.test.control;
 
 import io.collap.bryg.closure.StandardClosure;
-import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.Model;
 import io.collap.bryg.test.Domain;
 import io.collap.bryg.test.TemplateTest;
@@ -18,11 +17,6 @@ public class WhileTest extends TemplateTest {
             @Override
             public void render (Writer writer, Model model) throws IOException {
                 writer.append ("Hello Closure!");
-            }
-
-            @Override
-            public void call (String name, Writer writer, Model model) throws IOException, InvalidInputParameterException, ClassCastException {
-
             }
         });
     }
