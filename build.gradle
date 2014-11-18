@@ -5,7 +5,7 @@ apply plugin: 'idea'
 apply plugin: 'maven'
 
 archivesBaseName = 'bryg'
-version = '0.4'
+version = '0.5-dev'
 group = 'io.collap.bryg'
 
 sourceCompatibility = 1.7
