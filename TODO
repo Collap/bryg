@@ -11,6 +11,10 @@ Ideas:
     - Support <!DOCTYPE x> with a function (and possibly an enum).
     - Allow closures to receive a Closure input parameter. This requires that the parameter name for the closure
       can be specified when calling the closure.
+    - (HTML) Block functions and if, while, each statements etc. could return their result as a String. For example
+        h1: Hello
+      would return "<h1>Hello</h1>" instead of writing it to the Writer directly. This would severely impact the
+      performance, but we could optimize this and only return an actual String if the value is saved in a variable.
 
 Absolutely needed improvements:
     - Better ANTLR and JIT error reporting (with an error list, instead of aborting the compilation instantly).
