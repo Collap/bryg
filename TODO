@@ -1,4 +1,5 @@
 - What about Java enums and their values?
+- Remove hyphens from function calls and only allow them when the ID is enclosed in backticks.
 
 Upcoming features:
     - Fragment functions
@@ -15,6 +16,7 @@ Ideas:
         h1: Hello
       would return "<h1>Hello</h1>" instead of writing it to the Writer directly. This would severely impact the
       performance, but we could optimize this and only return an actual String if the value is saved in a variable.
+    - Allow explicitly annotating the "default" fragment of a template. The default default fragment would be render.
 
 Absolutely needed improvements:
     - Better ANTLR and JIT error reporting (with an error list, instead of aborting the compilation instantly).
