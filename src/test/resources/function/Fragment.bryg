@@ -2,6 +2,10 @@ in String name
 
 @head ()
 : Welcome, \{name}!
+@name ()
 
 frag head
   h2 name
+
+frag name
+  : Beep

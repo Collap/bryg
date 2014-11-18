@@ -129,7 +129,7 @@ public class TemplateFragmentCall extends Node {
 
         /* Check if there is a closure variable that can be called. */
         Variable variable = context.getCurrentScope ().getVariable (fullName);
-        if (variable != null) {
+        if (variable != null && variable.getType ().similarTo (Closure.class)) {
             calledClosure = variable;
             calledFragment = null;
             return;
