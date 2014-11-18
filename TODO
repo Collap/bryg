@@ -1,5 +1,4 @@
 - What about Java enums and their values?
-- Remove hyphens from function calls and only allow them when the ID is enclosed in backticks.
 
 Upcoming features:
     - Fragment functions
