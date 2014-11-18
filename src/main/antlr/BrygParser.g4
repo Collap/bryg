@@ -191,7 +191,8 @@ argument
     ;
 
 argumentId
-    :   id ('-' id)*
+    :   id
+    |   '`' (Identifier | keyword) ('-' (Identifier | keyword))* '`'
     ;
 
 argumentPredicate
@@ -215,24 +216,24 @@ type
 
 id
     :   Identifier
-    |   '`'
-        (   Identifier
-        |   NOT
-        |   AND
-        |   OR
-        |   IN
-        |   OPT
-        |   IS
-        |   EACH
-        |   WHILE
-        |   ELSE
-        |   IF
-        |   MUT
-        |   VAL
-        |   NULL
-        |   TRUE
-        |   FALSE
-        |   FRAG
-        )
-        '`'
+    |   '`' keyword '`'
+    ;
+
+keyword
+    :   NOT
+    |   AND
+    |   OR
+    |   IN
+    |   OPT
+    |   IS
+    |   EACH
+    |   WHILE
+    |   ELSE
+    |   IF
+    |   MUT
+    |   VAL
+    |   NULL
+    |   TRUE
+    |   FALSE
+    |   FRAG
     ;
