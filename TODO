@@ -5,6 +5,7 @@ Upcoming features:
     - new Object ()
     - Static function calls
     - Also check out the roadmap in the Wiki.
+    - Some kind of syntax to quickly create Lists (e.g. [a, b, c]).
 
 Ideas:
     - Replace System.out.println with a Logger?
@@ -19,6 +20,7 @@ Ideas:
 
 Absolutely needed improvements:
     - Better ANTLR and JIT error reporting (with an error list, instead of aborting the compilation instantly).
+    - Write source lines into the class file.
 
 Tests:
     - Test the tab to indentation translation of the lexer.
