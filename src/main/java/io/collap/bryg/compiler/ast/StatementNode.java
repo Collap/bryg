@@ -1,5 +1,6 @@
 package io.collap.bryg.compiler.ast;
 
+import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.ast.expression.literal.StringLiteralExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
@@ -31,13 +32,19 @@ public class StatementNode extends Node {
 
     @Override
     public void compile () {
+        BrygMethodVisitor mv = context.getMethodVisitor ();
+
+        /* Give ASM a line number. */
+        Label here = new Label ();
+        mv.visitLabel (here);
+        mv.visitLineNumber (getLine (), here);
+
         /* Every statement which direct child expression returns a value and is not a variable
          * declaration is written automatically. */
         if (child instanceof Expression) {
             Expression expression = (Expression) child;
             Type type = expression.getType ();
             if (!type.similarTo (Void.TYPE)) {
-                BrygMethodVisitor mv = context.getMethodVisitor ();
                 if (expression instanceof StringLiteralExpression) {
                     /* Append String constants to the constant string writer. */
                     String text = (String) expression.getConstantValue ();

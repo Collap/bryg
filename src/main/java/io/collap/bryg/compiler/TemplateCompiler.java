@@ -60,13 +60,12 @@ public class TemplateCompiler implements Compiler<TemplateType> {
     }
 
     private void compileClass (ClassVisitor classVisitor) {
-        String name = templateType.getFullName ();
-
         classVisitor.visit (
-                V1_7, ACC_PUBLIC, TypeHelper.toInternalName (name), null,
+                V1_7, ACC_PUBLIC, TypeHelper.toInternalName (templateType.getFullName ()), null,
                 new Type (StandardTemplate.class).getAsmType ().getInternalName (),
                 new String[] { new Type (Template.class).getAsmType ().getInternalName () });
         {
+            classVisitor.visitSource (templateType.getSimpleName () + ".bryg", null);
             createConstructor (classVisitor);
 
             for (TemplateFragmentCompileInfo compileInfo : templateType.getTemplateFragmentCompileInfos ()) {

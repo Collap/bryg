@@ -65,6 +65,8 @@ public class ClosureCompiler implements Compiler<ClosureType> {
                 new Type (StandardUnit.class).getAsmType ().getInternalName (),
                 new String[] { new Type (Closure.class).getAsmType ().getInternalName () });
         {
+            classVisitor.visitSource (closureType.getParentTemplateType ().getSimpleName () + ".bryg", null);
+
             Context context = new Context (parentContext.getEnvironment (), closureType.getFragment ("render"),
                 closureType, null, closureType.getClosureScope ());
             Node node = context.getParseTreeVisitor ().visit (closureType.getClosureContext ());

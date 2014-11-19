@@ -44,6 +44,17 @@ public abstract class UnitType {
         return fullName;
     }
 
+    /**
+     * @return The name of the template without the package.
+     */
+    public String getSimpleName () {
+        int index = fullName.lastIndexOf ('.');
+        if (index < 0) {
+            return fullName;
+        }
+        return fullName.substring (index + 1);
+    }
+
     public String getClassPackage () {
         return classPackage;
     }

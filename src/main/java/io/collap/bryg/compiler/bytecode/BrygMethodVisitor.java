@@ -165,12 +165,6 @@ public class BrygMethodVisitor extends MethodVisitor {
     }
 
     @Override
-    public void visitLabel (Label label) {
-        flushStringBuilder ();
-        super.visitLabel (label);
-    }
-
-    @Override
     public void visitLdcInsn (Object cst) {
         flushStringBuilder ();
         super.visitLdcInsn (cst);
@@ -231,12 +225,6 @@ public class BrygMethodVisitor extends MethodVisitor {
     }
 
     @Override
-    public void visitLineNumber (int line, Label start) {
-        flushStringBuilder ();
-        super.visitLineNumber (line, start);
-    }
-
-    @Override
     public void visitMaxs (int maxStack, int maxLocals) {
         flushStringBuilder ();
         super.visitMaxs (maxStack, maxLocals);
@@ -246,6 +234,19 @@ public class BrygMethodVisitor extends MethodVisitor {
     public void visitEnd () {
         flushStringBuilder ();
         super.visitEnd ();
+    }
+
+
+    /* The following methods do not affect the string builder at all. */
+
+    @Override
+    public void visitLineNumber (int line, Label start) {
+        super.visitLineNumber (line, start);
+    }
+
+    @Override
+    public void visitLabel (Label label) {
+        super.visitLabel (label);
     }
 
 }
