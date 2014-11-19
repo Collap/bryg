@@ -1,7 +1,8 @@
 package io.collap.bryg.compiler.util;
 
 import io.collap.bryg.parser.BrygParser;
-import io.collap.bryg.unit.UnitClassLoader;
+
+import java.lang.reflect.Field;
 
 public class IdUtil {
 
@@ -15,16 +16,45 @@ public class IdUtil {
         return text;
     }
 
-    public static String createGetterName (String fieldName) {
-        return "get" + capitalizeFirstLetter (fieldName);
+    public static String createGetterName (Field field) {
+        String name = field.getName ();
+
+        if (field.getType ().equals (Boolean.TYPE)) {
+            if (nameHasIsPrefix (name)) {
+                return name;
+            }else {
+                return "is" + capitalizeFirstLetter (name);
+            }
+        }
+
+        return "get" + capitalizeFirstLetter (name);
     }
 
-    public static String createSetterName (String fieldName) {
-        return "set" + capitalizeFirstLetter (fieldName);
+    public static String createSetterName (Field field) {
+        String name = field.getName ();
+
+        if (field.getType ().equals (Boolean.TYPE)) {
+            if (nameHasIsPrefix (name)) {
+                name = name.substring ("is".length ());
+            }
+            return "set" + capitalizeFirstLetter (name);
+        }
+
+        return "set" + capitalizeFirstLetter (name);
     }
 
     private static String capitalizeFirstLetter (String str) {
         return str.substring (0, 1).toUpperCase () + str.substring (1);
+    }
+
+    /**
+     * A particular field name has an "is" prefix, if the first two characters are "is",
+     * immediately followed by an upper case letter. For example: isVisible, isAlive, isRich
+     */
+    private static boolean nameHasIsPrefix (String name) {
+        if (name.length () < 3) return false;
+
+        return name.startsWith ("is") && Character.isUpperCase (name.charAt (2));
     }
 
 }

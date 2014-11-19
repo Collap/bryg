@@ -70,44 +70,48 @@ public class AccessExpression extends Expression {
             setType (new Type (field.getType ()));
         }else { /* AccessMode.set */
             if (Modifier.isFinal (field.getModifiers ())) {
-                throw new BrygJitException ("The field is final and can not be changed.", getLine ());
+                throw new BrygJitException ("The field '" + fieldName + "' is final and can not be changed.", getLine ());
             }
 
             setType (new Type (Void.TYPE));
         }
 
+        /* Either get the field directly, if it's public. */
         if (Modifier.isPublic (field.getModifiers ())) {
+            System.out.println ("Field " + fieldName + " is public.");
             getterOrSetter = null;
         }else {
+            /* Or find a getter/setter depending on the access mode. */
             if (mode == AccessMode.get) {
-                String getterName = IdUtil.createGetterName (fieldName);
+                String getterName = IdUtil.createGetterName (field);
                 try {
                     Method localGetter = childType.getJavaType ().getMethod (getterName);
                     if (localGetter.getReturnType ().equals (field.getType ())) {
                         if (Modifier.isPublic (localGetter.getModifiers ())) {
                             getterOrSetter = localGetter;
                         } else {
-                            System.out.println ("The supposed getter " + getterName + " is not public.");
+                            throw new BrygJitException ("The supposed getter " + getterName + " is not public.", getLine ());
                         }
                     } else {
-                        System.out.println ("The return type of the supposed getter " + getterName + " does not match the field's type.");
+                        throw new BrygJitException ("The return type of the supposed getter " + getterName +
+                                " does not match the field's type.", getLine ());
                     }
                 } catch (NoSuchMethodException e) {
-                    /* Expected. */
-                    System.out.println ("Info: Getter " + getterName + " of type " + field.getType () + " not found.");
+                    throw new BrygJitException ("Getter " + getterName + " of type " + field.getType () +
+                            " not found but expected.", getLine ());
                 }
             }else if (mode == AccessMode.set) {
-                String setterName = IdUtil.createSetterName (fieldName);
+                String setterName = IdUtil.createSetterName (field);
                 try {
                     Method localSetter = childType.getJavaType ().getMethod (setterName, field.getType ());
                     if (Modifier.isPublic (localSetter.getModifiers ())) {
                         getterOrSetter = localSetter;
                     } else {
-                        System.out.println ("The supposed setter " + setterName + " is not public.");
+                        throw new BrygJitException ("The supposed setter " + setterName + " is not public.", getLine ());
                     }
                 } catch (NoSuchMethodException e) {
-                    /* Expected. */
-                    System.out.println ("Info: Setter " + setterName + " of type " + field.getType () + " not found.");
+                    throw new BrygJitException ("Setter " + setterName + " of type " + field.getType ()
+                            + " not found but expected.", getLine ());
                 }
             }
         }
@@ -128,19 +132,17 @@ public class AccessExpression extends Expression {
                                 type
                         ), false);
                 // -> T
-            }else if (field != null && Modifier.isPublic (field.getModifiers ())) {
+            }else {
                 /* Get the field directly. */
                 mv.visitFieldInsn (GETFIELD, childInternalName,
                         field.getName (), type.getAsmType ().getDescriptor ());
                 // -> T
-            }else {
-                throw new BrygJitException ("The getter and field for object access are both inaccessible or non-existent!",
-                        getLine ());
             }
         }else { /* AccessMode.set */
+            /* This has to be checked now, because the setFieldExpression can be set by its setter. */
             if (setFieldExpression == null) {
                 throw new BrygJitException ("A setFieldExpression has to be supplied to the constructor for" +
-                        "a correct setter order. If you see this expression as a user, this is likely a compiler bug!", getLine ());
+                        " a correct setter order. If you see this exception as a user, this is likely a compiler bug!", getLine ());
             }
             setFieldExpression.compile ();
 
@@ -152,14 +154,11 @@ public class AccessExpression extends Expression {
                                 new Type (Void.TYPE)
                         ), false);
                 // T ->
-            }else if (field != null) {
+            }else {
                 /* Set the field directly. */
                 mv.visitFieldInsn (PUTFIELD, childInternalName,
                         field.getName (), fieldType.getAsmType ().getDescriptor ());
                 // T ->
-            }else {
-                throw new BrygJitException ("The setter and field for object access are both inaccessible or non-existent!",
-                        getLine ());
             }
         }
     }
