@@ -173,15 +173,16 @@ public class ClosureCompiler implements Compiler<ClosureType> {
 
 
         /* Set fields. */
-        for (int i = 0; i < capturedVariables.size (); ++i) {
+        for (int i = 0, id = 4; i < capturedVariables.size (); ++i) {
             Variable variable = capturedVariables.get (i);
-            int id = i + 4;
             bryg.org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
 
             constructor.visitVarInsn (ALOAD, 0); /* this */
             constructor.visitVarInsn (asmType.getOpcode (ILOAD), id);
             constructor.visitFieldInsn (PUTFIELD, TypeHelper.toInternalName (closureType.getFullName ()),
                     variable.getName (), asmType.getDescriptor ());
+
+            id += variable.getType ().getStackSize ();
         }
 
         constructor.visitInsn (RETURN);

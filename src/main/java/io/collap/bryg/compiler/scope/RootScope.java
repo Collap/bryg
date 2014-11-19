@@ -57,14 +57,8 @@ public class RootScope extends Scope {
     public int calculateNextId (@Nullable Type type) {
         int id = nextId;
 
-        /* Double and long use two variable slots. */
-        boolean isWide = false;
-        if (type != null && type.getJavaType ().isPrimitive ()) {
-            isWide = type.similarTo (Long.TYPE) || type.similarTo (Double.TYPE);
-        }
-
-        if (isWide) {
-            nextId += 2;
+        if (type != null) {
+            nextId += type.getStackSize ();
         }else {
             nextId += 1;
         }

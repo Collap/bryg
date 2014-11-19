@@ -60,6 +60,16 @@ public class Type {
         return asmType.getSize () == 2;
     }
 
+    public int getStackSize () {
+        /* Double and long use two variable slots. */
+        boolean isWide = false;
+        if (javaType.isPrimitive ()) {
+            isWide = similarTo (Long.TYPE) || similarTo (Double.TYPE);
+        }
+
+        return isWide ? 2 : 1;
+    }
+
     @Override
     public String toString () {
         return getJavaType ().toString ();
