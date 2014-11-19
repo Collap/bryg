@@ -1,0 +1,90 @@
+frag style
+  style:
+    .box {
+      display: inline-block;
+      float: left;
+      border: 1px solid black;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    .box p {
+      padding: 5px;
+    }
+
+    .box h1 {
+      font-size: 20pt;
+      text-align: center;
+      min-width: 200px;
+    }
+
+    .box table {
+      border-collapse: collapse;
+      border-spacing: 0px;
+    }
+
+    .box thead {
+      border-bottom: 1px solid black;
+      border-top: 1px solid black;
+    }
+
+    .box td {
+      min-width: 90px;
+      padding: 5px;
+    }
+
+    .box tr.odd {
+      background: #DFDFDF;
+    }
+
+frag section
+  in String heading
+  in Closure content
+
+  ; TODO: Here as well: We could really need a list.
+  opt String colDesc1
+  opt String colDesc2
+  opt String colDesc3
+  opt String colDesc4
+
+  div(class 'box')
+    h1 heading
+    table
+      thead tr
+        @th (colDesc1)
+        @th (colDesc2)
+        @th (colDesc3)
+        @th (colDesc4)
+      @content
+
+frag row
+  in boolean odd
+
+  ; TODO: There is currently no way to create lists in bryg, so the following parameters are hard-coded.
+  opt Object col1
+  opt Object col2
+  opt Object col3
+  opt Object col4
+
+  tr(class 'odd' if odd)
+    @td (col1)
+    @td (col2)
+    @td (col3)
+    @td (col4)
+
+frag td
+  opt Object value
+  @cell (isTh false, value)
+
+frag th
+  opt Object value
+  @cell (isTh true, value)
+
+frag cell
+  in boolean isTh
+  opt Object value
+  if value !== null
+    if isTh
+      th value
+    else
+      td value

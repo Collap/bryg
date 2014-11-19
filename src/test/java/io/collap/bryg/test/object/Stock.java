@@ -1,4 +1,4 @@
-package io.collap.bryg.test.example;
+package io.collap.bryg.test.object;
 
 import java.util.ArrayList;
 import java.util.List;

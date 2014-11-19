@@ -2,6 +2,7 @@ package io.collap.bryg.test.example;
 
 import io.collap.bryg.model.Model;
 import io.collap.bryg.test.TemplateTest;
+import io.collap.bryg.test.object.Stock;
 
 public class StocksTest extends TemplateTest {
 

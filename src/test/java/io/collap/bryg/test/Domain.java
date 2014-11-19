@@ -1,7 +1,6 @@
 package io.collap.bryg.test;
 
 import io.collap.bryg.compiler.Configuration;
-import io.collap.bryg.compiler.TemplateCompiler;
 import io.collap.bryg.compiler.library.BasicLibrary;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
@@ -11,6 +10,7 @@ import io.collap.bryg.environment.StandardEnvironment;
 import io.collap.bryg.loader.FileSourceLoader;
 import io.collap.bryg.loader.SourceLoader;
 import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.test.object.TestObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,13 +40,14 @@ public class Domain {
 
         SourceLoader sourceLoader = new FileSourceLoader (new File ("src/test/resources"));
         ClassResolver classResolver = new ClassResolver ();
-        classResolver.addFilter (new PrefixFilter ("io.collap.bryg.test"));
+        classResolver.addFilter (new PrefixFilter ("io.collap.bryg.test.object"));
         classResolver.resolveClassNames ();
 
         Library library = new BasicLibrary ();
 
         GlobalVariableModel commonModel = new GlobalVariableModel ();
         commonModel.declareVariable ("globalString", String.class, "This is the value of a global variable.");
+        commonModel.declareVariable ("testObject", TestObject.class, new TestObject ());
 
         environment = new StandardEnvironment (configuration, library, classResolver, sourceLoader, commonModel);
 

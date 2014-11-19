@@ -3,6 +3,7 @@ package io.collap.bryg.test;
 import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.template.Template;
 import io.collap.bryg.model.Model;
+import io.collap.bryg.test.object.TestController;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +23,10 @@ public abstract class TemplateTest {
 
     @Test
     public void render () throws IOException {
+        TestController testController = new TestController ();
+
         Model model = createModel ();
+        model.setVariable ("test", testController);
 
         StringWriter writer = new StringWriter ();
         template.render (writer, model);

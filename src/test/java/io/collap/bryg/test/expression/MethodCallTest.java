@@ -2,6 +2,7 @@ package io.collap.bryg.test.expression;
 
 import io.collap.bryg.model.Model;
 import io.collap.bryg.test.TemplateTest;
+import io.collap.bryg.test.object.TestObject;
 
 public class MethodCallTest extends TemplateTest {
 

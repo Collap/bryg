@@ -1,7 +1,7 @@
 package io.collap.bryg.test.expression;
 
 import io.collap.bryg.model.Model;
-import io.collap.bryg.test.Format;
+import io.collap.bryg.test.object.Format;
 import io.collap.bryg.test.TemplateTest;
 
 public class OperationsTest extends TemplateTest {

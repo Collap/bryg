@@ -1,4 +1,4 @@
-package io.collap.bryg.test;
+package io.collap.bryg.test.object;
 
 public class Format {
 

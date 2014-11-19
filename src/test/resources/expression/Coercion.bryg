@@ -1,96 +1,146 @@
-in TestObject obj
+in TestController test
 
-val byte b = (byte) 100
-val short s = (short) 10000
-val int i = 1000000000
-val long l = 10000000000L
-val float f = 0.5f
-val double d = 1.5
+html
+  head @Table style ()
+  @body
 
-h2: Values
-ul
-  li: \{b} (byte)
-  li: \{s} (short)
-  li: \{i} (int)
-  li: \{l} (long)
-  li: \{f} (float)
-  li: \{d} (double)
+frag section
+  in String heading
+  in Closure closure
+  @Table section (heading, closure, 'primitive', 'boxed')
 
-h2: Byte + x
-ul
-  li b + b
-  li b + s
-  li b + i
-  li b + l
-  li b + f
-  li b + d
+frag rowUnchecked
+  in boolean odd
+  in Object primitiveResult
+  in Object boxedResult
+  @Table row (odd, primitiveResult, boxedResult)
 
-h2: Short + x
-ul
-  li s + b
-  li s + s
-  li s + i
-  li s + l
-  li s + f
-  li s + d
+frag row
+  in boolean odd
+  in Object primitiveResult
+  in Object boxedResult
 
-h2: Int + x
-ul
-  li i + b
-  li i + s
-  li i + i
-  li i + l
-  li i + f
-  li i + d
+  ; Since the left argument is the primitive computation and the right argument the same with unboxing,
+  ; the results have to be equal
+  ; TODO: What about floating point errors?
+  if primitiveResult != boxedResult
+    test.fail (primitiveResult + ' does not equal ' + boxedResult)
 
-h2: Long + x
-ul
-  li l + b
-  li l + s
-  li l + i
-  li l + l
-  li l + f
-  li l + d
+  @Table row (odd, primitiveResult, boxedResult)
 
-h2: Float + x
-ul
-  li f + b
-  li f + s
-  li f + i
-  li f + l
-  li f + f
-  li f + d
+frag body
+  val byte b = (byte) 100
+  val Byte B = b
+  val short s = (short) 10000
+  val Short S = s
+  val int i = 1000000000
+  val Integer I = i
+  val long l = 10000000000L
+  val Long L = l
+  val float f = 0.5f
+  val Float F = f
+  val double d = 1.5
+  val Double D = d
 
-h2: Double + x
-ul
-  li d + b
-  li d + s
-  li d + i
-  li d + l
-  li d + f
-  li d + d
+  @section ('Values')
+    @row (false, b + ' (byte)', B + ' (Byte)')
+    @rowUnchecked (true, s + ' (short)', S + ' (Short)')
+    @rowUnchecked (false, i + ' (int)', I + ' (Integer)')
+    @rowUnchecked (true, l + ' (long)', L + ' (Long)')
+    @rowUnchecked (false, f + ' (float)', F + ' (Float)')
+    @rowUnchecked (true, d + ' (double)', D + ' (Double)')
 
-h2: Negation
-ul
-  li (-b)
-  li (-s)
-  li (-i)
-  li (-l)
-  li (-f)
-  li (-d)
+  @section ('Byte + x')
+    @row (false, b + b, B + B)
+    @row (true,  b + s, B + S)
+    @row (false, b + i, B + I)
+    @row (true,  b + l, B + L)
+    @row (false, b + f, B + F)
+    @row (true,  b + d, B + D)
 
-h2: Bitwise NOT
-ul
-  li ~b
-  li ~s
-  li ~i
-  li ~l
+  @section ('Short + x')
+    @row (false, s + b, S + B)
+    @row (true,  s + s, S + S)
+    @row (false, s + i, S + I)
+    @row (true,  s + l, S + L)
+    @row (false, s + f, S + F)
+    @row (true,  s + d, S + D)
 
-val Byte bo = b
-val Integer io = i
+  @section ('Int + x')
+    @row (false, i + b, I + B)
+    @row (true,  i + s, I + S)
+    @row (false, i + i, I + I)
+    @row (true,  i + l, I + L)
+    @row (false, i + f, I + F)
+    @row (true,  i + d, I + D)
 
-h2: TestObject.objectToString(Object obj)
-ul
-  li obj.objectToString('Hello Coercion')
-  li obj.objectToString(bo)
-  li obj.objectToString(io)
+  @section ('Long + x')
+    @row (false, l + b, L + B)
+    @row (true,  l + s, L + S)
+    @row (false, l + i, L + I)
+    @row (true,  l + l, L + L)
+    @row (false, l + f, L + F)
+    @row (true,  l + d, L + D)
+
+  @section ('Float + x')
+    @row (false, f + b, F + B)
+    @row (true,  f + s, F + S)
+    @row (false, f + i, F + I)
+    @row (true,  f + l, F + L)
+    @row (false, f + f, F + F)
+    @row (true,  f + d, F + D)
+
+  @section ('Double + x')
+    @row (false, d + b, D + B)
+    @row (true,  d + s, D + S)
+    @row (false, d + i, D + I)
+    @row (true,  d + l, D + L)
+    @row (false, d + f, D + F)
+    @row (true,  d + d, D + D)
+
+  @section ('Negation')
+    @row (false, (-b), (-B))
+    @row (true,  (-s), (-S))
+    @row (false, (-i), (-I))
+    @row (true,  (-l), (-L))
+    @row (false, (-f), (-F))
+    @row (true,  (-d), (-D))
+
+  @section ('Bitwise NOT')
+    @row (false, ~b, ~B)
+    @row (true,  ~s, ~S)
+    @row (false, ~i, ~I)
+    @row (true,  ~l, ~L)
+
+  @section ('Bitwise OR')
+    @row (false, b | s, B | S)
+    @row (true,  s | i, S | I)
+    @row (false, i | l, I | L)
+    @row (true,  l | b, L | B)
+    @row (false, b | i, B | I)
+    @row (true,  i | s, I | S)
+
+  @section ('Bitwise AND')
+    @row (false, b & s, B & S)
+    @row (true,  s & i, S & I)
+    @row (false, i & l, I & L)
+    @row (true,  l & b, L & B)
+    @row (false, b & i, B & I)
+    @row (true,  i & s, I & S)
+
+  @section ('Bitwise XOR')
+    @row (false, b ^ s, B ^ S)
+    @row (true,  s ^ i, S ^ I)
+    @row (false, i ^ l, I ^ L)
+    @row (true,  l ^ b, L ^ B)
+    @row (false, b ^ i, B ^ I)
+    @row (true,  i ^ s, I ^ S)
+
+  ; This tests both boxing and unboxing!
+  @section ('objectToString')
+    @row (false, testObject.objectToString(b), testObject.objectToString(B))
+    @row (true,  testObject.objectToString(s), testObject.objectToString(S))
+    @row (false, testObject.objectToString(i), testObject.objectToString(I))
+    @row (true,  testObject.objectToString(l), testObject.objectToString(L))
+    @row (false, testObject.objectToString(f), testObject.objectToString(F))
+    @row (true,  testObject.objectToString(d), testObject.objectToString(D))

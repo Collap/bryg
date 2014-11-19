@@ -1,4 +1,4 @@
-; This test uses a global variable.
-; TODO: Expand the test.
+; This test uses global variables.
 
 globalString
+testObject.testString(5)
