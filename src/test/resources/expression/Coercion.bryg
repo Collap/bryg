@@ -43,7 +43,7 @@ frag body
   val Double D = d
 
   @section ('Values')
-    @row (false, b + ' (byte)', B + ' (Byte)')
+    @rowUnchecked (false, b + ' (byte)', B + ' (Byte)')
     @rowUnchecked (true, s + ' (short)', S + ' (Short)')
     @rowUnchecked (false, i + ' (int)', I + ' (Integer)')
     @rowUnchecked (true, l + ' (long)', L + ' (Long)')
