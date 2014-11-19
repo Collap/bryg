@@ -34,6 +34,8 @@ import java.util.List;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
+// TODO: Add coercion to arguments.
+
 public class TemplateFragmentCall extends Node {
 
     /**
@@ -106,17 +108,27 @@ public class TemplateFragmentCall extends Node {
             closure = new ClosureDeclarationNode (context, ctx.closure ());
         }else {
             if (calledFragment != null) {
-                /* Check if closure is expected. */
-                boolean closureExpected = false;
+                /* Check if closure is expected and if an argument exists. */
+                boolean closureNotSupplied = false;
                 List<ParameterInfo> parameters = calledFragment.getAllParameters ();
+
+                L_outer:
                 for (ParameterInfo parameterInfo : parameters) {
                     if (parameterInfo.getType ().similarTo (Closure.class) && !parameterInfo.isOptional ()) {
-                        closureExpected = true;
+                        if (argumentExpressions != null) {
+                            for (ArgumentExpression argumentExpression : argumentExpressions) {
+                                String name = argumentExpression.getName ();
+                                if (name != null && name.equals (parameterInfo.getName ())) {
+                                    continue L_outer;
+                                }
+                            }
+                        }
+                        closureNotSupplied = true;
                         break;
                     }
                 }
 
-                if (closureExpected) {
+                if (closureNotSupplied) {
                     throw new BrygJitException ("Fragment '" + calledFragment.getOwner ().getFullName () +
                             ":" + calledFragment.getName () + "' expects a closure.", getLine ());
                 }
