@@ -17,7 +17,8 @@ public class Scope {
 
     public @Nullable Variable getVariable (String name) {
         Variable variable = variables.get (name);
-        if (variable == null) {
+        System.out.println ("Scope[" + getClass () + "]: " + name + "    " + variable);
+        if (variable == null && parent != null) {
             variable = parent.getVariable (name);
         }
         return variable;
@@ -26,10 +27,27 @@ public class Scope {
     /**
      * @return The same object, for chaining.
      */
-    public Variable registerVariable (Variable variable) {
+    public LocalVariable registerLocalVariable (LocalVariable variable) {
         variable.setId (calculateNextId (variable.getType ()));
-        variables.put (variable.getName (), variable);
+        registerVariableInternal (variable);
         return variable;
+    }
+
+    /**
+     * @return The same object, for chaining.
+     */
+    public InstanceVariable registerInstanceVariable (InstanceVariable variable) {
+        registerVariableInternal (variable);
+        return variable;
+    }
+
+    /**
+     * This method should NOT be used anywhere outside of the Scope class.
+     * It is only protected for overriding methods, otherwise it would be private.
+     * Use the registerLocalVariable and registerInstanceVariable methods instead.
+     */
+    protected void registerVariableInternal (Variable variable) {
+        variables.put (variable.getName (), variable);
     }
 
     public int calculateNextId (@Nullable Type type) {

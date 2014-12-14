@@ -1,44 +1,51 @@
 package io.collap.bryg.template;
 
-import io.collap.bryg.closure.ClosureType;
+import io.collap.bryg.compiler.scope.VariableInfo;
 import io.collap.bryg.unit.FragmentInfo;
-import io.collap.bryg.unit.ParameterInfo;
-import io.collap.bryg.unit.UnitType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TemplateFragmentInfo extends FragmentInfo {
 
-    private List<ParameterInfo> allParameters;
+    public final static String DIRECT_CALL_PREFIX = "__direct_";
 
-    public TemplateFragmentInfo (String name) {
-        super (name);
+    private List<VariableInfo> allParameters;
+    private String delegatorName;
+
+    public TemplateFragmentInfo (String delegatorName) {
+        super (DIRECT_CALL_PREFIX + delegatorName);
+        this.delegatorName = delegatorName;
     }
 
-    public TemplateFragmentInfo (String name, List<ParameterInfo> parameters) {
-        super (name, parameters);
+    public TemplateFragmentInfo (String delegatorName, List<VariableInfo> parameters) {
+        super (DIRECT_CALL_PREFIX + delegatorName, parameters);
+        this.delegatorName = delegatorName;
     }
 
     @Override
-    public List<ParameterInfo> getAllParameters () {
+    public List<VariableInfo> getAllParameters () {
         if (allParameters == null) {
-            List<ParameterInfo> generalParameters = ((TemplateType) owner).getGeneralParameters ();
-            allParameters = new ArrayList<> (generalParameters.size () + parameters.size ());
+            List<VariableInfo> generalParameters = ((TemplateType) owner).getGeneralParameters ();
+            allParameters = new ArrayList<> (generalParameters.size () + localParameters.size ());
             allParameters.addAll (generalParameters);
-            allParameters.addAll (parameters);
+            allParameters.addAll (localParameters);
         }
         return allParameters;
     }
 
     @Override
-    public List<ParameterInfo> getGeneralParameters () {
+    public List<VariableInfo> getGeneralParameters () {
         return ((TemplateType) owner).getGeneralParameters ();
     }
 
     @Override
     public TemplateType getOwner () {
         return (TemplateType) super.getOwner ();
+    }
+
+    public String getDelegatorName () {
+        return delegatorName;
     }
 
 }

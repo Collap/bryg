@@ -3,6 +3,7 @@ package io.collap.bryg.compiler.ast.expression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ public class InterpolationExpression extends Expression {
 
     public InterpolationExpression (Context context, List<Expression> expressions, int line) {
         super (context);
-        setType (new Type (String.class));
+        setType (Types.fromClass (String.class));
         setLine (line);
         this.expressions = expressions;
     }

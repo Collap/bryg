@@ -6,7 +6,9 @@ import io.collap.bryg.compiler.TemplateParser;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.model.Model;
 import io.collap.bryg.template.Template;
+import io.collap.bryg.template.TemplateFactory;
 import io.collap.bryg.template.TemplateType;
 import io.collap.bryg.loader.SourceLoader;
 import io.collap.bryg.template.TemplateClassLoader;
@@ -65,14 +67,13 @@ public class StandardEnvironment implements Environment {
         return templateType;
     }
 
-
     @Override
-    public @Nullable Template getTemplate (String prefixlessName) {
-        return getTemplatePrefixed (UnitClassLoader.getPrefixedName (prefixlessName));
+    public @Nullable TemplateFactory getTemplateFactory (String prefixlessName) {
+        return getTemplateFactoryPrefixed (UnitClassLoader.getPrefixedName (prefixlessName));
     }
 
     @Override
-    public @Nullable Template getTemplatePrefixed (String name) {
+    public @Nullable TemplateFactory getTemplateFactoryPrefixed (String name) {
         TemplateType templateType = getTemplateTypePrefixed (name);
 
         if (templateType == null) {
@@ -86,17 +87,23 @@ public class StandardEnvironment implements Environment {
             }
         }
 
-        try {
-            Constructor<? extends Template> constructor = templateType.getConstructor ();
-            if (constructor.getParameterTypes ().length <= 0) {
-                return constructor.newInstance ();
-            }else { /* StandardTemplate. */
-                return constructor.newInstance (this);
-            }
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            e.printStackTrace ();
+        return new TemplateFactory (this, templateType); // TODO: Cache the factory?
+    }
+
+    @Override
+    public @Nullable Template getTemplate (String prefixlessName, Model generalParameters) {
+        return getTemplatePrefixed (UnitClassLoader.getPrefixedName (prefixlessName), generalParameters);
+    }
+
+    @Override
+    public @Nullable Template getTemplatePrefixed (String name, Model generalParameters) {
+        TemplateFactory templateFactory = getTemplateFactoryPrefixed (name);
+
+        if (templateFactory == null) {
             return null;
         }
+
+        return templateFactory.create (generalParameters);
     }
 
     private synchronized @Nullable TemplateType parseTemplate (String name) {

@@ -6,6 +6,7 @@ import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.compiler.util.BoxingUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -21,13 +22,13 @@ public class BitwiseNotExpression extends Expression {
         setLine (childCtx.getStart ().getLine ());
         child = (Expression) context.getParseTreeVisitor ().visit (childCtx);
 
-        if (!child.getType ().getJavaType ().isPrimitive ()) {
+        if (!child.getType ().isPrimitive ()) {
             /* Possibly unbox. */
-            Type unboxedType = BoxingUtil.unboxType (child.getType ());
-            if (unboxedType == null) {
+            Type primitiveType = child.getType ().getPrimitiveType ();
+            if (primitiveType == null) {
                 throw new BrygJitException ("The expression with the type " + child.getType () + " can not be unboxed!", getLine ());
             }
-            child = new UnboxingExpression (context, child, unboxedType);
+            child = new UnboxingExpression (context, child, primitiveType);
         }
 
         if (!child.getType ().isIntegralType ()) {
@@ -36,7 +37,7 @@ public class BitwiseNotExpression extends Expression {
 
         /* Promote byte and short to int, since there are no opcodes for BNOT for byte and short. */
         if (child.getType ().similarTo (Byte.TYPE) || child.getType ().similarTo (Short.TYPE)) {
-            child = new CastExpression (context, new Type (Integer.TYPE), child, getLine ());
+            child = new CastExpression (context, Types.fromClass (Integer.TYPE), child, getLine ());
         }
 
         setType (child.getType ());
@@ -66,7 +67,7 @@ public class BitwiseNotExpression extends Expression {
         }
         // -> T
 
-        int xorOp = type.getAsmType ().getOpcode (IXOR);
+        int xorOp = type.getOpcode (IXOR);
         mv.visitInsn (xorOp);
         // T, T -> T
     }

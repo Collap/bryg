@@ -1,7 +1,7 @@
 package io.collap.bryg.compiler.ast.expression.literal;
 
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 
@@ -9,7 +9,7 @@ public class BooleanLiteralExpression extends LiteralExpression {
 
     public BooleanLiteralExpression (Context context, BrygParser.BooleanLiteralContext ctx) {
         super (context, ctx.getStart ().getLine ());
-        setType (new Type (Boolean.TYPE));
+        setType (Types.fromClass (Boolean.TYPE));
 
         value = ctx.value.getType () == BrygLexer.TRUE;
     }

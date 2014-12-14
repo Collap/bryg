@@ -1,18 +1,16 @@
 package io.collap.bryg.compiler;
 
+import io.collap.bryg.compiler.scope.VariableInfo;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.compiler.visitor.PrintTreeVisitor;
 import io.collap.bryg.environment.StandardEnvironment;
-import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.template.TemplateFragmentCompileInfo;
 import io.collap.bryg.template.TemplateFragmentInfo;
 import io.collap.bryg.template.TemplateType;
-import io.collap.bryg.unit.FragmentInfo;
-import io.collap.bryg.unit.ParameterInfo;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -95,12 +93,8 @@ public class TemplateParser implements Parser<TemplateType> {
 
         double parseTime = (System.nanoTime () - parseStart) / 1.0e9;
 
-        /* The render fragment only has general parameters. */
-        ArrayList<BrygParser.InDeclarationContext> renderParamContexts = new ArrayList<> ();
-        TemplateFragmentInfo renderFragment = new TemplateFragmentInfo ("render", parseParameters (renderParamContexts));
-        TemplateFragmentCompileInfo renderCompileInfo = new TemplateFragmentCompileInfo (renderFragment,
-                renderParamContexts,
-                startContext.statement ());
+        TemplateFragmentInfo renderFragment = new TemplateFragmentInfo ("render");
+        TemplateFragmentCompileInfo renderCompileInfo = new TemplateFragmentCompileInfo (renderFragment, startContext.statement ());
 
         List<TemplateFragmentCompileInfo> compileInfos = new ArrayList<> ();
         compileInfos.add (renderCompileInfo);
@@ -124,18 +118,18 @@ public class TemplateParser implements Parser<TemplateType> {
 
     private TemplateFragmentCompileInfo parseFragment (BrygParser.FragmentFunctionContext ctx) {
         BrygParser.FragmentBlockContext fragBlockCtx = ctx.fragmentBlock ();
-        List<ParameterInfo> parameters = parseParameters (fragBlockCtx.inDeclaration ());
+        List<VariableInfo> parameters = parseParameters (fragBlockCtx.inDeclaration ());
         TemplateFragmentInfo fragmentInfo = new TemplateFragmentInfo (IdUtil.idToString (ctx.id ()), parameters);
-        return new TemplateFragmentCompileInfo (fragmentInfo, fragBlockCtx.inDeclaration (), fragBlockCtx.statement ());
+        return new TemplateFragmentCompileInfo (fragmentInfo, fragBlockCtx.statement ());
     }
 
-    private List<ParameterInfo> parseParameters (List<BrygParser.InDeclarationContext> ctxs) {
-        List<ParameterInfo> parameters = new ArrayList<> ();
+    private List<VariableInfo> parseParameters (List<BrygParser.InDeclarationContext> ctxs) {
+        List<VariableInfo> parameters = new ArrayList<> ();
         for (BrygParser.InDeclarationContext ctx : ctxs) {
             String name = IdUtil.idToString (ctx.id ());
             Type type = new TypeInterpreter (environment.getClassResolver ()).interpretType (ctx.type ());
             boolean optional = ctx.qualifier.getType () == BrygLexer.OPT;
-            parameters.add (new ParameterInfo (name, type, optional));
+            parameters.add (new VariableInfo (type, name, false, optional));
         }
         return parameters;
     }

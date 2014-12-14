@@ -43,7 +43,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
         // -> T, T
 
         BrygMethodVisitor mv = context.getMethodVisitor ();
-        if (operandType.getJavaType ().isPrimitive ()) {
+        if (operandType.isPrimitive ()) {
             if (operandType.similarTo (Boolean.TYPE)) {
                 switch (operator) {
                     case BrygLexer.REQ:

@@ -3,8 +3,10 @@ package io.collap.bryg.compiler.ast.expression;
 import io.collap.bryg.compiler.ast.AccessMode;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.type.CompiledType;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -20,6 +22,7 @@ public class AccessExpression extends Expression {
     private AccessMode mode;
 
     private Expression child;
+    private CompiledType childType;
 
     private Field field;
     private Method getterOrSetter;
@@ -44,9 +47,14 @@ public class AccessExpression extends Expression {
 
         String fieldName = IdUtil.idToString (ctx.id ());
         child = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
-        Type childType = child.getType ();
 
-        if (childType.getJavaType ().isPrimitive ()) {
+        if (!(child.getType () instanceof CompiledType)) {
+            throw new BrygJitException ("Can't call a Java method on a non-Java type.", getLine ());
+        }
+
+        childType = ((CompiledType) child.getType ());
+
+        if (childType.isPrimitive ()) {
             throw new BrygJitException ("The expression that is accessed by an access expression must not be a primitive type!"
                 + " (Type: " + childType + ")", getLine ());
         }
@@ -67,13 +75,13 @@ public class AccessExpression extends Expression {
         }
 
         if (mode == AccessMode.get) {
-            setType (new Type (field.getType ()));
+            setType (Types.fromClass (field.getType ()));
         }else { /* AccessMode.set */
             if (Modifier.isFinal (field.getModifiers ())) {
                 throw new BrygJitException ("The field '" + fieldName + "' is final and can not be changed.", getLine ());
             }
 
-            setType (new Type (Void.TYPE));
+            setType (Types.fromClass (Void.TYPE));
         }
 
         /* Either get the field directly, if it's public. */
@@ -122,7 +130,7 @@ public class AccessExpression extends Expression {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
         child.compile ();
-        String childInternalName = child.getType ().getAsmType ().getInternalName ();
+        String childInternalName = child.getType ().getInternalName ();
 
         if (mode == AccessMode.get) {
             if (getterOrSetter != null) {
@@ -135,7 +143,7 @@ public class AccessExpression extends Expression {
             }else {
                 /* Get the field directly. */
                 mv.visitFieldInsn (GETFIELD, childInternalName,
-                        field.getName (), type.getAsmType ().getDescriptor ());
+                        field.getName (), type.getDescriptor ());
                 // -> T
             }
         }else { /* AccessMode.set */
@@ -146,18 +154,18 @@ public class AccessExpression extends Expression {
             }
             setFieldExpression.compile ();
 
-            Type fieldType = new Type (field.getType ());
+            Type fieldType = Types.fromClass (field.getType ());
             if (getterOrSetter != null) {
                 mv.visitMethodInsn (INVOKEVIRTUAL, childInternalName,
                         getterOrSetter.getName (), TypeHelper.generateMethodDesc (
-                                new Type[]{fieldType},
-                                new Type (Void.TYPE)
+                                new Type[] { fieldType },
+                                Types.fromClass (Void.TYPE)
                         ), false);
                 // T ->
             }else {
                 /* Set the field directly. */
                 mv.visitFieldInsn (PUTFIELD, childInternalName,
-                        field.getName (), fieldType.getAsmType ().getDescriptor ());
+                        field.getName (), fieldType.getDescriptor ());
                 // T ->
             }
         }

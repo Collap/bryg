@@ -5,6 +5,7 @@ import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.library.Function;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 
 public abstract class HTMLFunction implements Function {
 
@@ -36,7 +37,7 @@ public abstract class HTMLFunction implements Function {
 
     @Override
     public Type getReturnType () {
-        return new Type (Void.TYPE);
+        return Types.fromClass (Void.TYPE);
     }
 
     public String getTag () {

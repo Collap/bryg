@@ -2,8 +2,11 @@ package io.collap.bryg.compiler.ast.expression.coercion;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.type.CompiledType;
+import io.collap.bryg.compiler.type.RuntimeType;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.exception.BrygJitException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,13 +38,18 @@ public class UnboxingExpression extends Expression {
         setLine (child.getLine ());
         setType (unboxedType);
         this.child = child;
+
+        if (!(child.getType () instanceof CompiledType)) {
+            throw new BrygJitException ("Can't call a Java method on a non-Java type.", getLine ());
+        }
+
     }
 
     @Override
     public void compile () {
         Type boxType = child.getType ();
-        String boxTypeName = child.getType ().getAsmType ().getInternalName ();
-        String valueMethodName = valueMethodNames.get (boxType.getJavaType ());
+        String boxTypeName = child.getType ().getInternalName ();
+        String valueMethodName = valueMethodNames.get (((CompiledType) boxType).getJavaType ());
 
         child.compile ();
         // -> T

@@ -28,9 +28,6 @@ import io.collap.bryg.parser.BrygParser;
 
 public class IncDecExpression extends Expression {
 
-    private boolean isIncrement; /* Otherwise: decrement. */
-    private boolean isPrefix; /* Otherwise: postfix */
-
     private Expression get;
     private Expression set;
     private Expression action;
@@ -38,8 +35,6 @@ public class IncDecExpression extends Expression {
     public IncDecExpression (Context context, BrygParser.ExpressionContext childCtx,
                              boolean isIncrement, boolean isPrefix, int line) {
         super (context);
-        this.isIncrement = isIncrement;
-        this.isPrefix = isPrefix;
         setLine (line);
 
         if (childCtx instanceof BrygParser.VariableExpressionContext) {
@@ -47,9 +42,6 @@ public class IncDecExpression extends Expression {
                     (BrygParser.VariableExpressionContext) childCtx, AccessMode.get);
             Variable variable = getExpr.getVariable ();
             setType (variable.getType ());
-
-            get = getExpr;
-            set = new VariableExpression (context, variable, AccessMode.set, getLine ());
 
             // TODO: Special case for integer variables (IINC).
             int amount;
@@ -63,6 +55,28 @@ public class IncDecExpression extends Expression {
                     new DummyExpression (context, type, getLine ()), /* The get expression is already compiled before! */
                     new IntegerLiteralExpression (context, amount, getLine ()),
                     getLine ());
+
+            Expression valueExpr;
+            if (isPrefix) {
+                valueExpr = new Expression (context) {
+                    @Override
+                    public void compile () {
+                        action.compile ();
+                        compileDuplicate ();
+                    }
+                };
+            }else { /* postfix */
+                valueExpr = new Expression (context) {
+                    @Override
+                    public void compile () {
+                        compileDuplicate ();
+                        action.compile ();
+                    }
+                };
+            }
+
+            get = getExpr;
+            set = new VariableExpression (context, getLine (), variable, AccessMode.set, valueExpr);
         }else {
             throw new BrygJitException ("Increment and decrement expressions are currently only supported for " +
                     "variables.", line);
@@ -74,17 +88,8 @@ public class IncDecExpression extends Expression {
         get.compile ();
         // -> T
 
-        if (isPrefix) {
-            action.compile ();
-            compileDuplicate ();
-        }else { /* postfix */
-            compileDuplicate ();
-            action.compile ();
-        }
-        // T -> T, T
-
         set.compile ();
-        // T ->
+        // T -> T
 
         // Stack: T
     }

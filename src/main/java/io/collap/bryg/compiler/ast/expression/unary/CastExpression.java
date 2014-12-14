@@ -33,7 +33,7 @@ public class CastExpression extends Expression {
 
         Type from = child.getType ();
         Type to = type;
-        if (from.getJavaType ().isPrimitive () && to.getJavaType ().isPrimitive ()) {
+        if (from.isPrimitive () && to.isPrimitive ()) {
             conversionOpcode = CoercionUtil.getConversionOpcode (from, to, getLine ());
             isPrimitiveCast = true;
         }else {
@@ -63,7 +63,7 @@ public class CastExpression extends Expression {
                 // from -> to
             }
         }else { /* Object cast. */
-            mv.visitTypeInsn (CHECKCAST, type.getAsmType ().getInternalName ());
+            mv.visitTypeInsn (CHECKCAST, type.getInternalName ());
             // from -> to
         }
     }

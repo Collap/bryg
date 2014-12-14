@@ -4,11 +4,12 @@ import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.Types;
 
 public class StringBuilderCompileHelper extends ObjectCompileHelper {
 
     public StringBuilderCompileHelper (BrygMethodVisitor mv) {
-        super (mv, new Type (StringBuilder.class));
+        super (mv, Types.fromClass (StringBuilder.class));
     }
 
     /**
@@ -23,14 +24,14 @@ public class StringBuilderCompileHelper extends ObjectCompileHelper {
      */
     public void compileAppend (Expression expression, boolean compileExpression) {
         Type argumentType = expression.getType ();
-        if (!argumentType.getJavaType ().isPrimitive ()) { /* All objects are supplied as either String or Object. */
+        if (!argumentType.isPrimitive ()) { /* All objects are supplied as either String or Object. */
             if (!argumentType.similarTo (String.class)) {
-                argumentType = new Type (Object.class);
+                argumentType = Types.fromClass (Object.class);
             }
         }else {
             /* Byte and Short primitives need to be appended as integers. */
             if (argumentType.similarTo (Byte.TYPE) || argumentType.similarTo (Short.TYPE)) {
-                argumentType = new Type (Integer.TYPE);
+                argumentType = Types.fromClass (Integer.TYPE);
             }
         }
 

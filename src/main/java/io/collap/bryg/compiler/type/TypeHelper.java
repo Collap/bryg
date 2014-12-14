@@ -9,10 +9,10 @@ public class TypeHelper {
         if (argumentClasses != null) {
             types = new Type[argumentClasses.length];
             for (int i = 0; i < argumentClasses.length; ++i) {
-                types[i] = new Type (argumentClasses[i]);
+                types[i] = Types.fromClass (argumentClasses[i]);
             }
         }
-        return generateMethodDesc (types, new Type (returnClass));
+        return generateMethodDesc (types, Types.fromClass (returnClass));
     }
 
     public static String generateMethodDesc (@Nullable Type[] argumentTypes, Type returnType) {
@@ -20,10 +20,10 @@ public class TypeHelper {
         if (argumentTypes != null) {
             descs = new String[argumentTypes.length];;
             for (int i = 0; i < argumentTypes.length; i++) {
-                descs[i] = argumentTypes[i].getAsmType ().getDescriptor ();
+                descs[i] = argumentTypes[i].getDescriptor ();
             }
         }
-        return generateMethodDesc (descs, returnType.getAsmType ().getDescriptor ());
+        return generateMethodDesc (descs, returnType.getDescriptor ());
     }
 
     public static String generateMethodDesc (@Nullable String[] argumentDescs, String returnDesc) {

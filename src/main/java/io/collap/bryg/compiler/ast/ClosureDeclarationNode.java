@@ -10,8 +10,9 @@ import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.helper.ObjectCompileHelper;
 import io.collap.bryg.compiler.scope.ClosureScope;
+import io.collap.bryg.compiler.scope.UnitScope;
 import io.collap.bryg.compiler.scope.Variable;
-import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.unit.StandardUnit;
@@ -19,7 +20,6 @@ import io.collap.bryg.unit.StandardUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-import static bryg.org.objectweb.asm.Opcodes.ALOAD;
 import static bryg.org.objectweb.asm.Opcodes.GETFIELD;
 
 public class ClosureDeclarationNode extends Node {
@@ -30,7 +30,7 @@ public class ClosureDeclarationNode extends Node {
         super (context);
         setLine (ctx.getStart ().getLine ());
 
-        ClosureScope closureScope = new ClosureScope (context.getCurrentScope ());
+        ClosureScope closureScope = new ClosureScope (new UnitScope (null), closureType, context.getCurrentScope ());
 
         String className = context.getUniqueClosureName ();
         try {
@@ -57,30 +57,30 @@ public class ClosureDeclarationNode extends Node {
             public void compile () {
                 BrygMethodVisitor mv = context.getMethodVisitor ();
 
-                mv.visitVarInsn (ALOAD, context.getRootScope ().getVariable ("this").getId ());
+                new VariableExpression (context, getLine (),
+                        context.getHighestLocalScope ().getVariable ("this"), AccessMode.get).compile ();
                 // -> StandardUnit
 
-                mv.visitFieldInsn (GETFIELD, new Type (StandardUnit.class).getAsmType ().getInternalName (),
-                        "environment", new Type (Environment.class).getAsmType ().getDescriptor ());
+                mv.visitFieldInsn (GETFIELD, Types.fromClass (StandardUnit.class).getInternalName (),
+                        "environment", Types.fromClass (Environment.class).getDescriptor ());
                 // StandardUnit -> Environment
             }
         });
 
         /* Load "this" as "__parent" parameter. */
-        arguments.add (new VariableExpression (context, context.getRootScope ().getVariable ("this"),
-                AccessMode.get, getLine ()));
+        arguments.add (new VariableExpression (context, getLine (),
+                context.getHighestLocalScope ().getVariable ("this"), AccessMode.get));
 
         /* Load "model" as "__parent_model" parameter. */
-        arguments.add (new VariableExpression (context, context.getRootScope ().getVariable ("model"),
-                AccessMode.get, getLine ()));
+        arguments.add (new VariableExpression (context, getLine (),
+                context.getHighestLocalScope ().getVariable ("model"), AccessMode.get));
 
         /* "Load" captured variables. */
         for (Variable capturedVariable : closureType.getClosureScope ().getCapturedVariables ()) {
-            arguments.add (new VariableExpression (context, capturedVariable, AccessMode.get, getLine ()));
+            arguments.add (new VariableExpression (context, getLine (), capturedVariable, AccessMode.get));
         }
 
-        new ObjectCompileHelper (mv, new Type (closureType.getClosureClass ()))
-                .compileNew (closureType.getConstructorDesc (), arguments);
+        new ObjectCompileHelper (mv, closureType).compileNew (closureType.getConstructorDesc (), arguments);
         // -> Closure
     }
 

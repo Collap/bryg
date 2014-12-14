@@ -5,6 +5,7 @@ import io.collap.bryg.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.exception.BrygJitException;
 
 import javax.annotation.Nullable;
@@ -31,21 +32,21 @@ public class CoercionUtil {
         if (right == null) throw new BrygJitException ("The right type is null. This is probably an internal compiler issue.", -1);
 
         /* Immediately return objects, like Strings. Ignore primitives and boxes. */
-        if (!left.getType ().getJavaType ().isPrimitive () && !right.getType ().getJavaType ().isPrimitive ()) {
-            Type leftUnboxed = BoxingUtil.unboxType (left.getType ());
-            Type rightUnboxed = BoxingUtil.unboxType (right.getType ());
-            if (leftUnboxed == null && rightUnboxed == null) {
+        if (!left.getType ().isPrimitive () && !right.getType ().isPrimitive ()) {
+            Type leftPrimitive = left.getType ().getPrimitiveType ();
+            Type rightPrimitive = right.getType ().getPrimitiveType ();
+            if (leftPrimitive == null && rightPrimitive == null) {
                 // TODO: Widening reference conversion here? The current use cases don't need it.
                 return new Pair<> (left, right);
             }
         }
 
         /* Attempt unboxing. */
-        if (!left.getType ().getJavaType ().isPrimitive ()) {
+        if (!left.getType ().isPrimitive ()) {
             left = getUnboxingExpressionOrThrowException (context, left);
         }
 
-        if (!right.getType ().getJavaType ().isPrimitive ()) {
+        if (!right.getType ().isPrimitive ()) {
             right = getUnboxingExpressionOrThrowException (context, right);
         }
 
@@ -66,17 +67,17 @@ public class CoercionUtil {
         }else if (left.getType ().isFloatingPointType () && right.getType ().isIntegralType ()) {
             return promoteType (context, right, left, targetType);
         }else {
-            throw new BrygJitException ("Coercion failed, but a target type was supplied: " + targetType.getJavaType (), left.getLine ());
+            throw new BrygJitException ("Coercion failed, but a target type was supplied: " + targetType, left.getLine ());
         }
     }
 
     private static UnboxingExpression getUnboxingExpressionOrThrowException (Context context, Expression child) {
-        Type unboxedType = BoxingUtil.unboxType (child.getType ());
-        if (unboxedType == null) {
+        Type primitiveType = child.getType ().getPrimitiveType ();
+        if (primitiveType == null) {
             throw new BrygJitException ("Can not coerce object types, but a target type was supplied.", child.getLine ());
         }
 
-        return new UnboxingExpression (context, child, unboxedType);
+        return new UnboxingExpression (context, child, primitiveType);
     }
 
     private static Pair<Expression, Expression> promoteType (Context context, Expression left, Expression right,
@@ -106,16 +107,16 @@ public class CoercionUtil {
         if (leftType.isIntegralType () && rightType.isIntegralType ()) {
             if (leftType.similarTo (Long.TYPE) || rightType.similarTo (Long.TYPE)) {
                 /* This promotes any integers to longs. */
-                return new Type (Long.TYPE);
+                return Types.fromClass (Long.TYPE);
             }else {
                 /* Both type are integers or smaller, so no need for longs.*/
-                return new Type (Integer.TYPE);
+                return Types.fromClass (Integer.TYPE);
             }
         }else if (leftType.isFloatingPointType () && rightType.isFloatingPointType ()) {
             /* This promotes all floats to doubles.
              * We already know that the types are not equal, so these two types can't possibly
              * both be floats.*/
-            return new Type (Double.TYPE);
+            return Types.fromClass (Double.TYPE);
         }else if (leftType.isIntegralType () && rightType.isFloatingPointType ()) {
             return getTargetIFpType (leftType, rightType);
         }else if (leftType.isFloatingPointType () && rightType.isIntegralType ()) {
@@ -131,12 +132,12 @@ public class CoercionUtil {
         if (!fpType.isFloatingPointType ()) return null;
 
         if (iType.similarTo (Long.TYPE)) {
-            return new Type (Double.TYPE);
+            return Types.fromClass (Double.TYPE);
         }else { /* byte, int, short */
             if (fpType.similarTo (Float.TYPE)) {
-                return new Type (Float.TYPE);
+                return Types.fromClass (Float.TYPE);
             }else {
-                return new Type (Double.TYPE);
+                return Types.fromClass (Double.TYPE);
             }
         }
     }
@@ -168,9 +169,9 @@ public class CoercionUtil {
             return expr;
         }
 
-        if (!expr.getType ().getJavaType ().isPrimitive ()) {
-            Type unboxedType = BoxingUtil.unboxType (expr.getType ());
-            if (unboxedType == null) {
+        if (!expr.getType ().isPrimitive ()) {
+            Type primitiveType = expr.getType ().getPrimitiveType ();
+            if (primitiveType == null) {
                 /* Try widening reference conversion. */
                 Expression cast = tryWideningReferenceConversion (context, expr, targetType);
                 if (cast != null) {
@@ -179,18 +180,18 @@ public class CoercionUtil {
                     throw new BrygJitException ("Widening reference conversion not possible!", expr.getLine ());
                 }
             }else {
-                expr = new UnboxingExpression (context, expr, unboxedType);
+                expr = new UnboxingExpression (context, expr, primitiveType);
             }
         }
 
-        Type boxedType = null;
+        Type wrapperType = null;
         Type conversionTargetType = null;
-        if (BoxingUtil.isBoxedType (targetType)) {
-            boxedType = targetType;
-            conversionTargetType = BoxingUtil.unboxType (targetType);
+        if (targetType.isWrapperType ()) {
+            wrapperType = targetType;
+            conversionTargetType = targetType.getPrimitiveType ();
         }else if (targetType.similarTo (Object.class)) {
             /* In this case, the value needs to be boxed and then promoted to Object. */
-            boxedType = BoxingUtil.boxType (expr.getType ());
+            wrapperType = expr.getType ().getWrapperType ();
         }
 
         if (conversionTargetType != null) {
@@ -206,7 +207,7 @@ public class CoercionUtil {
         }
 
         /* Box if needed. */
-        if (boxedType != null) {
+        if (wrapperType != null) {
             expr = BoxingUtil.createBoxingExpression (context, expr);
 
             /* Possibly convert to Object. */
@@ -216,9 +217,9 @@ public class CoercionUtil {
                     + targetType + " is not possible", expr.getLine ());
             }
 
-            if (!boxedType.similarTo (expr.getType ())) {
-                throw new BrygJitException ("Boxed types do not match: " + boxedType.getJavaType () + ", "
-                        + expr.getType ().getJavaType (), expr.getLine ());
+            if (!wrapperType.similarTo (expr.getType ())) {
+                throw new BrygJitException ("Boxed types do not match: " + wrapperType + ", "
+                        + expr.getType (), expr.getLine ());
             }
         }
 
@@ -228,7 +229,7 @@ public class CoercionUtil {
     private static Expression tryWideningReferenceConversion (Context context, Expression expr, Type targetType) {
         if (targetType.similarTo (expr.getType ())) return expr;
 
-        if (targetType.getJavaType ().isAssignableFrom (expr.getType ().getJavaType ())) {
+        if (targetType.isAssignableFrom (expr.getType ())) {
             System.out.println ("Widening reference cast from " + expr.getType () + " to " + targetType);
             return new CastExpression (context, targetType, expr, expr.getLine ());
         }else {

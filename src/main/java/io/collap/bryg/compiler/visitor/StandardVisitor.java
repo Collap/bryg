@@ -68,17 +68,12 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public Node visitClosure (@NotNull BrygParser.ClosureContext ctx) {
-        return new RootNode (context, ctx.inDeclaration (), ctx.statement ());
+        return new RootNode (context, ctx.statement ());
     }
 
     @Override
-    public @Nullable InDeclarationNode visitInDeclaration (@NotNull BrygParser.InDeclarationContext ctx) {
-        try {
-            return new InDeclarationNode (context, ctx);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace ();
-        }
-        return null;
+    public Node visitInDeclaration (@NotNull BrygParser.InDeclarationContext ctx) {
+        throw new BrygJitException ("In declarations can not be compiled!", ctx.getStart ().getLine ());
     }
 
     @Override
@@ -225,7 +220,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
             Variable variable = context.getCurrentScope ().getVariable (id);
 
             if (variable != null) {
-                return new VariableExpression (context, variable, AccessMode.get, ctx.getStart ().getLine ());
+                return new VariableExpression (context, ctx.getStart ().getLine (), variable, AccessMode.get);
             }else { /* The variable is probably a function. */
                 Function function = context.getEnvironment ().getLibrary ().getFunction (id);
                 if (function != null) {

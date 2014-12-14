@@ -5,6 +5,7 @@ import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.helper.StringBuilderCompileHelper;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 /**
@@ -24,7 +25,7 @@ public class BinaryAdditionExpression extends BinaryArithmeticExpression {
     @Override
     protected void setupType () {
         if (left.getType ().similarTo (String.class) || right.getType ().similarTo (String.class)) {
-            setType (new Type (String.class));
+            setType (Types.fromClass (String.class));
         }else {
             super.setupType ();
         }

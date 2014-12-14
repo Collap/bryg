@@ -20,6 +20,8 @@ public abstract class LiteralExpression extends Expression {
         }
 
         context.getMethodVisitor ().visitLdcInsn (value);
+
+        System.out.println ("BAZINCOMPILE: " + value + " [" + getLine () + "]");
     }
 
     @Override

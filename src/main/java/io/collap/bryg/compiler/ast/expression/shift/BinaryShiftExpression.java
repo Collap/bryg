@@ -35,7 +35,7 @@ public abstract class BinaryShiftExpression extends BinaryExpression {
         left.compile ();
         right.compile ();
 
-        int op = type.getAsmType ().getOpcode (getOpcode ());
+        int op = type.getOpcode (getOpcode ());
         context.getMethodVisitor ().visitInsn (op);
     }
 

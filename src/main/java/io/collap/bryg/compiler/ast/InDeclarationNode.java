@@ -1,6 +1,7 @@
 package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.ast.expression.DummyExpression;
+import io.collap.bryg.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
@@ -8,7 +9,7 @@ import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.compiler.type.TypeInterpreter;
-import io.collap.bryg.compiler.util.BoxingUtil;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.compiler.util.OperationUtil;
 import io.collap.bryg.exception.BrygJitException;
@@ -22,6 +23,7 @@ import static bryg.org.objectweb.asm.Opcodes.*;
 
 // TODO: Only compile if parameter is actually used.
 
+@Deprecated
 public class InDeclarationNode extends Node {
 
     private Variable parameter;
@@ -33,7 +35,7 @@ public class InDeclarationNode extends Node {
      */
     private boolean optional;
 
-    public InDeclarationNode (Context context, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
+    private InDeclarationNode (Context context, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
         this (
                 context,
                 IdUtil.idToString (ctx.id ()),
@@ -43,18 +45,19 @@ public class InDeclarationNode extends Node {
         );
     }
 
-    public InDeclarationNode (Context context, String name, Type type, boolean optional, int line) {
+    private InDeclarationNode (Context context, String name, Type type, boolean optional, int line) {
         /**
          * In declarations are always immutable.
          */
-        this (context, context.getCurrentScope ().registerVariable (new Variable (type, name, false, optional)),
-                optional, line, false);
+        super (context);
+        /* this (context, context.getCurrentScope ().registerVariable (new LocalVariable (type, name, false, optional)),
+                optional, line, false); */
     }
 
     /**
      * @param isGlobalVariable Whether the variable needs to be loaded from the global variable model.
      */
-    public InDeclarationNode (Context context, Variable parameter, boolean optional, int line, boolean isGlobalVariable) {
+    private InDeclarationNode (Context context, Variable parameter, boolean optional, int line, boolean isGlobalVariable) {
         super (context);
         setLine (line);
 
@@ -64,7 +67,7 @@ public class InDeclarationNode extends Node {
         model = context.getCurrentScope ().getVariable ("model");
 
         /* A primitive may not be optional. */
-        if (optional && parameter.getType ().getJavaType ().isPrimitive ()) {
+        if (optional && parameter.getType ().isPrimitive ()) {
             throw new BrygJitException ("A primitive input parameter may not be optional.", getLine ());
         }
     }
@@ -87,15 +90,15 @@ public class InDeclarationNode extends Node {
             mv.visitVarInsn (ALOAD, 0);
             // -> this
 
-            mv.visitFieldInsn (GETFIELD, new Type (StandardUnit.class).getAsmType ().getInternalName (),
-                    "globalVariableModel", new Type (GlobalVariableModel.class).getAsmType ().getDescriptor ());
+            mv.visitFieldInsn (GETFIELD, Types.fromClass (StandardUnit.class).getInternalName (),
+                    "globalVariableModel", Types.fromClass (GlobalVariableModel.class).getDescriptor ());
             // this -> GlobalVariableModel
 
             // TODO: Is this cast even needed?
             // mv.visitTypeInsn (CHECKCAST, new Type (Model.class).getAsmType ().getInternalName ());
             // GlobalVariableModel -> Model
         }else {
-            mv.visitVarInsn (ALOAD, model.getId ());
+            new VariableExpression (context, getLine (), model, AccessMode.get).compile ();
             // -> Model
         }
 
@@ -103,10 +106,10 @@ public class InDeclarationNode extends Node {
         // -> String
 
         mv.visitMethodInsn (INVOKEINTERFACE,
-                model.getType ().getAsmType ().getInternalName (),
+                model.getType ().getInternalName (),
                 "getVariable",
                 TypeHelper.generateMethodDesc (
-                        new Class<?>[] { String.class },
+                        new Class<?>[]{String.class},
                         Object.class
                 ),
                 true);
@@ -115,7 +118,7 @@ public class InDeclarationNode extends Node {
 
     private void ifNullThrowException () {
         OperationUtil.compileIfNullThrowException (context.getMethodVisitor (),
-                new Type (InvalidInputParameterException.class),
+                Types.fromClass (InvalidInputParameterException.class),
                 parameter.getName () + " could not be loaded!");
     }
 
@@ -124,15 +127,15 @@ public class InDeclarationNode extends Node {
         BrygMethodVisitor mv = context.getMethodVisitor ();
 
         Type expectedType = parameter.getType ();
-        Type boxedType = BoxingUtil.boxType (expectedType);
+        Type wrapperType = expectedType.getWrapperType ();
 
-        if (boxedType != null) {
-            mv.visitTypeInsn (CHECKCAST, boxedType.getAsmType ().getInternalName ());
+        if (wrapperType != null) {
+            mv.visitTypeInsn (CHECKCAST, wrapperType.getInternalName ());
             // Object -> T
 
-            new UnboxingExpression (context, new DummyExpression (context, boxedType, getLine ()), expectedType).compile ();
+            new UnboxingExpression (context, new DummyExpression (context, wrapperType, getLine ()), expectedType).compile ();
 
-            mv.visitVarInsn (expectedType.getAsmType ().getOpcode (ISTORE), parameter.getId ());
+            // new VariableExpression (context, getLine (), parameter, AccessMode.set, ).compile ();
             // primitive ->
         }else {
             castAndStoreObject ();
@@ -141,12 +144,12 @@ public class InDeclarationNode extends Node {
 
     private void castAndStoreObject () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
-        String internalTypeName = parameter.getType ().getAsmType ().getInternalName ();
+        String internalTypeName = parameter.getType ().getInternalName ();
 
         mv.visitTypeInsn (CHECKCAST, internalTypeName);
         // Object -> T
 
-        mv.visitVarInsn (ASTORE, parameter.getId ());
+        // mv.visitVarInsn (ASTORE, parameter.getId ());
         // T ->
     }
 

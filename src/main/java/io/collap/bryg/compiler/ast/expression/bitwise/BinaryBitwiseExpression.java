@@ -42,7 +42,7 @@ public abstract class BinaryBitwiseExpression extends BinaryExpression {
         right.compile ();
         // -> T, T
 
-        int opcode = type.getAsmType ().getOpcode (getOpcode ());
+        int opcode = type.getOpcode (getOpcode ());
         mv.visitInsn (opcode);
         // T, T -> T
     }

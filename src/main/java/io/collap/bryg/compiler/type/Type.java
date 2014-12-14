@@ -3,24 +3,9 @@ package io.collap.bryg.compiler.type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Type {
+public abstract class Type {
 
-    private Class<?> javaType;
-    private bryg.org.objectweb.asm.Type asmType;
-    private List<Type> genericTypes; /* Lazily loaded. */
-
-    public Type (Class<?> javaType) {
-        this.javaType = javaType;
-        this.asmType = AsmTypes.getAsmType (javaType);
-    }
-
-    public Class<?> getJavaType () {
-        return javaType;
-    }
-
-    public bryg.org.objectweb.asm.Type getAsmType () {
-        return asmType;
-    }
+    protected List<Type> genericTypes; /* The list itself is lazily loaded. */
 
     public List<Type> getGenericTypes () {
         if (genericTypes == null) {
@@ -29,50 +14,48 @@ public class Type {
         return genericTypes;
     }
 
+    public abstract String getInternalName ();
+    public abstract String getDescriptor ();
+    public abstract int getOpcode (int ix);
+
     /**
      *  @return Whether the type has the same Java base type as this type.
      */
-    public boolean similarTo (Type type) {
-        return javaType.equals (type.getJavaType ());
-    }
+    public abstract boolean similarTo (Type type);
 
     /**
      * @return Whether the class is the same as the Java base type of this type.
      */
-    public boolean similarTo (Class<?> type) {
-        return javaType.equals (type);
-    }
+    public abstract boolean similarTo (Class<?> type);
 
-    public boolean isIntegralType () {
-        // Note: Ordered by suspected amount of occurrence.
-        return similarTo (Integer.TYPE) || similarTo (Long.TYPE) || similarTo (Byte.TYPE) || similarTo (Short.TYPE);
-    }
-
-    public boolean isFloatingPointType () {
-        return similarTo (Double.TYPE) || similarTo (Float.TYPE);
-    }
+    public abstract boolean isPrimitive ();
+    public abstract boolean isIntegralType ();
+    public abstract boolean isFloatingPointType ();
 
     public boolean isNumeric () {
         return isIntegralType () || isFloatingPointType ();
     }
 
     public boolean is64Bit () {
-        return asmType.getSize () == 2;
+        return getStackSize () == 2;
     }
 
-    public int getStackSize () {
-        /* Double and long use two variable slots. */
-        boolean isWide = false;
-        if (javaType.isPrimitive ()) {
-            isWide = similarTo (Long.TYPE) || similarTo (Double.TYPE);
-        }
+    public abstract int getStackSize ();
 
-        return isWide ? 2 : 1;
-    }
+    public abstract boolean isAssignableFrom (Type type);
 
-    @Override
-    public String toString () {
-        return getJavaType ().toString ();
-    }
+    public abstract boolean isWrapperType ();
+
+    /**
+     * @return If this type is a primitive type, the wrapper type that belongs to it, otherwise null.
+     */
+    public abstract Type getWrapperType ();
+
+    /**
+     * @return If this type is a wrapper type, the primitive type that belongs to it, otherwise null.
+     */
+    public abstract Type getPrimitiveType ();
+
+    public abstract boolean isInterface ();
 
 }

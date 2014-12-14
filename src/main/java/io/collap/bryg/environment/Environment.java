@@ -4,7 +4,9 @@ import io.collap.bryg.compiler.Configuration;
 import io.collap.bryg.compiler.library.Library;
 import io.collap.bryg.compiler.resolver.ClassResolver;
 import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.model.Model;
 import io.collap.bryg.template.Template;
+import io.collap.bryg.template.TemplateFactory;
 import io.collap.bryg.template.TemplateType;
 
 import javax.annotation.Nullable;
@@ -23,16 +25,20 @@ public interface Environment {
      */
     public @Nullable TemplateType getTemplateTypePrefixed (String name);
 
+    public @Nullable TemplateFactory getTemplateFactory (String prefixlessName);
+
+    public @Nullable TemplateFactory getTemplateFactoryPrefixed (String name);
+
     /**
      * Returns a <b>new</b> instance of the template each time the method is called.
      * Also loads and compiles the template if it is not already loaded.
      */
-    public @Nullable Template getTemplate (String prefixlessName);
+    public @Nullable Template getTemplate (String prefixlessName, Model generalParameters);
 
     /**
      * This method is intended to be used by bryg internally.
      */
-    public @Nullable Template getTemplatePrefixed (String name);
+    public @Nullable Template getTemplatePrefixed (String name, Model generalParameters);
 
     public Configuration getConfiguration ();
     public Library getLibrary ();

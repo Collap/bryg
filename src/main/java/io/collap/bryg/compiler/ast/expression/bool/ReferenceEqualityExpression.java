@@ -20,8 +20,8 @@ public class ReferenceEqualityExpression extends BinaryBooleanExpression {
         super (context, ctx.expression (0), ctx.expression (1));
         setLine (ctx.getStart ().getLine ());
 
-        if (left.getType ().getJavaType ().isPrimitive () ||
-                right.getType ().getJavaType ().isPrimitive ()) {
+        if (left.getType ().isPrimitive () ||
+                right.getType ().isPrimitive ()) {
             throw new BrygJitException ("Primitive values can't be compared by reference equality.", getLine ());
         }
 

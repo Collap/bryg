@@ -1,9 +1,10 @@
 package io.collap.bryg.compiler.scope;
 
-import io.collap.bryg.closure.ClosureType;
-import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.closure.StandardClosure;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.model.GlobalVariableModel;
 import io.collap.bryg.model.Model;
+import io.collap.bryg.unit.UnitType;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.Set;
  * This scope tracks another scope's variables that are used at least once by this scope or by this scope's children.
  * All of these variables are declared in this scope.
  */
-public class ClosureScope extends RootScope {
+public class ClosureScope extends MethodScope {
 
     private Scope target;
     private Set<Variable> usedVariables = new HashSet<> ();
@@ -25,13 +26,15 @@ public class ClosureScope extends RootScope {
      */
     private List<Variable> capturedVariables;
 
-    public ClosureScope (Scope target) {
-        super (new GlobalVariableModel ()); /* Provide an empty global variable model. */
+    public ClosureScope (UnitScope unitScope, UnitType unitType, Scope target) {
+        /* TODO: Provide an empty global variable model, because global variables are already captured by the parent fragment? */
+        super (unitScope, unitType, new GlobalVariableModel (), null);
         this.target = target;
 
+        registerLocalVariable (new LocalVariable (Types.fromClass (Model.class), "model", false, false));
+
         /* Register __parent variable. */
-        registerVariable (new Variable (new Type (Object.class), ClosureType.PARENT_FIELD_NAME, false));
-        registerVariable (new Variable (new Type (Model.class), ClosureType.PARENT_MODEL_FIELD_NAME, false));
+        registerInstanceVariable (new InstanceVariable (Types.fromClass (Object.class), StandardClosure.PARENT_FIELD_NAME, false));
     }
 
     @Override
@@ -46,9 +49,12 @@ public class ClosureScope extends RootScope {
 
                 /* Declare variable in this scope.
                    All captured variables are declared immutable, because changing
-                   them would not affect the captured variables outside the closure. */
-                variable = new Variable (targetVariable.getType (), name, false, targetVariable.isNullable ());
-                registerVariable (variable);
+                   them would not affect the captured variables outside the closure,
+                   which would be misleading to the programmer. */
+                InstanceVariable instanceVariable = new InstanceVariable (targetVariable.getType (), name,
+                        false, targetVariable.isNullable ());
+                registerInstanceVariable (instanceVariable);
+                variable = instanceVariable;
             }
         }
         return variable;

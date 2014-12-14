@@ -1,7 +1,7 @@
 package io.collap.bryg.closure;
 
+import io.collap.bryg.compiler.scope.VariableInfo;
 import io.collap.bryg.unit.FragmentInfo;
-import io.collap.bryg.unit.ParameterInfo;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public class ClosureFragmentInfo extends FragmentInfo {
         super (name);
     }
 
-    public ClosureFragmentInfo (String name, List<ParameterInfo> parameters) {
+    public ClosureFragmentInfo (String name, List<VariableInfo> parameters) {
         super (name, parameters);
     }
 

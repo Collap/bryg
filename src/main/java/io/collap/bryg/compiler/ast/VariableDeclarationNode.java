@@ -1,9 +1,9 @@
 package io.collap.bryg.compiler.ast;
 
 import io.collap.bryg.compiler.ast.expression.Expression;
-import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
+import io.collap.bryg.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.scope.Variable;
+import io.collap.bryg.compiler.scope.LocalVariable;
 import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.CoercionUtil;
@@ -12,11 +12,9 @@ import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
 
-import static bryg.org.objectweb.asm.Opcodes.ISTORE;
-
 public class VariableDeclarationNode extends Node {
 
-    private Variable variable;
+    private LocalVariable variable;
     private Expression expression;
 
     public VariableDeclarationNode (Context context, BrygParser.VariableDeclarationContext ctx) {
@@ -34,7 +32,7 @@ public class VariableDeclarationNode extends Node {
             expression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
         }
 
-        Type type = null;
+        Type type;
         if (expectedType == null) {
             if (expression == null) {
                 throw new BrygJitException ("Could not infer type for variable '" + name + "'.", getLine ());
@@ -56,21 +54,18 @@ public class VariableDeclarationNode extends Node {
             throw new BrygJitException ("Could not get type for variable '" + name + "'.", getLine ());
         }
 
-        variable = new Variable (type, name, ctx.mutability.getType () == BrygLexer.MUT);
-        context.getCurrentScope ().registerVariable (variable);
+        variable = new LocalVariable (type, name, ctx.mutability.getType () == BrygLexer.MUT);
+        System.out.println (context.getCurrentScope ().getClass ());
+        context.getCurrentScope ().registerLocalVariable (variable);
     }
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        System.out.println ("Compile var decl!");
 
         if (expression != null) {
-            expression.compile ();
-            // -> T
-
-            bryg.org.objectweb.asm.Type asmType = variable.getType ().getAsmType ();
-            mv.visitVarInsn (asmType.getOpcode (ISTORE), variable.getId ());
-            // T ->
+            new VariableExpression (context, getLine (), variable, AccessMode.set, expression).compile ();
+            // ->
         }else {
             throw new UnsupportedOperationException ("Currently a variable must be declared with an expression, " +
                 "default values for types are not yet implemented!");

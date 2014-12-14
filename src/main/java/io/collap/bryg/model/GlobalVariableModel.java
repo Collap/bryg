@@ -8,16 +8,16 @@ public class GlobalVariableModel implements Model {
 
     public class GlobalVariable {
 
-        private Class<?> type;
+        private Class<?> javaType;
         private Object value;
 
-        private GlobalVariable (Class<?> type, Object value) {
-            this.type = type;
+        private GlobalVariable (Class<?> javaType, Object value) {
+            this.javaType = javaType;
             this.value = value;
         }
 
-        public Class<?> getType () {
-            return type;
+        public Class<?> getJavaType () {
+            return javaType;
         }
 
         public Object getValue () {

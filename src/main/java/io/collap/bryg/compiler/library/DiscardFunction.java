@@ -3,6 +3,7 @@ package io.collap.bryg.compiler.library;
 import io.collap.bryg.compiler.ast.expression.FunctionCallExpression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 
 /**
  * This function discards the return value, so that no output is printed implicitly.
@@ -21,7 +22,7 @@ public class DiscardFunction extends BlockFunction {
 
     @Override
     public Type getReturnType () {
-        return new Type (Void.TYPE);
+        return Types.fromClass (Void.TYPE);
     }
 
 }

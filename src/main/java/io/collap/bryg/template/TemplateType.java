@@ -1,10 +1,10 @@
 package io.collap.bryg.template;
 
+import io.collap.bryg.compiler.scope.VariableInfo;
 import io.collap.bryg.environment.Environment;
+import io.collap.bryg.model.Model;
 import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.unit.FragmentInfo;
-import io.collap.bryg.unit.ParameterInfo;
-import io.collap.bryg.unit.StandardUnit;
 import io.collap.bryg.unit.UnitType;
 
 import java.lang.reflect.Constructor;
@@ -21,7 +21,7 @@ public class TemplateType extends UnitType {
     private Class<? extends Template> templateClass;
     private Constructor<? extends Template> constructor;
 
-    private List<ParameterInfo> generalParameters;
+    private List<VariableInfo> generalParameters;
 
     /* These fields can be used when the template type has been created, but the
        template has not been fully compiled. Is set to null after compilation. */
@@ -37,14 +37,14 @@ public class TemplateType extends UnitType {
     private Set<TemplateType> referencedTemplates;
 
     public TemplateType (String className) {
-        this (className, new ArrayList<ParameterInfo> (), new ArrayList<TemplateFragmentCompileInfo> (),
+        this (className, new ArrayList<VariableInfo> (), new ArrayList<TemplateFragmentCompileInfo> (),
                 new ArrayList<BrygParser.InDeclarationContext> ());
     }
 
     /**
      * Also extracts fragments from the compile infos and adds them to the UnitType.
      */
-    public TemplateType (String className, List<ParameterInfo> generalParameters,
+    public TemplateType (String className, List<VariableInfo> generalParameters,
                          List<TemplateFragmentCompileInfo> templateFragmentCompileInfos,
                          List<BrygParser.InDeclarationContext> generalParameterContexts) {
         super (className);
@@ -70,6 +70,11 @@ public class TemplateType extends UnitType {
         this.templateFragmentCompileInfos = null;
     }
 
+    @Override
+    public Class<?> getStandardUnitClass () {
+        return StandardTemplate.class;
+    }
+
     /**
      * Clears the compilation data.
      * Use AFTER the template has been compiled, otherwise the backlash will be horrible, horrible.
@@ -80,17 +85,13 @@ public class TemplateType extends UnitType {
         referencedTemplates = null;
     }
 
-    public Constructor<? extends Template> getConstructor () {
+    public Constructor<? extends Template> getPublicConstructor () {
         /* This is lazily loaded, because at this point the JVM actually checks the class,
            which is definitely not what we want when we compile templates which depend on
            each other. */
         if (constructor == null) {
             try {
-                if (StandardUnit.class.isAssignableFrom (templateClass)) {
-                    constructor = templateClass.getConstructor (Environment.class);
-                } else {
-                    constructor = templateClass.getConstructor ();
-                }
+                constructor = templateClass.getConstructor (Environment.class, Model.class);
             }catch (NoSuchMethodException e) {
                 e.printStackTrace ();
                 throw new RuntimeException ("Constructor of template " + fullName + " could not be loaded!");
@@ -122,12 +123,12 @@ public class TemplateType extends UnitType {
         return templateFragmentCompileInfos;
     }
 
-    public void addGeneralParameter (ParameterInfo parameterInfo, BrygParser.InDeclarationContext ctx) {
-        generalParameters.add (parameterInfo);
+    public void addGeneralParameter (VariableInfo parameter, BrygParser.InDeclarationContext ctx) {
+        generalParameters.add (parameter);
         generalParameterContexts.add (ctx);
     }
 
-    public List<ParameterInfo> getGeneralParameters () {
+    public List<VariableInfo> getGeneralParameters () {
         return generalParameters;
     }
 

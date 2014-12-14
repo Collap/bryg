@@ -15,15 +15,15 @@ public class TypeInterpreter {
     private static final Map<String, Type> typeNameToPrimitiveType = new HashMap<> ();
 
     static {
-        typeNameToPrimitiveType.put ("void", new Type (Void.TYPE));
-        typeNameToPrimitiveType.put ("boolean", new Type (Boolean.TYPE));
-        typeNameToPrimitiveType.put ("char", new Type (Character.TYPE));
-        typeNameToPrimitiveType.put ("byte", new Type (Byte.TYPE));
-        typeNameToPrimitiveType.put ("short", new Type (Short.TYPE));
-        typeNameToPrimitiveType.put ("int", new Type (Integer.TYPE));
-        typeNameToPrimitiveType.put ("long", new Type (Long.TYPE));
-        typeNameToPrimitiveType.put ("float", new Type (Float.TYPE));
-        typeNameToPrimitiveType.put ("double", new Type (Double.TYPE));
+        typeNameToPrimitiveType.put ("void", Types.fromClass (Void.TYPE));
+        typeNameToPrimitiveType.put ("boolean", Types.fromClass (Boolean.TYPE));
+        typeNameToPrimitiveType.put ("char", Types.fromClass (Character.TYPE));
+        typeNameToPrimitiveType.put ("byte", Types.fromClass (Byte.TYPE));
+        typeNameToPrimitiveType.put ("short", Types.fromClass (Short.TYPE));
+        typeNameToPrimitiveType.put ("int", Types.fromClass (Integer.TYPE));
+        typeNameToPrimitiveType.put ("long", Types.fromClass (Long.TYPE));
+        typeNameToPrimitiveType.put ("float", Types.fromClass (Float.TYPE));
+        typeNameToPrimitiveType.put ("double", Types.fromClass (Double.TYPE));
     }
 
     /**
@@ -53,7 +53,7 @@ public class TypeInterpreter {
 
         /* Possible class type. */
         try {
-            Type type = new Type (classResolver.getResolvedClass (typeName));
+            Type type = Types.fromClass (classResolver.getResolvedClass (typeName));
 
             /* Resolve generics. */
             List<BrygParser.TypeContext> genericTypeContexts = ctx.type ();

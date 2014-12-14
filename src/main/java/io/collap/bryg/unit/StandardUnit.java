@@ -14,21 +14,24 @@ import java.lang.reflect.Method;
 
 public abstract class StandardUnit implements Unit {
 
+    public static final String ENVIRONMENT_FIELD_NAME = "__environment";
+    public static final String GLOBALS_FIELD_NAME = "__globals";
+
     private static final Model emptyModel = new EmptyModel ();
 
     /**
      * The name is referenced in {@link io.collap.bryg.compiler.ast.TemplateFragmentCall}.
      */
-    protected Environment environment;
+    protected Environment __environment;
 
     /**
      * The name is referenced in {@link io.collap.bryg.compiler.ast.InDeclarationNode}.
      */
-    protected GlobalVariableModel globalVariableModel;
+    protected GlobalVariableModel __globals;
 
-    protected StandardUnit (Environment environment) {
-        this.environment = environment;
-        this.globalVariableModel = environment.getGlobalVariableModel ();
+    protected StandardUnit (Environment __environment) {
+        this.__environment = __environment;
+        this.__globals = __environment.getGlobalVariableModel ();
     }
 
     @Override

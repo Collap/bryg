@@ -11,6 +11,7 @@ import io.collap.bryg.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpr
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.scope.Variable;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.compiler.util.CoercionUtil;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
@@ -28,7 +29,7 @@ public class BinaryAssignmentExpression extends BinaryExpression {
 
     public BinaryAssignmentExpression (Context context, BrygParser.BinaryAssignmentExpressionContext ctx) {
         super (context, ctx.getStart ().getLine ());
-        setType (new Type (Void.TYPE)); // TODO: Implement as proper expression?
+        setType (Types.fromClass (Void.TYPE)); // TODO: Implement as proper expression?
 
         /* Get operator. */
         int operator = ctx.op.getType ();
@@ -51,17 +52,17 @@ public class BinaryAssignmentExpression extends BinaryExpression {
                 throw new BrygJitException ("Variable '" + variableName + "' is not mutable.", variableLine);
             }
 
-            left = new VariableExpression (context, variable, AccessMode.set, variableLine);
+            left = new VariableExpression (context, variableLine,variable, AccessMode.set);
             expectedType = variable.getType ();
 
             if (operator != BrygLexer.ASSIGN) {
-                leftGet = new VariableExpression (context, variable, AccessMode.get, variableLine);
+                leftGet = new VariableExpression (context, variableLine, variable, AccessMode.get);
             }
         }else if (leftCtx instanceof BrygParser.AccessExpressionContext) {
             BrygParser.AccessExpressionContext accessCtx = (BrygParser.AccessExpressionContext) leftCtx;
             try {
                 AccessExpression accessExpression = new AccessExpression (context, accessCtx, AccessMode.set);
-                expectedType = new Type (accessExpression.getField ().getType ());
+                expectedType = Types.fromClass (accessExpression.getField ().getType ());
                 left = accessExpression;
 
                 if (operator != BrygLexer.ASSIGN) {

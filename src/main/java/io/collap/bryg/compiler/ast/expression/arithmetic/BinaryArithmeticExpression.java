@@ -43,11 +43,11 @@ public abstract class BinaryArithmeticExpression extends BinaryExpression {
     @Override
     public void compile () {
         BrygMethodVisitor mv = context.getMethodVisitor ();
-        if (type.getJavaType ().isPrimitive ()) {
+        if (type.isPrimitive ()) {
             left.compile ();
             right.compile ();
 
-            int op = type.getAsmType ().getOpcode (getOpcode ());
+            int op = type.getOpcode (getOpcode ());
             mv.visitInsn (op);
         }else {
             throw new BrygJitException ("Unexpected type " + type, getLine ());

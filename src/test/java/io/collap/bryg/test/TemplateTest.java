@@ -3,6 +3,7 @@ package io.collap.bryg.test;
 import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.template.Template;
 import io.collap.bryg.model.Model;
+import io.collap.bryg.template.TemplateFactory;
 import io.collap.bryg.test.object.TestController;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,11 +15,11 @@ import java.io.StringWriter;
 
 public abstract class TemplateTest {
 
-    protected Template template;
+    protected TemplateFactory templateFactory;
 
     @Before
     public void init () {
-        template = Domain.getEnvironment ().getTemplate (getTemplateName ());
+        templateFactory = Domain.getEnvironment ().getTemplateFactory (getTemplateName ());
     }
 
     @Test
@@ -27,7 +28,11 @@ public abstract class TemplateTest {
 
         Model model = createModel ();
         model.setVariable ("test", testController);
+        Template template = templateFactory.create (model);
+        render (template, model);
+    }
 
+    protected void render (Template template, Model model) throws IOException {
         StringWriter writer = new StringWriter ();
         template.render (writer, model);
         System.out.println ("Result:");
@@ -45,6 +50,8 @@ public abstract class TemplateTest {
     public void benchmark () throws IOException {
         final int iterations = 10000;
         final Model model = createModel ();
+
+        Template template = templateFactory.create (model);
 
         StringWriter stringWriter;
         for (int i = 0; i < iterations; ++i) {

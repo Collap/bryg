@@ -2,6 +2,7 @@ package io.collap.bryg.test.function;
 
 import io.collap.bryg.model.BasicModel;
 import io.collap.bryg.model.Model;
+import io.collap.bryg.template.Template;
 import io.collap.bryg.test.TemplateTest;
 
 import java.io.IOException;
@@ -10,14 +11,14 @@ import java.io.StringWriter;
 public class FragmentTest extends TemplateTest{
 
     @Override
-    public void render () throws IOException {
-        super.render ();
+    protected void render (Template template, Model model) throws IOException {
+        super.render (template, model);
 
-        Model model = new BasicModel ();
-        model.setVariable ("name", "Marco");
+        Model headModel = new BasicModel ();
+        headModel.setVariable ("name", "Marco");
 
         StringWriter writer = new StringWriter ();
-        template.call ("head", writer, model);
+        template.call ("head", writer, headModel);
         System.out.println ("Called fragment 'head' from Java with name='Marco':");
         System.out.println (writer.toString ());
         System.out.println ();

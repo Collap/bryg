@@ -1,8 +1,9 @@
 package io.collap.bryg.compiler.ast.expression;
 
 import io.collap.bryg.compiler.context.Context;
-import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.CompiledType;
 import io.collap.bryg.compiler.type.TypeHelper;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.compiler.util.CoercionUtil;
 import io.collap.bryg.compiler.util.FunctionUtil;
 import io.collap.bryg.compiler.util.IdUtil;
@@ -31,6 +32,7 @@ public class MethodCallExpression extends Expression {
     }
 
     private Expression operandExpression;
+    private CompiledType operandType;
     private List<Expression> argumentExpressions;
     private Method method;
 
@@ -40,8 +42,12 @@ public class MethodCallExpression extends Expression {
 
         operandExpression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
 
-        Class<?> objectType = operandExpression.getType ().getJavaType ();
-        if (objectType.isPrimitive ()) {
+        if (!(operandExpression.getType () instanceof CompiledType)) {
+            throw new BrygJitException ("Can't call a Java method on a non-Java type.", getLine ());
+        }
+
+        operandType = ((CompiledType) operandExpression.getType ());
+        if (operandType.getJavaType ().isPrimitive ()) {
             throw new BrygJitException ("Methods can not be invoked on primitives.", getLine ());
         }
 
@@ -64,8 +70,8 @@ public class MethodCallExpression extends Expression {
         }
 
         /* Find method. */
-        findMethod (IdUtil.idToString (ctx.functionCall ().id ()), objectType);
-        setType (new Type (method.getReturnType ()));
+        findMethod (IdUtil.idToString (ctx.functionCall ().id ()), operandType.getJavaType ());
+        setType (Types.fromClass (method.getReturnType ()));
     }
 
     private void findMethod (String methodName, Class<?> objectType) {
@@ -122,7 +128,8 @@ public class MethodCallExpression extends Expression {
             Expression expression = argumentExpressions.get (i);
             if (!expression.getType ().similarTo (paramType)) { /* Check if the exact types match. */
                 if (coerce) {
-                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion (context, expression, new Type (paramType));
+                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion (context, expression,
+                            Types.fromClass (paramType));
                     if (coercionExpression == null) {
                         return null;
                     }
@@ -142,8 +149,7 @@ public class MethodCallExpression extends Expression {
 
     @Override
     public void compile () {
-        Type ownerType = operandExpression.getType ();
-        boolean isInterface = ownerType.getJavaType ().isInterface ();
+        boolean isInterface = operandType.getJavaType ().isInterface ();
 
         operandExpression.compile ();
         // -> O
@@ -154,7 +160,7 @@ public class MethodCallExpression extends Expression {
         // -> A1, A2, ...
 
         context.getMethodVisitor ().visitMethodInsn (isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
-                ownerType.getAsmType ().getInternalName (),
+                operandType.getInternalName (),
                 method.getName (),
                 TypeHelper.generateMethodDesc (
                         method.getParameterTypes (),

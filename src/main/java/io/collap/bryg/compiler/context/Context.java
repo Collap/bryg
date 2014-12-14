@@ -1,18 +1,14 @@
 package io.collap.bryg.compiler.context;
 
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
-import io.collap.bryg.compiler.scope.Variable;
+import io.collap.bryg.compiler.scope.HighestLocalScope;
 import io.collap.bryg.compiler.visitor.StandardVisitor;
-import io.collap.bryg.compiler.scope.RootScope;
 import io.collap.bryg.compiler.scope.Scope;
-import io.collap.bryg.compiler.type.Type;
 import io.collap.bryg.environment.Environment;
-import io.collap.bryg.model.Model;
 import io.collap.bryg.unit.FragmentInfo;
 import io.collap.bryg.unit.UnitType;
 
 import javax.annotation.Nullable;
-import java.io.Writer;
 
 public class Context {
 
@@ -21,7 +17,7 @@ public class Context {
     private UnitType unitType;
     private StandardVisitor parseTreeVisitor;
     private BrygMethodVisitor methodVisitor;
-    private RootScope rootScope;
+    private HighestLocalScope highestLocalScope;
     private int closureBlockId;
 
     //
@@ -43,14 +39,14 @@ public class Context {
      * @param methodVisitor May be null, but should be set before compiling any nodes.
      */
     public Context (Environment environment, FragmentInfo fragmentInfo, UnitType unitType,
-                    @Nullable BrygMethodVisitor methodVisitor, RootScope rootScope) {
+                    @Nullable BrygMethodVisitor methodVisitor, HighestLocalScope highestLocalScope) {
         this.environment = environment;
         this.fragmentInfo = fragmentInfo;
         this.unitType = unitType;
         this.parseTreeVisitor = new StandardVisitor ();
         this.methodVisitor = methodVisitor;
-        this.rootScope = rootScope;
-        currentScope = rootScope;
+        this.highestLocalScope = highestLocalScope;
+        currentScope = highestLocalScope;
         closureBlockId = 0;
 
         /* Set context instance for the parameters. */
@@ -104,8 +100,8 @@ public class Context {
         return methodVisitor;
     }
 
-    public RootScope getRootScope () {
-        return rootScope;
+    public HighestLocalScope getHighestLocalScope () {
+        return highestLocalScope;
     }
 
     public Scope getCurrentScope () {

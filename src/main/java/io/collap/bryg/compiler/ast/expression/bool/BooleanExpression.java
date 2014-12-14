@@ -5,6 +5,7 @@ import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
+import io.collap.bryg.compiler.type.Types;
 
 import javax.annotation.Nullable;
 
@@ -14,7 +15,7 @@ public abstract class BooleanExpression extends Expression {
 
     protected BooleanExpression (Context context) {
         super (context);
-        setType (new Type (Boolean.TYPE));
+        setType (Types.fromClass (Boolean.TYPE));
     }
 
     /**

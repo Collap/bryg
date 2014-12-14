@@ -230,6 +230,13 @@ public class BrygMethodVisitor extends MethodVisitor {
         super.visitMaxs (maxStack, maxLocals);
     }
 
+    /**
+     * Call this when the method's stack and variable list maximum sizes are computed automatically.
+     */
+    public void visitMaxsAuto () {
+        visitMaxs (0, 0);
+    }
+
     @Override
     public void visitEnd () {
         flushStringBuilder ();

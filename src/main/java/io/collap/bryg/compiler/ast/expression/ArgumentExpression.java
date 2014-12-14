@@ -2,7 +2,6 @@ package io.collap.bryg.compiler.ast.expression;
 
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.compiler.ast.expression.bool.BooleanExpression;
-import io.collap.bryg.compiler.ast.expression.bool.ExpressionBooleanExpression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;

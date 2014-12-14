@@ -1,23 +1,26 @@
 package io.collap.bryg.compiler;
 
-import bryg.org.objectweb.asm.ClassVisitor;
-import bryg.org.objectweb.asm.ClassWriter;
-import bryg.org.objectweb.asm.MethodVisitor;
+import bryg.org.objectweb.asm.*;
 import bryg.org.objectweb.asm.util.TraceClassVisitor;
+import io.collap.bryg.compiler.ast.AccessMode;
+import io.collap.bryg.compiler.ast.DelegatorRootNode;
+import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.RootNode;
+import io.collap.bryg.compiler.ast.expression.ModelLoadExpression;
+import io.collap.bryg.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.compiler.bytecode.BrygClassVisitor;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.scope.*;
+import io.collap.bryg.compiler.type.*;
 import io.collap.bryg.compiler.type.Type;
-import io.collap.bryg.compiler.scope.RootScope;
-import io.collap.bryg.compiler.type.AsmTypes;
-import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.environment.Environment;
 import io.collap.bryg.environment.StandardEnvironment;
 import io.collap.bryg.exception.InvalidInputParameterException;
 import io.collap.bryg.model.Model;
-import io.collap.bryg.parser.BrygParser;
 import io.collap.bryg.template.*;
+import io.collap.bryg.unit.FragmentInfo;
+import io.collap.bryg.unit.StandardUnit;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -25,7 +28,9 @@ import java.util.List;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
-public class TemplateCompiler implements Compiler<TemplateType> {
+// TODO: Compile dynamic init function?
+
+public class TemplateCompiler extends UnitCompiler implements Compiler<TemplateType> {
 
     private StandardEnvironment environment;
     private TemplateType templateType;
@@ -62,22 +67,105 @@ public class TemplateCompiler implements Compiler<TemplateType> {
     private void compileClass (ClassVisitor classVisitor) {
         classVisitor.visit (
                 V1_7, ACC_PUBLIC, TypeHelper.toInternalName (templateType.getFullName ()), null,
-                new Type (StandardTemplate.class).getAsmType ().getInternalName (),
-                new String[] { new Type (Template.class).getAsmType ().getInternalName () });
+                Types.fromClass (StandardTemplate.class).getInternalName (),
+                new String[] { Types.fromClass (Template.class).getInternalName () });
         {
             classVisitor.visitSource (templateType.getSimpleName () + ".bryg", null);
-            createConstructor (classVisitor);
+
+            compileFields (classVisitor, templateType.getGeneralParameters ());
+
+            List<VariableInfo> unitFields = new ArrayList<> ();
+            unitFields.addAll (templateType.getGeneralParameters ());
+            UnitScope unitScope = new UnitScope (unitFields);
+
+            // compileConstructor (classVisitor, templateType, false, null);
+            compileDelegatorConstructor (classVisitor, unitScope);
+            compileConstructor (classVisitor, templateType, true, templateType.getGeneralParameters ());
 
             for (TemplateFragmentCompileInfo compileInfo : templateType.getTemplateFragmentCompileInfos ()) {
-                compileFragment (classVisitor, compileInfo);
+                compileFragment (classVisitor, compileInfo, unitScope);
+                compileDelegator (classVisitor, compileInfo, unitScope);
             }
         }
         classVisitor.visitEnd ();
     }
 
-    private void compileFragment (ClassVisitor classVisitor, TemplateFragmentCompileInfo compileInfo) {
+    private void compileDelegatorConstructor (ClassVisitor classVisitor, UnitScope unitScope) {
+        String desc = TypeHelper.generateMethodDesc (
+                new Type[] { Types.fromClass (Environment.class), Types.fromClass (Model.class) },
+                Types.fromClass (Void.TYPE)
+        );
+        BrygMethodVisitor constructor = (BrygMethodVisitor) classVisitor.visitMethod (ACC_PUBLIC, "<init>", desc, null, null);
+
+        /* Call super. */
+        constructor.visitVarInsn (ALOAD, 0); /* this */
+        constructor.visitVarInsn (ALOAD, 1); /* environment */
+        constructor.visitMethodInsn (INVOKESPECIAL,
+                AsmTypes.getAsmType (StandardTemplate.class).getInternalName (),
+                "<init>", TypeHelper.generateMethodDesc (
+                        new Class[] { Environment.class },
+                        Void.TYPE
+                ), false);
+
+        /* Load values from model and store them. */
+        final ConstructorScope scope = new ConstructorScope (unitScope, templateType);
+        final LocalVariable model = new LocalVariable (Types.fromClass (Model.class), "model", false);
+        scope.registerLocalVariable (model);
+
+        Context context = new Context (environment, new TemplateFragmentInfo ("<init>",
+                new ArrayList<VariableInfo> () {{
+                    add (scope.getVariable ("this").getInfo ());
+                    add (scope.getVariable (StandardUnit.ENVIRONMENT_FIELD_NAME).getInfo ());
+                    add (model.getInfo ());
+                }}),
+                templateType, constructor, scope);
+        DelegatorRootNode root = new DelegatorRootNode (context);
+
+        /* Load and store. */
+        List<VariableInfo> generalParameters = templateType.getGeneralParameters ();
+        for (VariableInfo parameter : generalParameters) {
+            root.addChild (new VariableExpression (context, -1, scope.getVariable (parameter.getName ()),
+                    AccessMode.set, new ModelLoadExpression (context, parameter, model)));
+        }
+
+        root.compile ();
+
+        constructor.voidReturn ();
+        constructor.visitMaxsAuto ();
+        constructor.visitEnd ();
+    }
+
+    private void compileFragment (ClassVisitor classVisitor, TemplateFragmentCompileInfo compileInfo, UnitScope unitScope) {
+        FragmentInfo fragmentInfo = compileInfo.getFragmentInfo ();
+
         BrygMethodVisitor mv = (BrygMethodVisitor) classVisitor.visitMethod (ACC_PUBLIC,
-                compileInfo.getFragmentInfo ().getName (),
+                compileInfo.getFragmentInfo ().getName (), fragmentInfo.getDesc (), null, null);
+        {
+            MethodScope methodScope = new MethodScope (unitScope, templateType,
+                    environment.getGlobalVariableModel (), fragmentInfo.getLocalParameters ());
+            Context context = new Context (environment, fragmentInfo, templateType, mv, methodScope);
+
+            RootNode node = new RootNode (context, compileInfo.getStatementContexts ());
+
+            if (environment.getConfiguration ().shouldPrintAst ()) {
+                node.print (System.out, 0);
+                System.out.println ();
+            }
+
+            node.addGlobalVariableLoads (methodScope);
+            node.compile ();
+
+            mv.voidReturn ();
+            mv.visitMaxsAuto ();
+        }
+        mv.visitEnd ();
+    }
+
+    private void compileDelegator (ClassVisitor classVisitor, TemplateFragmentCompileInfo compileInfo, UnitScope unitScope) {
+        final TemplateFragmentInfo fragmentInfo = compileInfo.getFragmentInfo ();
+
+        final BrygMethodVisitor mv = (BrygMethodVisitor) classVisitor.visitMethod (ACC_PUBLIC,
+                fragmentInfo.getDelegatorName (),
                 TypeHelper.generateMethodDesc (
                         new Class<?>[] { Writer.class, Model.class },
                         Void.TYPE
@@ -85,45 +173,44 @@ public class TemplateCompiler implements Compiler<TemplateType> {
                 null,
                 new String[] { AsmTypes.getAsmType (InvalidInputParameterException.class).getInternalName () });
         {
-            Context context = new Context (environment, compileInfo.getFragmentInfo (), templateType,
-                    mv, new RootScope (environment.getGlobalVariableModel ()));
+            List<VariableInfo> parameters = fragmentInfo.getLocalParameters ();
+            MethodScope scope = new MethodScope (unitScope, templateType, environment.getGlobalVariableModel (), null);
+            Context context = new Context (environment, fragmentInfo, templateType,
+                    mv, scope);
+            LocalVariable model = new LocalVariable (Types.fromClass (Model.class), "model", false);
+            scope.registerVariableInternal (model);
+            Variable thisVar = scope.getVariable ("this");
+            Variable writer = scope.getVariable ("writer");
 
-            /* Add general parameters to input declarations. */
-            List<BrygParser.InDeclarationContext> inDeclarationContexts;
-            inDeclarationContexts = new ArrayList<> ();
-            inDeclarationContexts.addAll (templateType.getGeneralParameterContexts ());
-            inDeclarationContexts.addAll (compileInfo.getInDeclarationContexts ());
+            DelegatorRootNode root = new DelegatorRootNode (context);
+            root.addChild (new VariableExpression (context, -1, thisVar, AccessMode.get));
 
-            RootNode node = new RootNode (context, inDeclarationContexts, compileInfo.getStatementContexts ());
+            /* Add all parameters in order. */
+            root.addChild (new VariableExpression (context, -1, writer, AccessMode.get));
+            for (VariableInfo parameter : parameters) {
+                root.addChild (new ModelLoadExpression (context, parameter, model));
+            }
+
+            /* Call the actual fragment function. */
+            root.addChild (new Node (context) {
+                @Override
+                public void compile () {
+                    mv.visitMethodInsn (INVOKEVIRTUAL, fragmentInfo.getOwner ().getInternalName (),
+                            fragmentInfo.getName (), fragmentInfo.getDesc (), false);
+                }
+            });
 
             if (environment.getConfiguration ().shouldPrintAst ()) {
-                node.print (System.out, 0);
+                root.print (System.out, 0);
                 System.out.println ();
             }
 
-            node.addGlobalVariableInDeclarations (context.getRootScope ());
-            node.compile ();
+            root.compile ();
 
             mv.voidReturn ();
-            mv.visitMaxs (0, 0); /* Note: This function is called so the maximum values are calculated by ASM.
-                                                  The arguments 0 and 0 have no special meaning. */
+            mv.visitMaxsAuto ();
         }
         mv.visitEnd ();
-    }
-
-    private void createConstructor (ClassVisitor classVisitor) {
-        String desc = TypeHelper.generateMethodDesc (new Class[] {Environment.class }, Void.TYPE);
-        MethodVisitor constructor = classVisitor.visitMethod (ACC_PUBLIC, "<init>",
-                desc,
-                null, null);
-        constructor.visitVarInsn (ALOAD, 0); /* this */
-        constructor.visitVarInsn (ALOAD, 1); /* environment */
-        constructor.visitMethodInsn (INVOKESPECIAL,
-                AsmTypes.getAsmType (StandardTemplate.class).getInternalName (),
-                "<init>", desc, false);
-        constructor.visitInsn (RETURN);
-        constructor.visitMaxs (2, 2);
-        constructor.visitEnd ();
     }
 
     @Override

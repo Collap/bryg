@@ -5,7 +5,7 @@ import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.compiler.context.Context;
 import io.collap.bryg.compiler.type.Type;
-import io.collap.bryg.compiler.util.BoxingUtil;
+import io.collap.bryg.compiler.type.Types;
 import io.collap.bryg.exception.BrygJitException;
 
 public class NegationExpression extends Expression {
@@ -18,19 +18,19 @@ public class NegationExpression extends Expression {
         setLine (line);
 
         if (!child.getType ().isNumeric ()) {
-            Type unboxedType = BoxingUtil.unboxType (child.getType ());
-            if (unboxedType == null) {
+            Type primitiveType = child.getType ().getPrimitiveType ();
+            if (primitiveType == null) {
                 throw new BrygJitException ("Can only negate numeric primitive types!", line);
             }
-            this.child = new UnboxingExpression (context, child, unboxedType);
-            setType (unboxedType);
+            this.child = new UnboxingExpression (context, child, primitiveType);
+            setType (primitiveType);
         }else {
             setType (child.getType ());
         }
 
         /* "Convert" to integer if byte or short, since there are no neg operators for byte or short. */
         if (type.similarTo (Byte.TYPE) || type.similarTo (Short.TYPE)) {
-            setType (new Type (Integer.TYPE));
+            setType (Types.fromClass (Integer.TYPE));
         }
     }
 
@@ -40,7 +40,7 @@ public class NegationExpression extends Expression {
         // -> T
 
         /* Negate the value. */
-        int op = type.getAsmType ().getOpcode (Opcodes.INEG);
+        int op = type.getOpcode (Opcodes.INEG);
         context.getMethodVisitor ().visitInsn (op);
         // T -> T
     }

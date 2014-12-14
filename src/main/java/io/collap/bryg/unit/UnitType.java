@@ -1,20 +1,23 @@
 package io.collap.bryg.unit;
 
+import io.collap.bryg.compiler.type.RuntimeType;
+import io.collap.bryg.compiler.type.TypeHelper;
 import io.collap.bryg.template.TemplateType;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class UnitType {
+public abstract class UnitType extends RuntimeType {
 
     protected String fullName;
     protected String classPackage;
     protected Map<String, FragmentInfo> fragments = new HashMap<> ();
 
-    private String jvmName;
-    private String descriptor;
+    private String constructorDesc;
 
     public UnitType (String fullName) {
+        super (TypeHelper.toInternalName (fullName));
+
         this.fullName = fullName;
 
         /* Set unit package based on name. */
@@ -26,23 +29,11 @@ public abstract class UnitType {
         }
     }
 
-    public String getJvmName () {
-        if (jvmName == null) {
-            jvmName = fullName.replaceAll ("\\.", "/");
-        }
-        return jvmName;
-    }
-
-    public String getDescriptor () {
-        if (descriptor == null) {
-            descriptor = "L" + getJvmName () + ";";
-        }
-        return descriptor;
-    }
-
     public String getFullName () {
         return fullName;
     }
+
+    public abstract Class<?> getStandardUnitClass ();
 
     /**
      * @return The name of the template without the package.
@@ -65,6 +56,14 @@ public abstract class UnitType {
 
     public FragmentInfo getFragment (String name) {
         return fragments.get (name);
+    }
+
+    public String getConstructorDesc () {
+        return constructorDesc;
+    }
+
+    public void setConstructorDesc (String constructorDesc) {
+        this.constructorDesc = constructorDesc;
     }
 
     /**

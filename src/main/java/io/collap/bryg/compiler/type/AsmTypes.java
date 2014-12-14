@@ -9,7 +9,7 @@ public class AsmTypes {
 
     private static final Map<Class<?>, Type> asmTypeCache = new HashMap<> ();
 
-    public static Type getAsmType (Class<?> cl) {
+    public static synchronized Type getAsmType (Class<?> cl) {
         Type cachedType = asmTypeCache.get (cl);
         if (cachedType == null) {
             cachedType = Type.getType (cl);

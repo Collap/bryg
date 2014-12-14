@@ -5,12 +5,10 @@ import io.collap.bryg.compiler.ast.Node;
 import io.collap.bryg.compiler.ast.expression.Expression;
 import io.collap.bryg.compiler.bytecode.BrygMethodVisitor;
 import io.collap.bryg.compiler.context.Context;
+import io.collap.bryg.compiler.scope.LocalVariable;
+import io.collap.bryg.compiler.type.*;
 import io.collap.bryg.compiler.visitor.StandardVisitor;
 import io.collap.bryg.compiler.scope.Scope;
-import io.collap.bryg.compiler.scope.Variable;
-import io.collap.bryg.compiler.type.Type;
-import io.collap.bryg.compiler.type.TypeHelper;
-import io.collap.bryg.compiler.type.TypeInterpreter;
 import io.collap.bryg.compiler.util.IdUtil;
 import io.collap.bryg.exception.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -24,10 +22,11 @@ import static bryg.org.objectweb.asm.Opcodes.*;
 public class EachStatement extends Node {
 
     private boolean isArray;
-    private Variable iterator;
-    private Variable element;
-    private Variable index;
+    private LocalVariable iterator;
+    private LocalVariable element;
+    private LocalVariable index;
     private Expression collectionExpression;
+    private CompiledType collectionType;
     private Node statementOrBlock;
 
     public EachStatement (Context context, BrygParser.EachStatementContext ctx) {
@@ -44,7 +43,11 @@ public class EachStatement extends Node {
         Scope scope = context.getCurrentScope ().createSubScope ();
         context.setCurrentScope (scope);
 
-        Type collectionType = collectionExpression.getType ();
+        if (!(collectionExpression.getType () instanceof CompiledType)) {
+            throw new BrygJitException ("Can't call a Java method on a non-Java type.", getLine ());
+        }
+
+        collectionType = ((CompiledType) collectionExpression.getType ());
         BrygParser.TypeContext typeContext = headCtx.type ();
         Type declaredElementType = null;
         if (typeContext != null) {
@@ -55,7 +58,7 @@ public class EachStatement extends Node {
         Class<?> elementClass = collectionType.getJavaType ().getComponentType (); /* Assuming the collection is an array. */
         if (elementClass != null) {
             isArray = true;
-            elementType = new Type (elementClass);
+            elementType = Types.fromClass (elementClass);
         }else {
             isArray = false;
 
@@ -84,18 +87,20 @@ public class EachStatement extends Node {
         /* Register variable(s). */
         if (!isArray) {
             /* Register iterator out of scope. */
-            Type iteratorType = new Type (Iterator.class);
-            iterator = new Variable (iteratorType, "", false); /* Immutable. */
-            iterator.setId (context.getRootScope ().calculateNextId (iteratorType));
+            Type iteratorType = Types.fromClass (Iterator.class);
+            iterator = new LocalVariable (iteratorType, "", false); /* Immutable. */
+            iterator.setId (context.getHighestLocalScope ().calculateNextId (iteratorType));
         }
 
         String variableName = IdUtil.idToString (headCtx.element);
-        element = scope.registerVariable (new Variable (elementType, variableName, false)); /* Immutable. */
+        element = new LocalVariable (elementType, variableName, false); /* Immutable. */
+        scope.registerLocalVariable (element);
 
         BrygParser.IdContext indexCtx = headCtx.index;
         if (indexCtx != null) {
             String indexName = IdUtil.idToString (indexCtx);
-            index = scope.registerVariable (new Variable (new Type (Integer.TYPE), indexName, false)); /* Immutable. */
+            index = new LocalVariable (Types.fromClass (Integer.TYPE), indexName, false); /* Immutable. */
+            scope.registerLocalVariable (index);
         }
 
         BrygParser.StatementOrBlockContext statementOrBlockCtx = ctx.statementOrBlock ();
@@ -124,7 +129,7 @@ public class EachStatement extends Node {
             collectionExpression.compile ();
             // -> Iterable
 
-            mv.visitMethodInsn (INVOKEINTERFACE, collectionExpression.getType ().getAsmType ().getInternalName (),
+            mv.visitMethodInsn (INVOKEINTERFACE, collectionExpression.getType ().getInternalName (),
                     "iterator", TypeHelper.generateMethodDesc (null, Iterator.class), true);
             // Iterable -> Iterator
 
@@ -149,11 +154,11 @@ public class EachStatement extends Node {
             mv.visitVarInsn (ALOAD, iterator.getId ());
             // -> Iterator
 
-            mv.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getAsmType ().getInternalName (),
+            mv.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getInternalName (),
                     "next", TypeHelper.generateMethodDesc (null, Object.class), true);
             // Iterator -> Object
 
-            mv.visitTypeInsn (CHECKCAST, element.getType ().getAsmType ().getInternalName ());
+            mv.visitTypeInsn (CHECKCAST, element.getType ().getInternalName ());
             // Object -> String
 
             mv.visitVarInsn (ASTORE, element.getId ());
@@ -172,8 +177,8 @@ public class EachStatement extends Node {
             mv.visitVarInsn (ALOAD, iterator.getId ());
             // -> Iterator
 
-            mv.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getAsmType ().getInternalName (),
-                    "hasNext", TypeHelper.generateMethodDesc (null, new Type (Boolean.TYPE)), true);
+            mv.visitMethodInsn (INVOKEINTERFACE, iterator.getType ().getInternalName (),
+                    "hasNext", TypeHelper.generateMethodDesc (null, Types.fromClass (Boolean.TYPE)), true);
             // Iterator -> int
 
             mv.visitJumpInsn (IFNE, blockLabel); /* true: jump */

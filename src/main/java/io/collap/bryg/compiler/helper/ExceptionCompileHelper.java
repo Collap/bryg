@@ -14,7 +14,7 @@ public class ExceptionCompileHelper extends ObjectCompileHelper {
     }
 
     public void compileThrow (String message) {
-        String exceptionInternalName = type.getAsmType ().getInternalName ();
+        String exceptionInternalName = type.getInternalName ();
         mv.visitTypeInsn (NEW, exceptionInternalName);
         mv.visitInsn (DUP);
         // -> InvalidParameterException, InvalidParameterException

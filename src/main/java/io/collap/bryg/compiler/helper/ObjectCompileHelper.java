@@ -29,7 +29,7 @@ public class ObjectCompileHelper extends CompileHelper {
      * -> Object
      */
     public void compileNew (String constructorDesc, @Nullable List<Node> arguments) {
-        String internalTypeName = type.getAsmType ().getInternalName ();
+        String internalTypeName = type.getInternalName ();
 
         mv.visitTypeInsn (NEW, internalTypeName);
         // -> Object
@@ -50,7 +50,7 @@ public class ObjectCompileHelper extends CompileHelper {
     public void compileInvokeVirtual (String methodName, String methodDesc) {
         // TODO: Check if the method exists.
 
-        mv.visitMethodInsn (INVOKEVIRTUAL, type.getAsmType ().getInternalName (), methodName, methodDesc, false);
+        mv.visitMethodInsn (INVOKEVIRTUAL, type.getInternalName (), methodName, methodDesc, false);
     }
 
 }

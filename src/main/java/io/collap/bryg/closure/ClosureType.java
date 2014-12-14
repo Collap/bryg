@@ -7,16 +7,11 @@ import io.collap.bryg.unit.UnitType;
 
 public class ClosureType extends UnitType {
 
-    // TODO: Find a way to make these fields optional (only compiled if needed), for obvious performance reasons.
-    public static final String PARENT_FIELD_NAME = "__parent";
-    public static final String PARENT_MODEL_FIELD_NAME = "__parent_model";
-
     private TemplateType parentTemplateType;
     private ClosureScope closureScope;
     private BrygParser.ClosureContext closureContext;
 
     private Class<? extends Closure> closureClass;
-    private String constructorDesc;
 
     public ClosureType (TemplateType parentTemplateType, String className, ClosureScope closureScope,
                         BrygParser.ClosureContext closureContext) {
@@ -24,6 +19,11 @@ public class ClosureType extends UnitType {
         this.parentTemplateType = parentTemplateType;
         this.closureScope = closureScope;
         this.closureContext = closureContext;
+    }
+
+    @Override
+    public Class<?> getStandardUnitClass () {
+        return StandardClosure.class;
     }
 
     public ClosureScope getClosureScope () {
@@ -40,14 +40,6 @@ public class ClosureType extends UnitType {
 
     public void setClosureClass (Class<? extends Closure> closureClass) {
         this.closureClass = closureClass;
-    }
-
-    public String getConstructorDesc () {
-        return constructorDesc;
-    }
-
-    public void setConstructorDesc (String constructorDesc) {
-        this.constructorDesc = constructorDesc;
     }
 
     @Override

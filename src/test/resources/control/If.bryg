@@ -3,6 +3,7 @@ in int number
 html
   head
     title
+      number
       if (number == 42): Hello 42!
       else: Hello other number!
   body
