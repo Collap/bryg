@@ -1,6 +1,6 @@
 package io.collap.bryg.test.control;
 
-import io.collap.bryg.model.Model;
+import io.collap.bryg.Model;
 import io.collap.bryg.test.TemplateTest;
 
 public class IfTest extends TemplateTest {

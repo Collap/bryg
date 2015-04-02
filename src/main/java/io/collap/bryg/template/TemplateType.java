@@ -1,11 +1,13 @@
 package io.collap.bryg.template;
 
-import io.collap.bryg.compiler.scope.VariableInfo;
-import io.collap.bryg.environment.Environment;
-import io.collap.bryg.model.Model;
+import io.collap.bryg.internal.ParameterInfo;
+import io.collap.bryg.Template;
+import io.collap.bryg.Environment;
+import io.collap.bryg.Model;
+import io.collap.bryg.internal.StandardTemplate;
 import io.collap.bryg.parser.BrygParser;
-import io.collap.bryg.unit.FragmentInfo;
-import io.collap.bryg.unit.UnitType;
+import io.collap.bryg.internal.FragmentInfo;
+import io.collap.bryg.internal.UnitType;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ public class TemplateType extends UnitType {
     private Class<? extends Template> templateClass;
     private Constructor<? extends Template> constructor;
 
-    private List<VariableInfo> generalParameters;
+    private List<ParameterInfo> generalParameters;
 
     /* These fields can be used when the template type has been created, but the
        template has not been fully compiled. Is set to null after compilation. */

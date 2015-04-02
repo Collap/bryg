@@ -1,15 +1,15 @@
 package io.collap.bryg.test;
 
-import io.collap.bryg.compiler.Configuration;
-import io.collap.bryg.compiler.library.BasicLibrary;
-import io.collap.bryg.compiler.library.Library;
-import io.collap.bryg.compiler.resolver.ClassResolver;
-import io.collap.bryg.compiler.resolver.PrefixFilter;
-import io.collap.bryg.environment.Environment;
-import io.collap.bryg.environment.StandardEnvironment;
-import io.collap.bryg.loader.FileSourceLoader;
-import io.collap.bryg.loader.SourceLoader;
-import io.collap.bryg.model.GlobalVariableModel;
+import io.collap.bryg.internal.compiler.Configuration;
+import io.collap.bryg.library.BasicLibrary;
+import io.collap.bryg.library.Library;
+import io.collap.bryg.ClassResolver;
+import io.collap.bryg.PrefixFilter;
+import io.collap.bryg.Environment;
+import io.collap.bryg.internal.StandardEnvironment;
+import io.collap.bryg.FileSourceLoader;
+import io.collap.bryg.SourceLoader;
+import io.collap.bryg.GlobalVariableModel;
 import io.collap.bryg.test.object.TestObject;
 
 import java.io.File;

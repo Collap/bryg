@@ -8,7 +8,7 @@ archivesBaseName = 'bryg'
 version = '0.5-dev'
 group = 'io.collap.bryg'
 
-sourceCompatibility = 1.7
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()

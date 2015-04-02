@@ -1,7 +1,7 @@
 package io.collap.bryg.test.control;
 
-import io.collap.bryg.closure.StandardClosure;
-import io.collap.bryg.model.Model;
+import io.collap.bryg.internal.StandardClosure;
+import io.collap.bryg.Model;
 import io.collap.bryg.test.Domain;
 import io.collap.bryg.test.TemplateTest;
 

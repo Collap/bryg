@@ -1,9 +1,9 @@
 package io.collap.bryg.test;
 
-import io.collap.bryg.model.BasicModel;
-import io.collap.bryg.template.Template;
-import io.collap.bryg.model.Model;
-import io.collap.bryg.template.TemplateFactory;
+import io.collap.bryg.MapModel;
+import io.collap.bryg.Template;
+import io.collap.bryg.Model;
+import io.collap.bryg.TemplateFactory;
 import io.collap.bryg.test.object.TestController;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,7 +72,7 @@ public abstract class TemplateTest {
     }
 
     private Model createModel () {
-        Model model = new BasicModel ();
+        Model model = new MapModel();
         configureModel (model);
         return model;
     }

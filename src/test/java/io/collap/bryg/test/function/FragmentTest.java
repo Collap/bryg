@@ -1,8 +1,8 @@
 package io.collap.bryg.test.function;
 
-import io.collap.bryg.model.BasicModel;
-import io.collap.bryg.model.Model;
-import io.collap.bryg.template.Template;
+import io.collap.bryg.MapModel;
+import io.collap.bryg.Model;
+import io.collap.bryg.Template;
 import io.collap.bryg.test.TemplateTest;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ public class FragmentTest extends TemplateTest{
     protected void render (Template template, Model model) throws IOException {
         super.render (template, model);
 
-        Model headModel = new BasicModel ();
+        Model headModel = new MapModel();
         headModel.setVariable ("name", "Marco");
 
         StringWriter writer = new StringWriter ();

@@ -1,6 +1,6 @@
 package io.collap.bryg.test.expression;
 
-import io.collap.bryg.model.Model;
+import io.collap.bryg.Model;
 import io.collap.bryg.test.TemplateTest;
 
 public class ReferenceTest extends TemplateTest {

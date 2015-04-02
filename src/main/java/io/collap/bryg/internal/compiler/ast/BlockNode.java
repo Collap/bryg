@@ -1,0 +1,35 @@
+package io.collap.bryg.internal.compiler.ast;
+
+import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.scope.Scope;
+import io.collap.bryg.parser.BrygParser;
+import org.antlr.v4.runtime.tree.ParseTree;
+
+public class BlockNode extends InnerNode {
+
+    public BlockNode (Context context, BrygParser.BlockContext ctx) {
+        super (context);
+
+        addChildrenWithScope (ctx, context.getCurrentScope ().createSubScope ());
+    }
+
+    protected void addChildrenWithScope (BrygParser.BlockContext ctx, Scope scope) {
+        context.setCurrentScope (scope);
+
+        for (ParseTree tree : ctx.children) {
+            if (tree instanceof BrygParser.StatementContext) {
+                children.add (new StatementNode (context, ((BrygParser.StatementContext) tree)));
+            }
+        }
+
+        context.setCurrentScope (scope.getParent ());
+    }
+
+    /**
+     * Creates an empty block.
+     */
+    public BlockNode (Context context) {
+        super (context);
+    }
+
+}
