@@ -33,4 +33,4 @@ Note that for example the ``+=`` operator does not behave exactly like the equiv
   double d = 37.0
   i += d
 
-The equivalent code in bryg would not be valid, because we can't cast a ``double`` down to an ``int`` implicitly. We believe that coercion rules should behave consistently, regardless of the syntax used, so this is an intentional "fix" for the inconsistent Java coercion.
+The equivalent code in bryg would not be valid, because we can't cast a ``double`` down to an ``int`` implicitly. We believe that every conversion beyond basic coercion should be visible at all times, so this is an intentional "fix" for the Java equivalent, where those composites are defined as ``a = (A)(a op b)``.

@@ -58,7 +58,7 @@ Fields may also have default values:
 
 .. todo::
 
-  Allow constants?
+  Allow constants? (NOT static mutable fields, this would possibly lead to numerous problems regarding class loaders.)
 
 
 Template Constructors

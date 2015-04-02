@@ -27,6 +27,9 @@ You can specify a type. This is necessary when a type can not be inferred from t
 
 To allow the compiler to infer a type, you can initialise the variable directly. **Currently**, this is mandatory, as default values are not implemented yet. In the **future**, this will still be mandatory for immutable variables and variables with types that do not have a default value (such as objects without a parameterless constructor).
 
+.. todo::
+  We need some notion of nullability for variables and fields as well!
+
 
 Variable Expressions
 --------------------

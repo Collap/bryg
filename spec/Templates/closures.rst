@@ -8,7 +8,7 @@ The closure captures variables declared outside the closure as fields. Captured 
 
 Closure Types
 -------------
-The type of every closure is `Closure`, with an **mandatory** list of all parameters:
+The type of every closure is `Closure`, with a **mandatory** list of all parameters:
 
 .. code-block:: bryg
 
