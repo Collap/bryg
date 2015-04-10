@@ -2,7 +2,7 @@ package io.collap.bryg.internal.compiler.ast.expression;
 
 import io.collap.bryg.internal.compiler.ast.BlockNode;
 import io.collap.bryg.internal.compiler.ast.Node;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.module.Function;
 import io.collap.bryg.internal.compiler.util.FunctionUtil;
 import io.collap.bryg.internal.compiler.util.IdUtil;
@@ -20,46 +20,46 @@ public class FunctionCallExpression extends Expression {
     private List<ArgumentExpression> argumentExpressions;
     private Node statementOrBlock;
 
-    public FunctionCallExpression (Context context, BrygParser.BlockFunctionCallContext ctx) {
-        super (context);
+    public FunctionCallExpression (CompilationContext compilationContext, BrygParser.BlockFunctionCallContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
         initFunction (IdUtil.idToString (ctx.id ()));
-        statementOrBlock = context.getParseTreeVisitor ().visitBlock (ctx.block ());
+        statementOrBlock = compilationContext.getParseTreeVisitor ().visitBlock (ctx.block ());
         initArguments (ctx.argumentList ());
     }
 
-    public FunctionCallExpression (Context context, BrygParser.FunctionCallContext ctx) {
-        super (context);
+    public FunctionCallExpression (CompilationContext compilationContext, BrygParser.FunctionCallContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
         initFunction (IdUtil.idToString (ctx.id ()));
-        statementOrBlock = new BlockNode (context);
+        statementOrBlock = new BlockNode (compilationContext);
         initArguments (ctx.argumentList ());
     }
 
-    public FunctionCallExpression (Context context, BrygParser.StatementFunctionCallContext ctx) {
-        super (context);
+    public FunctionCallExpression (CompilationContext compilationContext, BrygParser.StatementFunctionCallContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
         initFunction (IdUtil.idToString (ctx.id ()));
-        statementOrBlock = context.getParseTreeVisitor ().visitStatement (ctx.statement ());
+        statementOrBlock = compilationContext.getParseTreeVisitor ().visitStatement (ctx.statement ());
         initArguments (ctx.argumentList ());
     }
 
-    public FunctionCallExpression (Context context, Function function, int line) {
-        super (context);
+    public FunctionCallExpression (CompilationContext compilationContext, Function function, int line) {
+        super (compilationContext);
         setLine (line);
 
         this.function = function;
-        statementOrBlock = new BlockNode (context);
+        statementOrBlock = new BlockNode (compilationContext);
         initArguments (null);
 
         setType (function.getReturnType ());
     }
 
     private void initFunction (String name) {
-        function = context.getEnvironment ().getLibrary ().getFunction (name);
+        function = compilationContext.getEnvironment ().getLibrary ().getFunction (name);
         if (function == null) {
             throw new BrygJitException ("Function '" + name + "' not found!", getLine ());
         }
@@ -74,7 +74,7 @@ public class FunctionCallExpression extends Expression {
      */
     private void initArguments (@Nullable BrygParser.ArgumentListContext argumentListCtx) {
         if (argumentListCtx != null) {
-            argumentExpressions = FunctionUtil.parseArgumentList (context, argumentListCtx);
+            argumentExpressions = FunctionUtil.parseArgumentList (compilationContext, argumentListCtx);
         }else {
             argumentExpressions = new ArrayList<> ();
         }
@@ -82,7 +82,7 @@ public class FunctionCallExpression extends Expression {
 
     @Override
     public void compile () {
-        function.compile (context, this);
+        function.compile (compilationContext, this);
     }
 
     public List<ArgumentExpression> getArgumentExpressions () {

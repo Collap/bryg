@@ -1,63 +1,64 @@
 package io.collap.bryg.internal.compiler.ast.expression;
 
-import io.collap.bryg.internal.compiler.ast.AccessMode;
+import io.collap.bryg.Nullness;
+import io.collap.bryg.internal.*;
 import io.collap.bryg.internal.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
-import io.collap.bryg.internal.scope.Variable;
-import io.collap.bryg.internal.scope.VariableInfo;
-import io.collap.bryg.internal.Type;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.TypeHelper;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.internal.compiler.util.OperationUtil;
 import io.collap.bryg.InvalidInputParameterException;
+
+import javax.annotation.Nullable;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 import static bryg.org.objectweb.asm.Opcodes.CHECKCAST;
 
 public class ModelLoadExpression extends Expression {
 
-    private VariableInfo info;
-    private Variable model;
+    private VariableInfo target; // TODO: Allow the model load expression to take a parameter info as well, to support default values
+                                 // (Or alternatively just add another (nullable) attribute for a default value)
+    private CompiledVariable modelVariable;
 
-    /**
-     *
-     */
-    public ModelLoadExpression (Context context, VariableInfo info, Variable model) {
-        super (context);
-        setLine (-1);
-        setType (info.getType ());
+    public ModelLoadExpression(CompilationContext compilationContext, VariableInfo target,
+                               CompiledVariable modelVariable) {
+        super(compilationContext);
+        setLine(-1); // TODO: There can definitely be a line here for normal fragments.
+        setType(target.getType());
 
-        this.info = info;
-        this.model = model;
+        this.target = target;
+        this.modelVariable = modelVariable;
     }
 
     @Override
-    public void compile () {
+    public void compile() {
         /* Get, check, cast and store variable. */
-        loadVariable ();
+        loadVariable();
         // -> Object
 
-        if (!info.isNullable ()) ifNullThrowException ();
+        if (target.getNullness() == Nullness.nullable) {
+            ifNullThrowException();
+        }
 
-        cast ();
+        cast();
     }
 
-    private void loadVariable () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+    private void loadVariable() {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
 
-        new VariableExpression (context, getLine (), model, AccessMode.get).compile ();
+        modelVariable.compile(compilationContext, VariableUsageInfo.withGetMode());
         // -> Model
 
-        mv.visitLdcInsn (info.getName ());
+        mv.visitLdcInsn(target.getName());
         // -> String
 
-        boolean isInterface = model.getType ().isInterface ();
-        mv.visitMethodInsn (isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
-                model.getType ().getInternalName (),
+        boolean isInterface = modelVariable.getType().isInterface();
+        mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
+                modelVariable.getType().getInternalName(),
                 "getVariable",
-                TypeHelper.generateMethodDesc (
+                TypeHelper.generateMethodDesc(
                         new Class<?>[]{String.class},
                         Object.class
                 ),
@@ -65,27 +66,28 @@ public class ModelLoadExpression extends Expression {
         // Model, String -> Object
     }
 
-    private void ifNullThrowException () {
-        OperationUtil.compileIfNullThrowException (context.getMethodVisitor (),
-                Types.fromClass (InvalidInputParameterException.class),
-                info.getName () + " could not be loaded!");
+    private void ifNullThrowException() {
+        OperationUtil.compileIfNullThrowException(compilationContext.getMethodVisitor(),
+                Types.fromClass(InvalidInputParameterException.class),
+                target.getName() + " could not be loaded!");
     }
 
     // TODO: Coercion here?
-    private void cast () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+    private void cast() {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-        Type expectedType = info.getType ();
-        Type wrapperType = expectedType.getWrapperType ();
+        Type expectedType = target.getType();
+        @Nullable Type wrapperType = expectedType.getWrapperType();
 
         if (wrapperType != null) {
-            mv.visitTypeInsn (CHECKCAST, wrapperType.getInternalName ());
+            mv.visitTypeInsn(CHECKCAST, wrapperType.getInternalName());
             // Object -> T
 
-            new UnboxingExpression (context, new DummyExpression (context, wrapperType, getLine ()), expectedType).compile ();
+            new UnboxingExpression(compilationContext, new DummyExpression(compilationContext, wrapperType,
+                    getLine()), expectedType).compile();
             // T -> primitive
-        }else {
-            mv.visitTypeInsn (CHECKCAST, info.getType ().getInternalName ());
+        } else {
+            mv.visitTypeInsn(CHECKCAST, target.getType().getInternalName());
             // Object -> T
         }
     }

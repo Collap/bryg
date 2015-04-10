@@ -3,7 +3,7 @@ package io.collap.bryg.internal.compiler.ast.expression.bitwise;
 import io.collap.bryg.internal.compiler.ast.expression.BinaryExpression;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.util.CoercionUtil;
 import io.collap.bryg.internal.compiler.util.Pair;
 import io.collap.bryg.BrygJitException;
@@ -11,19 +11,19 @@ import io.collap.bryg.parser.BrygParser;
 
 public abstract class BinaryBitwiseExpression extends BinaryExpression {
 
-    protected BinaryBitwiseExpression (Context context, BrygParser.ExpressionContext leftCtx,
+    protected BinaryBitwiseExpression (CompilationContext compilationContext, BrygParser.ExpressionContext leftCtx,
                                        BrygParser.ExpressionContext rightCtx) {
-        super (context, leftCtx, rightCtx);
+        super (compilationContext, leftCtx, rightCtx);
         init ();
     }
 
-    protected BinaryBitwiseExpression (Context context, Expression left, Expression right, int line) {
-        super (context, left, right, line);
+    protected BinaryBitwiseExpression (CompilationContext compilationContext, Expression left, Expression right, int line) {
+        super (compilationContext, left, right, line);
         init ();
     }
 
     private void init () {
-        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (context, left, right);
+        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (compilationContext, left, right);
         left = result.a;
         right = result.b;
         setType (left.getType ());
@@ -36,7 +36,7 @@ public abstract class BinaryBitwiseExpression extends BinaryExpression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         left.compile ();
         right.compile ();

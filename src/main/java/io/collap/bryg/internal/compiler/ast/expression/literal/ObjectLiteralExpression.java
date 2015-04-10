@@ -1,14 +1,14 @@
 package io.collap.bryg.internal.compiler.ast.expression.literal;
 
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.Types;
 
 import static bryg.org.objectweb.asm.Opcodes.ACONST_NULL;
 
 public class ObjectLiteralExpression extends LiteralExpression {
 
-    public ObjectLiteralExpression (Context context, Object value, int line) {
-        super (context, line);
+    public ObjectLiteralExpression (CompilationContext compilationContext, Object value, int line) {
+        super (compilationContext, line);
         setType (Types.fromClass (Object.class));
 
         this.value = value;
@@ -16,7 +16,7 @@ public class ObjectLiteralExpression extends LiteralExpression {
 
     @Override
     public void compile () {
-        context.getMethodVisitor ().visitInsn (ACONST_NULL);
+        compilationContext.getMethodVisitor ().visitInsn (ACONST_NULL);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package io.collap.bryg.internal.compiler.ast.expression.coercion;
 
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.CompiledType;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.TypeHelper;
@@ -32,8 +32,8 @@ public class UnboxingExpression extends Expression {
 
     private Expression child;
 
-    public UnboxingExpression (Context context, Expression child, Type unboxedType) {
-        super (context);
+    public UnboxingExpression (CompilationContext compilationContext, Expression child, Type unboxedType) {
+        super (compilationContext);
         setLine (child.getLine ());
         setType (unboxedType);
         this.child = child;
@@ -53,7 +53,7 @@ public class UnboxingExpression extends Expression {
         child.compile ();
         // -> T
 
-        context.getMethodVisitor ().visitMethodInsn (INVOKEVIRTUAL, boxTypeName, valueMethodName,
+        compilationContext.getMethodVisitor ().visitMethodInsn (INVOKEVIRTUAL, boxTypeName, valueMethodName,
                 TypeHelper.generateMethodDesc (
                         null,
                         type

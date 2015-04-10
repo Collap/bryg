@@ -2,7 +2,7 @@ package io.collap.bryg.internal.compiler.ast.expression.arithmetic;
 
 import bryg.org.objectweb.asm.Opcodes;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.util.StringBuilderCompileHelper;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.parser.BrygParser;
@@ -12,13 +12,13 @@ import io.collap.bryg.parser.BrygParser;
  */
 public class BinaryAdditionExpression extends BinaryArithmeticExpression {
 
-    public BinaryAdditionExpression (Context context, BrygParser.ExpressionContext leftCtx,
+    public BinaryAdditionExpression (CompilationContext compilationContext, BrygParser.ExpressionContext leftCtx,
                                      BrygParser.ExpressionContext rightCtx) {
-        super (context, leftCtx, rightCtx);
+        super (compilationContext, leftCtx, rightCtx);
     }
 
-    public BinaryAdditionExpression (Context context, Expression left, Expression right, int line) {
-        super (context, left, right, line);
+    public BinaryAdditionExpression (CompilationContext compilationContext, Expression left, Expression right, int line) {
+        super (compilationContext, left, right, line);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class BinaryAdditionExpression extends BinaryArithmeticExpression {
     }
 
     private void buildString () {
-        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (context.getMethodVisitor ());
+        StringBuilderCompileHelper stringBuilder = new StringBuilderCompileHelper (compilationContext.getMethodVisitor ());
 
         stringBuilder.compileNew ();
         stringBuilder.compileAppend (left);

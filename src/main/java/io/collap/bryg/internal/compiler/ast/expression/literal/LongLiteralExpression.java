@@ -1,13 +1,13 @@
 package io.collap.bryg.internal.compiler.ast.expression.literal;
 
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 public class LongLiteralExpression extends LiteralExpression {
 
-    public LongLiteralExpression (Context context, BrygParser.LongLiteralContext ctx) {
-        super (context, ctx.getStart ().getLine ());
+    public LongLiteralExpression (CompilationContext compilationContext, BrygParser.LongLiteralContext ctx) {
+        super (compilationContext, ctx.getStart ().getLine ());
         setType (Types.fromClass (Long.TYPE));
 
         /* Remove suffix. */

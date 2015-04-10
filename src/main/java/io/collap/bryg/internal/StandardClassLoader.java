@@ -1,58 +1,44 @@
 package io.collap.bryg.internal;
 
-import io.collap.bryg.Unit;
 import io.collap.bryg.internal.compiler.Compiler;
 
-import java.util.Stack;
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public final class StandardClassLoader extends ClassLoader {
 
-    /**
-     * This is the prefix of any unit class.
-     */
-    public static final String unitNamePrefix = "bryg.";
-
-    private StandardEnvironment environment;
-    private Stack<Compiler<?>> compilerStack;
+    private final StandardEnvironment environment;
+    private final LinkedList<Compiler<?>> compilers = new LinkedList<>();
 
     public StandardClassLoader(StandardEnvironment environment) {
-        this (StandardClassLoader.class.getClassLoader(), environment);
+        this(StandardClassLoader.class.getClassLoader(), environment);
     }
 
     public StandardClassLoader(ClassLoader parent, StandardEnvironment environment) {
         super(parent);
         this.environment = environment;
-        this.compilerStack = new Stack<>();
     }
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (!name.startsWith(unitNamePrefix)) {
-            /* Try to load with default class loader. */
-            System.out.println("TemplateClassLoader was requested to load '" + name + "'," +
-                    " which does not have the mandatory prefix (" + unitNamePrefix + ")." +
-                    "Attempting to use system class loader.");
-            return Class.forName(name);
-        }
-
-        if (compilerStack.empty()) {
-            throw new IllegalStateException("The compiler stack is empty, ");
-        }
-
-        // Only peek, since cleanup is performed manually. This also handles the case
-        // where the compiler might only be used to get the name of the compiled unit,
-        // in which case the compiler must not yet be popped.
-        Compiler compiler = compilerStack.peek();
-
-        String expectedName = compiler.getUnitType().getFullName();
-        if (!name.equals(expectedName)) {
-            // Try to load class from cache.
-            // TODO: Probably obsolete now that there is only one class loader per environment.
-            Class<? extends Unit> cl = environment.getClassCache ().getClass (name);
-            if (cl == null) {
-                throw new ClassNotFoundException ("The expected unit class '" + name + "' could not fetched from the cache.");
+        // Find a compiler that matches the name of the class which loading is requested.
+        @Nullable Compiler<?> compiler = null;
+        synchronized (compilers) {
+            Iterator<Compiler<?>> iterator = compilers.listIterator();
+            while (iterator.hasNext()) {
+                Compiler<?> nextCompiler = iterator.next();
+                if (nextCompiler.getUnitType().getFullName().equals(name)) {
+                    // Choose the compiler and remove it from the list.
+                    compiler = nextCompiler;
+                    iterator.remove();
+                }
             }
-            return cl;
+        }
+
+        // No compiler for the requested name has been found.
+        if (compiler == null) {
+            return super.findClass(name);
         }
 
         System.out.println("Class name: " + name);
@@ -62,25 +48,12 @@ public final class StandardClassLoader extends ClassLoader {
     }
 
     /**
-     * Pushes a compiler to the compiler stack. This marks it as the first compiler to be invoked.
+     * Adds a compiler to the expected list. It will be removed once the compilation is done.
      */
-    public void pushCompiler(Compiler compiler) {
-        compilerStack.push(compiler);
-    }
-
-    /**
-     * Pops the top compiler from the stack. This method must be invoked for cleanup purposes.
-     */
-    public void popCompiler() {
-        compilerStack.pop();
-    }
-
-    public static String getPrefixedName (String prefixlessName) {
-        return unitNamePrefix + prefixlessName;
-    }
-
-    public static String getPrefixlessName (String name) {
-        return name.substring (unitNamePrefix.length ());
+    public void addCompiler(Compiler compiler) {
+        synchronized (compilers) {
+            compilers.addFirst(compiler);
+        }
     }
 
 }

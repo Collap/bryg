@@ -8,7 +8,7 @@ import io.collap.bryg.internal.compiler.ast.expression.bitwise.BinaryBitwiseXorE
 import io.collap.bryg.internal.compiler.ast.expression.shift.BinarySignedLeftShiftExpression;
 import io.collap.bryg.internal.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
 import io.collap.bryg.internal.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.scope.Variable;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.Types;
@@ -27,8 +27,8 @@ public class BinaryAssignmentExpression extends BinaryExpression {
      */
     private boolean compileRight;
 
-    public BinaryAssignmentExpression (Context context, BrygParser.BinaryAssignmentExpressionContext ctx) {
-        super (context, ctx.getStart ().getLine ());
+    public BinaryAssignmentExpression (CompilationContext compilationContext, BrygParser.BinaryAssignmentExpressionContext ctx) {
+        super (compilationContext, ctx.getStart ().getLine ());
         setType (Types.fromClass (Void.TYPE)); // TODO: Implement as proper expression?
 
         /* Get operator. */
@@ -43,7 +43,7 @@ public class BinaryAssignmentExpression extends BinaryExpression {
             BrygParser.VariableExpressionContext variableCtx = (BrygParser.VariableExpressionContext) leftCtx;
             String variableName = IdUtil.idToString (variableCtx.variable ().id ());
             int variableLine = ctx.getStart ().getLine ();
-            Variable variable = context.getCurrentScope ().getVariable (variableName);
+            Variable variable = compilationContext.getCurrentScope ().getVariable (variableName);
             if (variable == null) {
                 throw new BrygJitException ("Variable '" + variableName + "' not found.", variableLine);
             }
@@ -52,21 +52,21 @@ public class BinaryAssignmentExpression extends BinaryExpression {
                 throw new BrygJitException ("Variable '" + variableName + "' is not mutable.", variableLine);
             }
 
-            left = new VariableExpression (context, variableLine,variable, AccessMode.set);
+            left = new VariableExpression (compilationContext, variableLine,variable, AccessMode.set);
             expectedType = variable.getType ();
 
             if (operator != BrygLexer.ASSIGN) {
-                leftGet = new VariableExpression (context, variableLine, variable, AccessMode.get);
+                leftGet = new VariableExpression (compilationContext, variableLine, variable, AccessMode.get);
             }
         }else if (leftCtx instanceof BrygParser.AccessExpressionContext) {
             BrygParser.AccessExpressionContext accessCtx = (BrygParser.AccessExpressionContext) leftCtx;
             try {
-                AccessExpression accessExpression = new AccessExpression (context, accessCtx, AccessMode.set);
+                AccessExpression accessExpression = new AccessExpression (compilationContext, accessCtx, AccessMode.set);
                 expectedType = Types.fromClass (accessExpression.getField ().getType ());
                 left = accessExpression;
 
                 if (operator != BrygLexer.ASSIGN) {
-                    leftGet = new AccessExpression (context, accessCtx, AccessMode.get);
+                    leftGet = new AccessExpression (compilationContext, accessCtx, AccessMode.get);
                 }
             } catch (NoSuchFieldException e) {
                 e.printStackTrace (); // TODO: Log properly. (Fix with Improved Error Handling)
@@ -76,43 +76,43 @@ public class BinaryAssignmentExpression extends BinaryExpression {
             throw new BrygJitException ("The assignment expression does not include a assignable left hand expression!", getLine ());
         }
 
-        right = (Expression) context.getParseTreeVisitor ().visit (ctx.expression (1));
+        right = (Expression) compilationContext.getParseTreeVisitor ().visit (ctx.expression (1));
 
         /* Handle +=, -=, etc. cases. */
         if (operator != BrygLexer.ASSIGN) {
             switch (operator) {
                 case BrygLexer.ADD_ASSIGN:
-                    right = new BinaryAdditionExpression (context, leftGet, right, getLine ());
+                    right = new BinaryAdditionExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.SUB_ASSIGN:
-                    right = new BinarySubtractionExpression (context, leftGet, right, getLine ());
+                    right = new BinarySubtractionExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.MUL_ASSIGN:
-                    right = new BinaryMultiplicationExpression (context, leftGet, right, getLine ());
+                    right = new BinaryMultiplicationExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.DIV_ASSIGN:
-                    right = new BinaryDivisionExpression (context, leftGet, right, getLine ());
+                    right = new BinaryDivisionExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.REM_ASSIGN:
-                    right = new BinaryRemainderExpression (context, leftGet, right, getLine ());
+                    right = new BinaryRemainderExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.BAND_ASSIGN:
-                    right = new BinaryBitwiseAndExpression (context, leftGet, right, getLine ());
+                    right = new BinaryBitwiseAndExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.BXOR_ASSIGN:
-                    right = new BinaryBitwiseXorExpression (context, leftGet, right, getLine ());
+                    right = new BinaryBitwiseXorExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.BOR_ASSIGN:
-                    right = new BinaryBitwiseOrExpression (context, leftGet, right, getLine ());
+                    right = new BinaryBitwiseOrExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.SIG_LSHIFT_ASSIGN:
-                    right = new BinarySignedLeftShiftExpression (context, leftGet, right, getLine ());
+                    right = new BinarySignedLeftShiftExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.SIG_RSHIFT_ASSIGN:
-                    right = new BinarySignedRightShiftExpression (context, leftGet, right, getLine ());
+                    right = new BinarySignedRightShiftExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 case BrygLexer.UNSIG_RSHIFT_ASSIGN:
-                    right = new BinaryUnsignedRightShiftExpression (context, leftGet, right, getLine ());
+                    right = new BinaryUnsignedRightShiftExpression (compilationContext, leftGet, right, getLine ());
                     break;
                 default:
                     throw new BrygJitException ("Operator " + operator + " is not supported in assignments!", getLine ());
@@ -121,7 +121,7 @@ public class BinaryAssignmentExpression extends BinaryExpression {
 
         /* Possible coercion. */
         if (!expectedType.similarTo (right.getType ())) {
-            right = CoercionUtil.applyUnaryCoercion (context, right, expectedType);
+            right = CoercionUtil.applyUnaryCoercion (compilationContext, right, expectedType);
         }
 
         /* In this case 'left' takes care of compiling 'right'. */

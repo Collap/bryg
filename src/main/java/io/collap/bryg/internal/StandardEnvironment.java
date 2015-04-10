@@ -1,15 +1,10 @@
 package io.collap.bryg.internal;
 
-import io.collap.bryg.Environment;
-import io.collap.bryg.internal.compiler.Configuration;
+import io.collap.bryg.*;
 import io.collap.bryg.internal.compiler.TemplateCompiler;
 import io.collap.bryg.internal.compiler.TemplateParser;
-import io.collap.bryg.ClassResolver;
-import io.collap.bryg.Model;
-import io.collap.bryg.Template;
-import io.collap.bryg.TemplateFactory;
-import io.collap.bryg.template.TemplateType;
-import io.collap.bryg.SourceLoader;
+import io.collap.bryg.module.Member;
+import io.collap.bryg.module.Module;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -20,39 +15,63 @@ import java.util.*;
  */
 public class StandardEnvironment implements Environment {
 
-    private final Map<String, TemplateType> templateTypes = Collections.synchronizedMap(new HashMap<String, TemplateType>());
+    private final Map<String, TemplateType> templateTypes = Collections.synchronizedMap(new HashMap<>());
 
-    private Configuration configuration;
+    private Map<String, Module> modules = new HashMap<>();
+    private Map<String, Module> globalNameToModuleMap = new HashMap<>();
+    private List<SourceLoader> sourceLoaders = new ArrayList<>();
     private ClassResolver classResolver;
-    private SourceLoader sourceLoader;
-
+    private DebugConfiguration debugConfiguration = new DebugConfiguration(false, false, false, false);
 
     private StandardClassLoader standardClassLoader;
 
-
-    public StandardEnvironment(Configuration configuration, Library library, ClassResolver classResolver,
-                               SourceLoader sourceLoader) {
-        this(configuration, library, classResolver, sourceLoader, new GlobalVariableModel());
+    public void initialize() {
+        standardClassLoader = new StandardClassLoader(this);
+        // TODO: Find global module members (And put them in a Map that associates their name with their module name).
     }
 
-    public StandardEnvironment(Configuration configuration, Library library, ClassResolver classResolver,
-                               SourceLoader sourceLoader, GlobalVariableModel globalVariableModel) {
-        this.configuration = configuration;
-        this.library = library;
-        this.classResolver = classResolver;
-        this.sourceLoader = sourceLoader;
-        this.globalVariableModel = globalVariableModel;
-        this.classCache = new ClassCache();
+    public void addModule(Module module) {
+        if (modules.containsKey(module.getName())) {
+            throw new IllegalArgumentException("A module with the name " + module.getName() + " is already registered!");
+        }
+
+        // Add each member to the global member space when the module is globally visible.
+        if (module.getVisibility() == Visibility.global) {
+            Iterator<? extends Member<?>> iterator = module.getMemberIterator();
+            while (iterator.hasNext()) {
+                Member<?> member = iterator.next();
+                registerGlobalMember(module, member);
+            }
+        }
+
+        modules.put(module.getName(), module);
     }
 
-    @Override
-    public @Nullable TemplateType getTemplateType(String prefixlessName) {
-        return getTemplateTypePrefixed(StandardClassLoader.getPrefixedName(prefixlessName));
+    private void registerGlobalMember (Module module, Member<?> member) {
+        String memberName = member.getName();
+        if (globalNameToModuleMap.containsKey(memberName)) {
+            throw new RuntimeException("A member with the name '" + memberName + "' was already registered by the " +
+                    "module " + globalNameToModuleMap.get(memberName).getName() + ". Current module: " + module.getName());
+        }
+
+        globalNameToModuleMap.put(memberName, module);
     }
 
-    @Override
-    public @Nullable TemplateType getTemplateTypePrefixed(String name) {
-        TemplateType templateType = templateTypes.get(name);
+    public @Nullable Module getModule(String name) {
+        return modules.get(name);
+    }
+
+    public void addSourceLoader(SourceLoader sourceLoader) {
+        sourceLoaders.add(sourceLoader);
+    }
+
+    /**
+     * This method is thread-safe. We use a combination of a synchronized map
+     * and a synchronized parsing method to avoid making this method synchronized
+     * as well.
+     */
+    public @Nullable TemplateType getTemplateType(String name) {
+        @Nullable TemplateType templateType = templateTypes.get(name);
 
         if (templateType == null) {
             templateType = parseTemplate(name);
@@ -61,61 +80,53 @@ public class StandardEnvironment implements Environment {
         return templateType;
     }
 
-    @Override
-    public @Nullable TemplateFactory getTemplateFactory(String prefixlessName) {
-        return getTemplateFactoryPrefixed(StandardClassLoader.getPrefixedName(prefixlessName));
-    }
-
-    @Override
-    public @Nullable TemplateFactory getTemplateFactoryPrefixed(String name) {
-        TemplateType templateType = getTemplateTypePrefixed(name);
+    /**
+     * This method is thread-safe. We use a combination of a synchronized map
+     * and synchronized compilation/parsing methods to avoid making this method
+     * synchronized as well.
+     */
+    public TemplateFactory getTemplateFactory(String name) {
+        @Nullable TemplateType templateType = getTemplateType(name);
 
         if (templateType == null) {
-            return null;
+            throw new CompilationException("The template type corresponding to the template name '" + name
+                    + "' could not be loaded.");
         }
 
         if (!templateType.isCompiled()) {
             boolean success = compileTemplate(templateType);
             if (!success) {
-                return null;
+                throw new CompilationException("There was an error during template compilation.");
             }
         }
 
-        return new TemplateFactory(this, templateType); // TODO: Cache the factory?
-    }
-
-    @Override
-    public @Nullable Template getTemplate(String prefixlessName, Model generalParameters) {
-        return getTemplatePrefixed(StandardClassLoader.getPrefixedName(prefixlessName), generalParameters);
-    }
-
-    @Override
-    public @Nullable Template getTemplatePrefixed(String name, Model generalParameters) {
-        TemplateFactory templateFactory = getTemplateFactoryPrefixed(name);
-
-        if (templateFactory == null) {
-            return null;
-        }
-
-        return templateFactory.create(generalParameters);
+        return new StandardTemplateFactory(this, templateType); // TODO: Cache the factory?
     }
 
     private synchronized @Nullable TemplateType parseTemplate(String name) {
-        TemplateType templateType = templateTypes.get(name);
+        @Nullable TemplateType templateType = templateTypes.get(name);
 
-        /* A similar strategy like in compileTemplate is used here to make sure that templates
-           are not parsed twice. */
+        // A similar strategy like in compileTemplate is used here to make sure that templates
+        // are not parsed twice.
         if (templateType == null) {
             System.out.println();
             System.out.println("Parsing template: " + name);
 
-            String source = sourceLoader.getTemplateSource(name);
-            TemplateParser parser = new TemplateParser(this, name, source);
-
-            templateType = parser.parse();
-            if (templateType != null) {
-                templateTypes.put(name, templateType);
+            @Nullable String source = null;
+            for (SourceLoader sourceLoader : sourceLoaders) {
+                source = sourceLoader.getTemplateSource(name);
+                if (source != null) {
+                    break;
+                }
             }
+
+            if (source == null) {
+                throw new CompilationException("The source for the template '" + name + "' could not be found.");
+            }
+
+            TemplateParser parser = new TemplateParser(this, name, source);
+            templateType = parser.parse();
+            templateTypes.put(name, templateType);
 
             System.out.println();
         }
@@ -145,60 +156,45 @@ public class StandardEnvironment implements Environment {
                 // long start = System.nanoTime ();
 
                 TemplateCompiler compiler = new TemplateCompiler(this, templateType);
-                TemplateClassLoader templateClassLoader = new TemplateClassLoader(this, compiler);
+                standardClassLoader.addCompiler(compiler);
 
-                Class<? extends Template> cl = (Class<? extends Template>) templateClassLoader.loadClass(className);
+                Class<? extends Template> cl = (Class<? extends Template>) standardClassLoader.loadClass(className);
                 templateType.setTemplateClass(cl);
-                /* Cache class. */
-                classCache.cacheClass(className, cl);
 
-                /* Compile all referenced templates. */
-                for (TemplateType referencedTemplate : templateType.getReferencedTemplates()) {
-                    compileTemplate(referencedTemplate);
-                }
+                // Compile all referenced templates.
+                templateType.getCompilationData().getReferencedTemplates().forEach(this::compileTemplate);
 
-                /* Remove references to temporary compilation data. */
+                // Remove references to temporary compilation data.
                 templateType.clearCompilationData();
 
                 // System.out.println ("Loading took " + ((System.nanoTime () - start) / 1.0e9) + "s.");
                 System.out.println();
             } catch (ClassNotFoundException e) {
-                System.out.println("Template " + templateType.getFullName() + " could not be loaded: ");
-                e.printStackTrace();
-                return false;
+                throw new CompilationException("Template " + templateType.getFullName() + " could not be compiled.", e);
             }
         }
 
         return true;
     }
 
-    @Override
-    public Configuration getConfiguration() {
-        return configuration;
+    public List<SourceLoader> getSourceLoaders() {
+        return sourceLoaders;
     }
 
-    @Override
-    public Library getLibrary() {
-        return library;
-    }
-
-    @Override
     public ClassResolver getClassResolver() {
         return classResolver;
     }
 
-    @Override
-    public GlobalVariableModel getGlobalVariableModel() {
-        return globalVariableModel;
+    public void setClassResolver(ClassResolver classResolver) {
+        this.classResolver = classResolver;
     }
 
-    @Override
-    public ClassCache getClassCache() {
-        return classCache;
+    public DebugConfiguration getDebugConfiguration() {
+        return debugConfiguration;
     }
 
-    public StandardClassLoader getStandardClassLoader() {
-        return standardClassLoader;
+    public void setDebugConfiguration(DebugConfiguration debugConfiguration) {
+        this.debugConfiguration = debugConfiguration;
     }
 
 }

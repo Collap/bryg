@@ -10,13 +10,6 @@ import io.collap.bryg.module.Module;
 public interface EnvironmentBuilder {
 
     /**
-     * <p><b>Optional</b>: Sets the unique parent of the environment.</p>
-     *
-     * For further information on environment parents, see {@link io.collap.bryg.Environment}.
-     */
-    public void setParent(Environment parent);
-
-    /**
      * <p><b>Optional</b>: Registers a module with the environment.</p>
      *
      * @see io.collap.bryg.module.Module
@@ -34,14 +27,19 @@ public interface EnvironmentBuilder {
     public void registerSourceLoader(SourceLoader sourceLoader);
 
     /**
-     * <p><b>Mandatory</b>: Registers a class resolver with the environment. At least one class resolver must be registered.</p>
-     *
-     * <p>This method must guarantee that the order of registration is preserved. For further information,
-     * see {@link io.collap.bryg.Environment}.</p>
+     * <p><b>Mandatory</b>: Sets the class resolver of the environment.</p>
      *
      * @see ClassResolver
      */
-    public void registerClassResolver(ClassResolver classResolver);
+    public void setClassResolver(ClassResolver classResolver);
+
+    /**
+     * <p><b>Optional</b>: Allows you to set the debug configuration of the environment. If the configuration is not
+     * set, a standard configuration with all debug options off is chosen.</p>
+     *
+     * @see io.collap.bryg.DebugConfiguration
+     */
+    public void setDebugConfiguration(DebugConfiguration debugConfiguration);
 
     /**
      * <p>Builds and returns the environment.</p>

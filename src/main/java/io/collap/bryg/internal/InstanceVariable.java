@@ -1,11 +1,10 @@
-package io.collap.bryg.internal.scope;
+package io.collap.bryg.internal;
 
 import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
-import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.compiler.ast.AccessMode;
 import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 
 import static bryg.org.objectweb.asm.Opcodes.GETFIELD;
@@ -16,16 +15,20 @@ import static bryg.org.objectweb.asm.Opcodes.PUTFIELD;
  */
 public class InstanceVariable extends CompiledVariable {
 
+    public InstanceVariable(FieldInfo field) {
+        this(field.getType(), field.getName(), field.getMutability(), field.getNullness());
+    }
+
     public InstanceVariable(Type type, String name, Mutability mutability, Nullness nullness) {
         super(type, name, mutability, nullness);
     }
 
     @Override
-    public void compile(Context context, VariableExpression expression) {
-        BrygMethodVisitor mv = context.getMethodVisitor();
+    public void compile(CompilationContext compilationContext, VariableExpression expression) {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-        CompiledVariable thisVar = context.getHighestLocalScope().getVariable("this");
-        new VariableExpression(context, expression.getLine(), thisVar, AccessMode.get).compile();
+        new VariableExpression(compilationContext, expression.getLine(),
+                compilationContext.getFragmentScope().getThisVariable(), AccessMode.get).compile();
         // -> this
 
         int fieldOperation;
@@ -40,7 +43,7 @@ public class InstanceVariable extends CompiledVariable {
             // When compiled: this, T ->
         }
 
-        mv.visitFieldInsn(fieldOperation, context.getUnitType().getInternalName(), name, type.getDescriptor());
+        mv.visitFieldInsn(fieldOperation, compilationContext.getUnitType().getInternalName(), name, type.getDescriptor());
     }
 
 }

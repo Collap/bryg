@@ -2,7 +2,6 @@ package io.collap.bryg.internal;
 
 import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
-import io.collap.bryg.internal.Type;
 
 public class VariableInfo {
 

@@ -3,7 +3,7 @@ package io.collap.bryg.internal.compiler.ast.expression.bool;
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.util.BoxingUtil;
 import io.collap.bryg.BrygJitException;
 
@@ -23,8 +23,8 @@ public class ExpressionBooleanExpression extends BooleanExpression {
 
     private Expression expression;
 
-    public ExpressionBooleanExpression (Context context, Expression expression) {
-        super (context);
+    public ExpressionBooleanExpression (CompilationContext compilationContext, Expression expression) {
+        super (compilationContext);
         setLine (expression.getLine ());
         this.expression = expression;
 
@@ -32,7 +32,7 @@ public class ExpressionBooleanExpression extends BooleanExpression {
             /* Attempt unboxing. */
             Expression unboxedExpression = null;
             if (expression.getType ().similarTo (Boolean.class)) {
-                unboxedExpression = BoxingUtil.createUnboxingExpression (context, expression);
+                unboxedExpression = BoxingUtil.createUnboxingExpression (compilationContext, expression);
             }
             if (unboxedExpression == null) {
                 throw new BrygJitException ("Expected a condition, but got an expression that does not return a boolean type",
@@ -44,7 +44,7 @@ public class ExpressionBooleanExpression extends BooleanExpression {
 
     @Override
     public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         expression.compile ();
         // -> boolean

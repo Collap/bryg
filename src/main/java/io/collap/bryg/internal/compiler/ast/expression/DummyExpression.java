@@ -1,6 +1,6 @@
 package io.collap.bryg.internal.compiler.ast.expression;
 
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.Type;
 
 /**
@@ -13,8 +13,8 @@ import io.collap.bryg.internal.Type;
  */
 public class DummyExpression extends Expression {
 
-    public DummyExpression (Context context, Type type, int line) {
-        super (context);
+    public DummyExpression (CompilationContext compilationContext, Type type, int line) {
+        super (compilationContext);
         setType (type);
         setLine (line);
     }

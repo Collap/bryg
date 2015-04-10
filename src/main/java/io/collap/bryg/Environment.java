@@ -7,18 +7,11 @@ import javax.annotation.Nullable;
 /**
  * <p>An environment is an object that is responsible for loading, compiling and managing template classes.
  * Each environment has its own class loader, which means that multiple environments do not share namespaces.</p>
- *
- * <h3>Parent</h3>
- * <p>The parent environment is used when the environment built by this
- * class can't find a template. This makes it possible to share common
- * templates with multiple other environments without polluting the
- * namespace or compiling the template twice.</p>
- *
  * <h3>Source Loaders</h3>
  * <p>Source loaders find and load the source of a template based on its name.
  * The order of source loaders is important: If a source loader does not find a source, the next
  * source loader is polled, and so on. An environment implementation <b>must</b> guarantee this order.</p>
- *
+ * <p>
  * <h3>Thread Safety</h3>
  * <p>Every implementation of this interface <b>guarantees thread safety</b>.</p>
  *
@@ -34,7 +27,9 @@ public interface Environment {
      * returns a <b>thread-safe</b> template factory, which can be used to instantiate
      * the template type multiple times.
      *
+     * @throws io.collap.bryg.CompilationException Thrown when the template type tied to the factory
+     *         could not be compiled.
      */
-    public @Nullable TemplateFactory getTemplateFactory (String name);
+    public TemplateFactory getTemplateFactory(String name);
 
 }

@@ -1,8 +1,10 @@
 package io.collap.bryg.internal.compiler.ast.expression;
 
 import io.collap.bryg.internal.compiler.ast.Node;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.Type;
+
+import javax.annotation.Nullable;
 
 public abstract class Expression extends Node {
 
@@ -11,8 +13,8 @@ public abstract class Expression extends Node {
      */
     protected Type type;
 
-    protected Expression (Context context) {
-        super (context);
+    protected Expression (CompilationContext compilationContext) {
+        super (compilationContext);
     }
 
     public Type getType () {
@@ -30,7 +32,7 @@ public abstract class Expression extends Node {
     /**
      * @return If not null, the type of the value is guaranteed to be an instance of the type returned by {@link #getType()}.
      */
-    public Object getConstantValue () {
+    public @Nullable Object getConstantValue () {
         return null;
     }
 

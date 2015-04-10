@@ -2,19 +2,19 @@ package io.collap.bryg.internal.compiler.ast.expression.shift;
 
 import io.collap.bryg.internal.compiler.ast.expression.BinaryExpression;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 public abstract class BinaryShiftExpression extends BinaryExpression {
 
-    protected BinaryShiftExpression (Context context, BrygParser.BinaryShiftExpressionContext ctx) {
-        super (context, ctx.expression (0), ctx.expression (1));
+    protected BinaryShiftExpression (CompilationContext compilationContext, BrygParser.BinaryShiftExpressionContext ctx) {
+        super (compilationContext, ctx.expression (0), ctx.expression (1));
         init ();
     }
 
-    protected BinaryShiftExpression (Context context, Expression left, Expression right, int line) {
-        super (context, left, right, line);
+    protected BinaryShiftExpression (CompilationContext compilationContext, Expression left, Expression right, int line) {
+        super (compilationContext, left, right, line);
         init ();
     }
 
@@ -36,7 +36,7 @@ public abstract class BinaryShiftExpression extends BinaryExpression {
         right.compile ();
 
         int op = type.getOpcode (getOpcode ());
-        context.getMethodVisitor ().visitInsn (op);
+        compilationContext.getMethodVisitor ().visitInsn (op);
     }
 
     /**

@@ -1,15 +1,14 @@
 package io.collap.bryg.internal.module.html;
 
 import io.collap.bryg.module.Function;
+import io.collap.bryg.module.Member;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FunctionCollection {
 
-    private static FunctionCollection instance = null;
+    private static @Nullable FunctionCollection instance = null;
 
     public synchronized static FunctionCollection getInstance() {
         if (instance == null) {
@@ -29,6 +28,10 @@ public class FunctionCollection {
      */
     public Function getFunction(String name) {
         return functionMap.get(name);
+    }
+
+    public Iterator<? extends Member<?>> getIterator() {
+        return Collections.unmodifiableCollection(functionMap.values()).iterator();
     }
 
     private void initialize() {

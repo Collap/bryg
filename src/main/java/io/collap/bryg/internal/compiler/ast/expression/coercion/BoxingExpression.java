@@ -2,7 +2,7 @@ package io.collap.bryg.internal.compiler.ast.expression.coercion;
 
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.TypeHelper;
 import io.collap.bryg.internal.type.Types;
@@ -15,8 +15,8 @@ public class BoxingExpression extends Expression {
 
     private Expression child;
 
-    public BoxingExpression (Context context, Expression child, Type boxedType) {
-        super (context);
+    public BoxingExpression (CompilationContext compilationContext, Expression child, Type boxedType) {
+        super (compilationContext);
         setLine (child.getLine ());
         setType (boxedType);
         this.child = child;
@@ -24,7 +24,7 @@ public class BoxingExpression extends Expression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         Type boxType = type;
         String boxTypeName = boxType.getInternalName ();

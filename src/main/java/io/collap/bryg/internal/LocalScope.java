@@ -1,4 +1,4 @@
-package io.collap.bryg.internal.scope;
+package io.collap.bryg.internal;
 
 import io.collap.bryg.internal.compiler.VariableIdCounter;
 
@@ -18,6 +18,10 @@ public class LocalScope extends Scope {
 
     public LocalScope createSubScope() {
         return new LocalScope(this, variableIdCounter);
+    }
+
+    public VariableIdCounter getVariableIdCounter() {
+        return variableIdCounter;
     }
 
 }

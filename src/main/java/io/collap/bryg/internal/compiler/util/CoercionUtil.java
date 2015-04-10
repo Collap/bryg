@@ -3,7 +3,7 @@ package io.collap.bryg.internal.compiler.util;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.internal.compiler.ast.expression.unary.CastExpression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.BrygJitException;
@@ -27,7 +27,7 @@ public class CoercionUtil {
      * @throws io.collap.bryg.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
      *         hence the compilation should be stopped at that point.
      */
-    public static Pair<Expression, Expression> applyBinaryCoercion (Context context, Expression left, Expression right) {
+    public static Pair<Expression, Expression> applyBinaryCoercion (CompilationContext compilationContext, Expression left, Expression right) {
         if (left == null) throw new BrygJitException ("The left is null. This is probably an internal compiler issue.", -1); // TODO: Get line...
         if (right == null) throw new BrygJitException ("The right type is null. This is probably an internal compiler issue.", -1);
 
@@ -43,11 +43,11 @@ public class CoercionUtil {
 
         /* Attempt unboxing. */
         if (!left.getType ().isPrimitive ()) {
-            left = getUnboxingExpressionOrThrowException (context, left);
+            left = getUnboxingExpressionOrThrowException (compilationContext, left);
         }
 
         if (!right.getType ().isPrimitive ()) {
-            right = getUnboxingExpressionOrThrowException (context, right);
+            right = getUnboxingExpressionOrThrowException (compilationContext, right);
         }
 
         /* Get target type. */
@@ -59,36 +59,36 @@ public class CoercionUtil {
         }
 
         if (left.getType ().isIntegralType () && right.getType ().isIntegralType ()) {
-            return promoteType (context, left, right, targetType);
+            return promoteType (compilationContext, left, right, targetType);
         }else if (left.getType ().isFloatingPointType () && right.getType ().isFloatingPointType ()) {
-            return promoteType (context, left, right, targetType);
+            return promoteType (compilationContext, left, right, targetType);
         }else if (left.getType ().isIntegralType () && right.getType ().isFloatingPointType ()) {
-            return promoteType (context, left, right, targetType);
+            return promoteType (compilationContext, left, right, targetType);
         }else if (left.getType ().isFloatingPointType () && right.getType ().isIntegralType ()) {
-            return promoteType (context, right, left, targetType);
+            return promoteType (compilationContext, right, left, targetType);
         }else {
             throw new BrygJitException ("Coercion failed, but a target type was supplied: " + targetType, left.getLine ());
         }
     }
 
-    private static UnboxingExpression getUnboxingExpressionOrThrowException (Context context, Expression child) {
+    private static UnboxingExpression getUnboxingExpressionOrThrowException (CompilationContext compilationContext, Expression child) {
         Type primitiveType = child.getType ().getPrimitiveType ();
         if (primitiveType == null) {
             throw new BrygJitException ("Can not coerce object types, but a target type was supplied.", child.getLine ());
         }
 
-        return new UnboxingExpression (context, child, primitiveType);
+        return new UnboxingExpression (compilationContext, child, primitiveType);
     }
 
-    private static Pair<Expression, Expression> promoteType (Context context, Expression left, Expression right,
+    private static Pair<Expression, Expression> promoteType (CompilationContext compilationContext, Expression left, Expression right,
                                                              Type targetType) {
 
         if (!left.getType ().similarTo (targetType)) {
-            left = new CastExpression (context, targetType, left, left.getLine ());
+            left = new CastExpression (compilationContext, targetType, left, left.getLine ());
         }
 
         if (!right.getType ().similarTo (targetType)) {
-            right = new CastExpression (context, targetType, right, right.getLine ());
+            right = new CastExpression (compilationContext, targetType, right, right.getLine ());
         }
 
         return new Pair<> (left, right);
@@ -143,13 +143,13 @@ public class CoercionUtil {
     }
 
     /**
-     * This method catches any exceptions thrown by {@link #applyUnaryCoercion(io.collap.bryg.internal.compiler.Context,
+     * This method catches any exceptions thrown by {@link #applyUnaryCoercion(io.collap.bryg.internal.compiler.CompilationContext,
      * io.collap.bryg.internal.compiler.ast.expression.Expression, io.collap.bryg.internal.Type)} and returns null
      * in those cases.
      */
-    public static Expression tryUnaryCoercion (Context context, Expression expr, Type targetType) {
+    public static Expression tryUnaryCoercion (CompilationContext compilationContext, Expression expr, Type targetType) {
         try {
-            return applyUnaryCoercion (context, expr, targetType);
+            return applyUnaryCoercion (compilationContext, expr, targetType);
         }catch (BrygJitException ex) {
             return null;
         }
@@ -164,7 +164,7 @@ public class CoercionUtil {
      * @throws io.collap.bryg.BrygJitException When the types can't be coerced. The behaviour in this case is undefined,
      *         hence the compilation should be stopped at that point.
      */
-    public static Expression applyUnaryCoercion (Context context, Expression expr, Type targetType) {
+    public static Expression applyUnaryCoercion (CompilationContext compilationContext, Expression expr, Type targetType) {
         if (expr.getType ().similarTo (targetType)) {
             return expr;
         }
@@ -173,14 +173,14 @@ public class CoercionUtil {
             Type primitiveType = expr.getType ().getPrimitiveType ();
             if (primitiveType == null) {
                 /* Try widening reference conversion. */
-                Expression cast = tryWideningReferenceConversion (context, expr, targetType);
+                Expression cast = tryWideningReferenceConversion (compilationContext, expr, targetType);
                 if (cast != null) {
                     return cast;
                 }else {
                     throw new BrygJitException ("Widening reference conversion not possible!", expr.getLine ());
                 }
             }else {
-                expr = new UnboxingExpression (context, expr, primitiveType);
+                expr = new UnboxingExpression (compilationContext, expr, primitiveType);
             }
         }
 
@@ -202,16 +202,16 @@ public class CoercionUtil {
 
         /* Convert if needed. */
             if (conversionOpcode != NOP) {
-                expr = new CastExpression (context, conversionTargetType, expr, conversionOpcode, expr.getLine ());
+                expr = new CastExpression (compilationContext, conversionTargetType, expr, conversionOpcode, expr.getLine ());
             }
         }
 
         /* Box if needed. */
         if (wrapperType != null) {
-            expr = BoxingUtil.createBoxingExpression (context, expr);
+            expr = BoxingUtil.createBoxingExpression (compilationContext, expr);
 
             /* Possibly convert to Object. */
-            Expression cast = tryWideningReferenceConversion (context, expr, targetType);
+            Expression cast = tryWideningReferenceConversion (compilationContext, expr, targetType);
             if (cast == null) {
                 throw new BrygJitException ("Widening reference conversion from " + expr.getType () + " to "
                     + targetType + " is not possible", expr.getLine ());
@@ -226,12 +226,12 @@ public class CoercionUtil {
         return expr;
     }
 
-    private static Expression tryWideningReferenceConversion (Context context, Expression expr, Type targetType) {
+    private static Expression tryWideningReferenceConversion (CompilationContext compilationContext, Expression expr, Type targetType) {
         if (targetType.similarTo (expr.getType ())) return expr;
 
         if (targetType.isAssignableFrom (expr.getType ())) {
             System.out.println ("Widening reference cast from " + expr.getType () + " to " + targetType);
-            return new CastExpression (context, targetType, expr, expr.getLine ());
+            return new CastExpression (compilationContext, targetType, expr, expr.getLine ());
         }else {
             return null;
         }

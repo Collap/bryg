@@ -3,7 +3,7 @@ package io.collap.bryg.internal.compiler.ast.expression.bool;
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.Types;
 
 import javax.annotation.Nullable;
@@ -12,8 +12,8 @@ import static bryg.org.objectweb.asm.Opcodes.GOTO;
 
 public abstract class BooleanExpression extends Expression {
 
-    protected BooleanExpression (Context context) {
-        super (context);
+    protected BooleanExpression (CompilationContext compilationContext) {
+        super (compilationContext);
         setType (Types.fromClass (Boolean.TYPE));
     }
 
@@ -22,7 +22,7 @@ public abstract class BooleanExpression extends Expression {
      */
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         Label nextTrue = new Label ();
         Label nextFalse = new Label ();
@@ -55,7 +55,7 @@ public abstract class BooleanExpression extends Expression {
     public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
         /* At this point the expression is supposed to be true. */
         if (nextTrue != null && !lastExpressionInChain) {
-            context.getMethodVisitor ().visitJumpInsn (GOTO, nextTrue);
+            compilationContext.getMethodVisitor ().visitJumpInsn (GOTO, nextTrue);
         }
     }
 

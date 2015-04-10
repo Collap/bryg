@@ -1,12 +1,13 @@
 package io.collap.bryg.internal;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Type {
 
     // TODO: This lazy loading is ugly.
-    protected List<Type> genericTypes; /* The list itself is lazily loaded. */
+    protected @Nullable List<Type> genericTypes; /* The list itself is lazily loaded. */
 
     public List<Type> getGenericTypes () {
         if (genericTypes == null) {
@@ -50,12 +51,12 @@ public abstract class Type {
     /**
      * @return If this type is a primitive type, the wrapper type that belongs to it, otherwise null.
      */
-    public abstract Type getWrapperType ();
+    public abstract @Nullable Type getWrapperType ();
 
     /**
      * @return If this type is a wrapper type, the primitive type that belongs to it, otherwise null.
      */
-    public abstract Type getPrimitiveType ();
+    public abstract @Nullable Type getPrimitiveType ();
 
     public abstract boolean isInterface ();
 

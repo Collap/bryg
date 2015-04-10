@@ -7,8 +7,6 @@ import io.collap.bryg.Closure;
 import io.collap.bryg.internal.*;
 import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.util.ObjectCompileHelper;
-import io.collap.bryg.internal.scope.Variable;
-import io.collap.bryg.internal.scope.VariableInfo;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.internal.compiler.util.IdUtil;
 import io.collap.bryg.internal.compiler.util.OperationUtil;
@@ -17,15 +15,15 @@ import io.collap.bryg.Template;
 import io.collap.bryg.internal.compiler.ast.expression.ArgumentExpression;
 import io.collap.bryg.internal.compiler.ast.expression.coercion.BoxingExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.TypeHelper;
 import io.collap.bryg.internal.compiler.util.FunctionUtil;
 import io.collap.bryg.Environment;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.Model;
 import io.collap.bryg.parser.BrygParser;
-import io.collap.bryg.template.TemplateFragmentInfo;
-import io.collap.bryg.template.TemplateType;
+import io.collap.bryg.internal.FragmentInfo;
+import io.collap.bryg.internal.TemplateType;
 
 import javax.annotation.Nullable;
 import java.io.Writer;
@@ -40,7 +38,7 @@ public class TemplateFragmentCall extends Node {
     /**
      * Only one may be set.
      */
-    private TemplateFragmentInfo calledFragment;
+    private FragmentInfo calledFragment;
     private Variable calledClosure;
 
     private boolean isFragmentInternal;
@@ -50,11 +48,11 @@ public class TemplateFragmentCall extends Node {
     private @Nullable List<ArgumentExpression> localArgumentExpressions;
     private ClosureDeclarationNode closure;
 
-    public TemplateFragmentCall (Context context, BrygParser.TemplateFragmentCallContext ctx) {
-        super (context);
+    public TemplateFragmentCall (CompilationContext compilationContext, BrygParser.TemplateFragmentCallContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
-        isCallInClosure = context.getUnitType () instanceof ClosureType;
+        isCallInClosure = compilationContext.getUnitType () instanceof ClosureType;
         isFragmentInternal = false;
         findCalledUnit (ctx);
 
@@ -63,7 +61,7 @@ public class TemplateFragmentCall extends Node {
 
 
 
-            localArgumentExpressions = FunctionUtil.parseArgumentList (context, ctx.argumentList ());
+            localArgumentExpressions = FunctionUtil.parseArgumentList (compilationContext, ctx.argumentList ());
 
             if (calledFragment != null) {
                 /* Infer parameter/argument names. */
@@ -81,7 +79,7 @@ public class TemplateFragmentCall extends Node {
                 if (shouldInferNames) {
                     List<VariableInfo> parameters;
                     if (isFragmentInternal) {
-                        parameters = calledFragment.getLocalParameters ();
+                        parameters = calledFragment.getParameters();
                     }else {
                         parameters = calledFragment.getAllParameters ();
                     }
@@ -108,7 +106,7 @@ public class TemplateFragmentCall extends Node {
         }
 
         if (ctx.closure () != null) {
-            closure = new ClosureDeclarationNode (context, ctx.closure ());
+            closure = new ClosureDeclarationNode (compilationContext, ctx.closure ());
         }else {
             if (calledFragment != null) {
                 /* Check if closure is expected and if an argument exists. */
@@ -143,7 +141,7 @@ public class TemplateFragmentCall extends Node {
         String fullName = ctx.templateId ().getText ().substring (1); /* Omit the AT (@). */
 
         /* Check if there is a closure variable that can be called. */
-        Variable variable = context.getCurrentScope ().getVariable (fullName);
+        Variable variable = compilationContext.getCurrentScope ().getVariable (fullName);
         if (variable != null && variable.getType ().similarTo (Closure.class)) {
             calledClosure = variable;
             calledFragment = null;
@@ -152,8 +150,8 @@ public class TemplateFragmentCall extends Node {
 
         /* Check if there is a local fragment function. */
         {
-            TemplateType templateType = context.getUnitType ().getParentTemplateType ();
-            TemplateFragmentInfo fragmentInfo = templateType.getFragment (fullName);
+            TemplateType templateType = compilationContext.getUnitType ().getParentTemplateType ();
+            FragmentInfo fragmentInfo = templateType.getFragment (fullName);
             if (fragmentInfo != null) {
                 calledClosure = null;
                 calledFragment = fragmentInfo;
@@ -164,7 +162,7 @@ public class TemplateFragmentCall extends Node {
 
         /* Check if the parent package needs to be prepended. */
         if (ctx.templateId ().currentPackage != null) {
-            fullName = context.getUnitType ().getClassPackage () + fullName;
+            fullName = compilationContext.getUnitType ().getClassPackage () + fullName;
         }else {
             fullName = StandardClassLoader.getPrefixedName(fullName);
         }
@@ -177,7 +175,7 @@ public class TemplateFragmentCall extends Node {
             fragName = "render"; // TODO: Make this a universal constant.
         }
 
-        TemplateType templateType = context.getEnvironment ().getTemplateTypePrefixed (fullName);
+        TemplateType templateType = compilationContext.getEnvironment ().getTemplateTypePrefixed (fullName);
         if (templateType == null) {
             throw new BrygJitException ("Template " + fullName + " not found for template call!", getLine ());
         }
@@ -202,12 +200,12 @@ public class TemplateFragmentCall extends Node {
     }
 
     private void compileFragmentCall () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         if (isFragmentInternal) {
             if (isCallInClosure) {
-                new VariableExpression (context, getLine (),
-                        context.getHighestLocalScope().getVariable (StandardClosure.PARENT_FIELD_NAME),
+                new VariableExpression (compilationContext, getLine (),
+                        compilationContext.getFragmentScope().getVariable (StandardClosure.PARENT_FIELD_NAME),
                         AccessMode.get).compile ();
             }else {
                 loadThis ();
@@ -227,13 +225,13 @@ public class TemplateFragmentCall extends Node {
 
         /* Call the __direct function. */
         TemplateType owner = calledFragment.getOwner ();
-        context.getUnitType ().getParentTemplateType ().getReferencedTemplates ().add (owner);
+        compilationContext.getUnitType ().getParentTemplateType ().getReferencedTemplates ().add (owner);
         mv.visitMethodInsn (INVOKEVIRTUAL, calledFragment.getOwner ().getInternalName (),
                 calledFragment.getDirectName (), calledFragment.getDesc (), false);
     }
 
     private void compileTemplateFetch () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
         Type environmentType = Types.fromClass (Environment.class);
 
         /* Get environment. */
@@ -248,7 +246,8 @@ public class TemplateFragmentCall extends Node {
         mv.visitInsn (DUP);
         // Environment -> Environment, Environment
 
-        int environmentVariableId = context.getCurrentScope ().calculateNextId (environmentType);
+        // TODO: Why is this stored here?!
+        int environmentVariableId = compilationContext.getCurrentScope ().calculateNextId (environmentType);
         mv.visitVarInsn (ASTORE, environmentVariableId);
         // Environment ->
 
@@ -268,7 +267,7 @@ public class TemplateFragmentCall extends Node {
     }
 
     private void compileClosureCall () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         compileClosureFetch ();
 
@@ -292,9 +291,9 @@ public class TemplateFragmentCall extends Node {
      * This method only checks whether the closure is null if the variable is declared optional.
      */
     private void compileClosureFetch () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
-        new VariableExpression (context, getLine (), calledClosure, AccessMode.get).compile ();
+        new VariableExpression (compilationContext, getLine (), calledClosure, AccessMode.get).compile ();
         // -> Closure
 
         if (calledClosure.isNullable ()) {
@@ -314,7 +313,7 @@ public class TemplateFragmentCall extends Node {
      * Also compiles the closure argument, if applicable.
      */
     private void compileArguments (boolean useModel) {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         if (localArgumentExpressions != null) {
             for (ArgumentExpression argument : localArgumentExpressions) {
@@ -340,7 +339,7 @@ public class TemplateFragmentCall extends Node {
                     /* Possibly box primitives for the model. */
                     Type wrapperType = argument.getType ().getWrapperType ();
                     if (wrapperType != null) {
-                        new BoxingExpression (context, argument, wrapperType).compile ();
+                        new BoxingExpression (compilationContext, argument, wrapperType).compile ();
                         // -> T
                     } else {
                         argument.compile ();
@@ -380,12 +379,12 @@ public class TemplateFragmentCall extends Node {
             throw new BrygJitException ("Currently only fragments can be called with closures.", getLine ());
         }
 
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         mv.visitInsn (DUP);
         // Model -> Model, Model
 
-        VariableInfo closureParameter = findClosureParameter (calledFragment.getLocalParameters ());
+        VariableInfo closureParameter = findClosureParameter (calledFragment.getParameters());
         if (closureParameter == null) {
             closureParameter = findClosureParameter (calledFragment.getGeneralParameters ());
         }
@@ -427,15 +426,15 @@ public class TemplateFragmentCall extends Node {
     }
 
     private void loadThis () {
-        new VariableExpression (context, getLine (), context.getHighestLocalScope().getVariable ("this"), AccessMode.get).compile ();
+        new VariableExpression (compilationContext, getLine (), compilationContext.getFragmentScope().getVariable ("this"), AccessMode.get).compile ();
     }
 
     private void loadWriter () {
-        new VariableExpression (context, getLine (), context.getHighestLocalScope().getVariable ("writer"), AccessMode.get).compile ();
+        new VariableExpression (compilationContext, getLine (), compilationContext.getFragmentScope().getVariable ("writer"), AccessMode.get).compile ();
     }
 
     private void compileFragmentInvocation (String name, String ownerName, boolean isInterfaceCall) {
-        context.getMethodVisitor ().visitMethodInsn (
+        compilationContext.getMethodVisitor ().visitMethodInsn (
                 isInterfaceCall ? INVOKEINTERFACE : INVOKEVIRTUAL, ownerName,
                 name, TypeHelper.generateMethodDesc (
                         new Class[] { Writer.class, Model.class },

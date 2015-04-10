@@ -3,7 +3,7 @@ package io.collap.bryg.internal.compiler.ast.expression.bool;
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.AsmTypes;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.TypeHelper;
@@ -21,9 +21,9 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
 
     protected int operator;
 
-    protected OperatorBinaryBooleanExpression (Context context, BrygParser.ExpressionContext left,
+    protected OperatorBinaryBooleanExpression (CompilationContext compilationContext, BrygParser.ExpressionContext left,
                                                BrygParser.ExpressionContext right, int operator) {
-        super (context, left, right);
+        super (compilationContext, left, right);
         this.operator = operator;
     }
 
@@ -33,7 +33,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
             throw new BrygJitException ("Left or right is null: " + left + ", " + right, getLine ());
         }
 
-        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (context, left, right);
+        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (compilationContext, left, right);
         left = result.a;
         right = result.b;
         Type operandType = left.getType ();
@@ -42,7 +42,7 @@ public abstract class OperatorBinaryBooleanExpression extends BinaryBooleanExpre
         right.compile ();
         // -> T, T
 
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
         if (operandType.isPrimitive ()) {
             if (operandType.similarTo (Boolean.TYPE)) {
                 switch (operator) {

@@ -2,6 +2,7 @@ package io.collap.bryg;
 
 import io.collap.bryg.internal.StandardClassLoader;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,20 +35,24 @@ public class FileSourceLoader implements SourceLoader {
     }
 
     @Override
-    public String getTemplateSource(String name) {
+    public @Nullable String getTemplateSource(String name) {
         if (name.startsWith(StandardClassLoader.unitNamePrefix)) {
             throw new RuntimeException("The name starts with the internal prefix!");
         }
 
         String path = name.replace('.', File.separatorChar) + fileExtension;
         File sourceFile = new File(templateDirectory, path);
+        if (!sourceFile.exists()) {
+            return null;
+        }
+
         String source;
         try (InputStream stream = new FileInputStream(sourceFile)) {
             byte[] data = new byte[(int) sourceFile.length()];
             stream.read(data);
             source = new String(data, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException("Template '" + name + "' not found at '" + path + "'.", e);
+            throw new RuntimeException("Template '" + name + "' could not be loaded from '" + path + "'.", e);
         }
         return source;
     }

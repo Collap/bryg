@@ -1,6 +1,6 @@
 package io.collap.bryg.internal.compiler.ast.expression;
 
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.util.StringBuilderCompileHelper;
 import io.collap.bryg.internal.type.Types;
 
@@ -10,8 +10,8 @@ public class InterpolationExpression extends Expression {
 
     List<Expression> expressions;
 
-    public InterpolationExpression (Context context, List<Expression> expressions, int line) {
-        super (context);
+    public InterpolationExpression (CompilationContext compilationContext, List<Expression> expressions, int line) {
+        super (compilationContext);
         setType (Types.fromClass (String.class));
         setLine (line);
         this.expressions = expressions;
@@ -19,7 +19,7 @@ public class InterpolationExpression extends Expression {
 
     @Override
     public void compile () {
-        StringBuilderCompileHelper builder = new StringBuilderCompileHelper (context.getMethodVisitor ());
+        StringBuilderCompileHelper builder = new StringBuilderCompileHelper (compilationContext.getMethodVisitor ());
 
         builder.compileNew ();
         // -> StringBuilder

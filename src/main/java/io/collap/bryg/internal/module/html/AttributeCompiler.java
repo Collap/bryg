@@ -6,6 +6,7 @@ import io.collap.bryg.internal.compiler.ast.expression.ArgumentExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 import io.collap.bryg.internal.compiler.util.StringBuilderCompileHelper;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,7 +67,7 @@ public class AttributeCompiler {
 
     public void compile() {
         for (ArgumentExpression attribute : arguments) {
-            String name = attribute.getName();
+            @Nullable String name = attribute.getName();
 
             if (name == null) {
                 throw new BrygJitException("Argument to a HTML function call is unnamed.", attribute.getLine());
@@ -81,9 +82,9 @@ public class AttributeCompiler {
                 System.out.println("Warning: The attribute " + name + " is not a valid HTML5 attribute! Line: " + attribute.getLine());
             }
 
-            Label nextFalseLabel = attribute.compilePredicate();
+            @Nullable Label nextFalseLabel = attribute.compilePredicate();
 
-            Object constantValue = attribute.getConstantValue();
+            @Nullable Object constantValue = attribute.getConstantValue();
             boolean isEmpty = attribute.isConstant() &&
                     (constantValue instanceof String
                             && ((String) constantValue).isEmpty()

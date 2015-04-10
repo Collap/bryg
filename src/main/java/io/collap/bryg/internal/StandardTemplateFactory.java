@@ -4,7 +4,6 @@ import io.collap.bryg.Model;
 import io.collap.bryg.Template;
 import io.collap.bryg.TemplateFactory;
 import io.collap.bryg.TemplateInstantiationException;
-import io.collap.bryg.template.TemplateType;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Constructor;

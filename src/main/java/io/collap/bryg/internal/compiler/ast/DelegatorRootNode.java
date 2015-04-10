@@ -1,11 +1,11 @@
 package io.collap.bryg.internal.compiler.ast;
 
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 
 public class DelegatorRootNode extends InnerNode {
 
-    public DelegatorRootNode (Context context) {
-        super (context);
+    public DelegatorRootNode (CompilationContext compilationContext) {
+        super (compilationContext);
     }
 
     public void addChild (Node child) {

@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 public class TypeHelper {
 
     public static String generateMethodDesc (@Nullable Class<?>[] argumentClasses, Class<?> returnClass) {
-        Type[] types = null;
+        @Nullable Type[] types = null;
         if (argumentClasses != null) {
             types = new Type[argumentClasses.length];
             for (int i = 0; i < argumentClasses.length; ++i) {
@@ -18,7 +18,7 @@ public class TypeHelper {
     }
 
     public static String generateMethodDesc (@Nullable Type[] argumentTypes, Type returnType) {
-        String[] descs = null;
+        @Nullable String[] descs = null;
         if (argumentTypes != null) {
             descs = new String[argumentTypes.length];;
             for (int i = 0; i < argumentTypes.length; i++) {

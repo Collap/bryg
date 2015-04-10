@@ -2,7 +2,7 @@ package io.collap.bryg.internal.compiler.ast.expression.unary;
 
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.TypeInterpreter;
 import io.collap.bryg.internal.compiler.util.CoercionUtil;
@@ -16,17 +16,17 @@ public class CastExpression extends Expression {
     private boolean isPrimitiveCast;
     private int conversionOpcode;
 
-    public CastExpression (Context context, BrygParser.CastExpressionContext ctx) {
+    public CastExpression (CompilationContext compilationContext, BrygParser.CastExpressionContext ctx) {
         this (
-                context,
-                new TypeInterpreter (context.getEnvironment ().getClassResolver ()).interpretType (ctx.type ()),
-                (Expression) context.getParseTreeVisitor ().visit (ctx.expression ()),
+                compilationContext,
+                new TypeInterpreter (compilationContext.getEnvironment ().getClassResolver ()).interpretType (ctx.type ()),
+                (Expression) compilationContext.getParseTreeVisitor ().visit (ctx.expression ()),
                 ctx.getStart ().getLine ()
         );
     }
 
-    public CastExpression (Context context, Type targetType, Expression child, int line) {
-        super (context);
+    public CastExpression (CompilationContext compilationContext, Type targetType, Expression child, int line) {
+        super (compilationContext);
         this.child = child;
         setType (targetType);
         setLine (line);
@@ -41,8 +41,8 @@ public class CastExpression extends Expression {
         }
     }
 
-    public CastExpression (Context context, Type targetType, Expression child, int conversionOpcode, int line) {
-        super (context);
+    public CastExpression (CompilationContext compilationContext, Type targetType, Expression child, int conversionOpcode, int line) {
+        super (compilationContext);
         this.child = child;
         this.conversionOpcode = conversionOpcode;
         isPrimitiveCast = true;
@@ -52,7 +52,7 @@ public class CastExpression extends Expression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         child.compile ();
         // -> from

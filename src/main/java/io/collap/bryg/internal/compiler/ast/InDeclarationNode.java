@@ -4,7 +4,7 @@ import io.collap.bryg.internal.compiler.ast.expression.DummyExpression;
 import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.scope.Variable;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.TypeHelper;
@@ -35,21 +35,21 @@ public class InDeclarationNode extends Node {
      */
     private boolean optional;
 
-    private InDeclarationNode (Context context, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
+    private InDeclarationNode (CompilationContext compilationContext, BrygParser.InDeclarationContext ctx) throws ClassNotFoundException {
         this (
-                context,
+                compilationContext,
                 IdUtil.idToString (ctx.id ()),
-                new TypeInterpreter (context.getEnvironment ().getClassResolver ()).interpretType (ctx.type ()),
+                new TypeInterpreter (compilationContext.getEnvironment ().getClassResolver ()).interpretType (ctx.type ()),
                 ctx.qualifier.getType () == BrygLexer.OPT,
                 ctx.getStart ().getLine ()
         );
     }
 
-    private InDeclarationNode (Context context, String name, Type type, boolean optional, int line) {
+    private InDeclarationNode (CompilationContext compilationContext, String name, Type type, boolean optional, int line) {
         /**
          * In declarations are always immutable.
          */
-        super (context);
+        super (compilationContext);
         /* this (context, context.getCurrentScope ().registerVariable (new LocalVariable (type, name, false, optional)),
                 optional, line, false); */
     }
@@ -57,14 +57,14 @@ public class InDeclarationNode extends Node {
     /**
      * @param isGlobalVariable Whether the variable needs to be loaded from the global variable model.
      */
-    private InDeclarationNode (Context context, Variable parameter, boolean optional, int line, boolean isGlobalVariable) {
-        super (context);
+    private InDeclarationNode (CompilationContext compilationContext, Variable parameter, boolean optional, int line, boolean isGlobalVariable) {
+        super (compilationContext);
         setLine (line);
 
         this.optional = optional;
         this.parameter = parameter;
         this.isGlobalVariable = isGlobalVariable;
-        model = context.getCurrentScope ().getVariable ("model");
+        model = compilationContext.getCurrentScope ().getVariable ("model");
 
         /* A primitive may not be optional. */
         if (optional && parameter.getType ().isPrimitive ()) {
@@ -84,7 +84,7 @@ public class InDeclarationNode extends Node {
     }
 
     private void loadVariable () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         if (isGlobalVariable) {
             mv.visitVarInsn (ALOAD, 0);
@@ -98,7 +98,7 @@ public class InDeclarationNode extends Node {
             // mv.visitTypeInsn (CHECKCAST, new Type (Model.class).getAsmType ().getInternalName ());
             // GlobalVariableModel -> Model
         }else {
-            new VariableExpression (context, getLine (), model, AccessMode.get).compile ();
+            new VariableExpression (compilationContext, getLine (), model, AccessMode.get).compile ();
             // -> Model
         }
 
@@ -117,14 +117,14 @@ public class InDeclarationNode extends Node {
     }
 
     private void ifNullThrowException () {
-        OperationUtil.compileIfNullThrowException (context.getMethodVisitor (),
+        OperationUtil.compileIfNullThrowException (compilationContext.getMethodVisitor (),
                 Types.fromClass (InvalidInputParameterException.class),
                 parameter.getName () + " could not be loaded!");
     }
 
     // TODO: Coercion here?
     private void castAndStore () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         Type expectedType = parameter.getType ();
         Type wrapperType = expectedType.getWrapperType ();
@@ -133,7 +133,7 @@ public class InDeclarationNode extends Node {
             mv.visitTypeInsn (CHECKCAST, wrapperType.getInternalName ());
             // Object -> T
 
-            new UnboxingExpression (context, new DummyExpression (context, wrapperType, getLine ()), expectedType).compile ();
+            new UnboxingExpression (compilationContext, new DummyExpression (compilationContext, wrapperType, getLine ()), expectedType).compile ();
 
             // new VariableExpression (context, getLine (), parameter, AccessMode.set, ).compile ();
             // primitive ->
@@ -143,7 +143,7 @@ public class InDeclarationNode extends Node {
     }
 
     private void castAndStoreObject () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
         String internalTypeName = parameter.getType ().getInternalName ();
 
         mv.visitTypeInsn (CHECKCAST, internalTypeName);

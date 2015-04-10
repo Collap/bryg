@@ -1,6 +1,6 @@
 package io.collap.bryg;
 
-public class Models {
+public final class Models {
 
     private static final Model EMPTY_MODEL = new EmptyModel();
 

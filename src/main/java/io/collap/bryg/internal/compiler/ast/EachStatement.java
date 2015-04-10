@@ -1,15 +1,14 @@
-package io.collap.bryg.internal.compiler.ast.control;
+package io.collap.bryg.internal.compiler.ast;
 
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.internal.Type;
-import io.collap.bryg.internal.compiler.ast.Node;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
-import io.collap.bryg.internal.scope.LocalVariable;
+import io.collap.bryg.internal.compiler.CompilationContext;
+import io.collap.bryg.internal.LocalVariable;
 import io.collap.bryg.internal.type.*;
 import io.collap.bryg.internal.compiler.StandardVisitor;
-import io.collap.bryg.internal.scope.Scope;
+import io.collap.bryg.internal.Scope;
 import io.collap.bryg.internal.compiler.util.IdUtil;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -30,19 +29,19 @@ public class EachStatement extends Node {
     private CompiledType collectionType;
     private Node statementOrBlock;
 
-    public EachStatement (Context context, BrygParser.EachStatementContext ctx) {
-        super (context);
+    public EachStatement (CompilationContext compilationContext, BrygParser.EachStatementContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
-        StandardVisitor ptv = context.getParseTreeVisitor ();
+        StandardVisitor ptv = compilationContext.getParseTreeVisitor ();
 
         BrygParser.EachHeadContext headCtx = ctx.eachHead ();
 
         collectionExpression = (Expression) ptv.visit (headCtx.expression ());
 
         /* Open new scope. */
-        Scope scope = context.getCurrentScope ().createSubScope ();
-        context.setCurrentScope (scope);
+        Scope scope = compilationContext.getCurrentScope ().createSubScope ();
+        compilationContext.setCurrentScope (scope);
 
         if (!(collectionExpression.getType () instanceof CompiledType)) {
             throw new BrygJitException ("Can't call a Java method on a non-Java type.", getLine ());
@@ -52,7 +51,7 @@ public class EachStatement extends Node {
         BrygParser.TypeContext typeContext = headCtx.type ();
         Type declaredElementType = null;
         if (typeContext != null) {
-            declaredElementType = new TypeInterpreter (context.getEnvironment ().getClassResolver ()).interpretType (typeContext);
+            declaredElementType = new TypeInterpreter (compilationContext.getEnvironment ().getClassResolver ()).interpretType (typeContext);
         }
         Type elementType = null;
 
@@ -90,7 +89,7 @@ public class EachStatement extends Node {
             /* Register iterator out of scope. */
             Type iteratorType = Types.fromClass (Iterator.class);
             iterator = new LocalVariable (iteratorType, "", false); /* Immutable. */
-            iterator.setId (context.getHighestLocalScope().calculateNextId (iteratorType));
+            iterator.setId (compilationContext.getFragmentScope().calculateNextId (iteratorType));
         }
 
         String variableName = IdUtil.idToString (headCtx.element);
@@ -112,12 +111,12 @@ public class EachStatement extends Node {
         }
 
         /* Reset scope. */
-        context.setCurrentScope (scope.getParent ());
+        compilationContext.setCurrentScope (scope.getParent ());
     }
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         if (isArray) {
             // TODO: Implement

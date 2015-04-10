@@ -1,11 +1,10 @@
-package io.collap.bryg.internal.compiler.ast.control;
+package io.collap.bryg.internal.compiler.ast;
 
 import bryg.org.objectweb.asm.Label;
-import io.collap.bryg.internal.compiler.ast.Node;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.ast.expression.bool.BooleanExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.StandardVisitor;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -20,11 +19,11 @@ public class IfStatement extends Node {
     private Node ifStatementOrBlock;
     private Node elseStatementOrBlock;
 
-    public IfStatement (Context context, BrygParser.IfStatementContext ctx) {
-        super (context);
+    public IfStatement (CompilationContext compilationContext, BrygParser.IfStatementContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
-        StandardVisitor ptv = context.getParseTreeVisitor ();
+        StandardVisitor ptv = compilationContext.getParseTreeVisitor ();
 
         Expression conditionOrExpression = (Expression) ptv.visit (ctx.expression ());
         if (conditionOrExpression instanceof BooleanExpression) {
@@ -48,7 +47,7 @@ public class IfStatement extends Node {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         boolean elseExists = elseStatementOrBlock != null;
         Label afterIf = new Label ();

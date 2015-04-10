@@ -2,7 +2,7 @@ package io.collap.bryg.internal.compiler.ast.expression;
 
 import io.collap.bryg.internal.compiler.ast.AccessMode;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.CompiledType;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.TypeHelper;
@@ -33,20 +33,20 @@ public class AccessExpression extends Expression {
      */
     private Expression setFieldExpression;
 
-    public AccessExpression (Context context, BrygParser.AccessExpressionContext ctx,
+    public AccessExpression (CompilationContext compilationContext, BrygParser.AccessExpressionContext ctx,
                              AccessMode mode) throws NoSuchFieldException {
-        this (context, ctx, mode, null);
+        this (compilationContext, ctx, mode, null);
     }
 
-    public AccessExpression (Context context, BrygParser.AccessExpressionContext ctx,
+    public AccessExpression (CompilationContext compilationContext, BrygParser.AccessExpressionContext ctx,
                              AccessMode mode, Expression setFieldExpression) throws NoSuchFieldException {
-        super (context);
+        super (compilationContext);
         this.mode = mode;
         this.setFieldExpression = setFieldExpression;
         setLine (ctx.getStart ().getLine ());
 
         String fieldName = IdUtil.idToString (ctx.id ());
-        child = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
+        child = (Expression) compilationContext.getParseTreeVisitor ().visit (ctx.expression ());
 
         if (!(child.getType () instanceof CompiledType)) {
             throw new BrygJitException ("Can't call a Java method on a non-Java type.", getLine ());
@@ -127,7 +127,7 @@ public class AccessExpression extends Expression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         child.compile ();
         String childInternalName = child.getType ().getInternalName ();

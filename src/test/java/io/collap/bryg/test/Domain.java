@@ -1,15 +1,14 @@
 package io.collap.bryg.test;
 
+import io.collap.bryg.*;
 import io.collap.bryg.internal.compiler.Configuration;
 import io.collap.bryg.library.BasicLibrary;
 import io.collap.bryg.library.Library;
-import io.collap.bryg.ClassResolver;
-import io.collap.bryg.PrefixFilter;
-import io.collap.bryg.Environment;
 import io.collap.bryg.internal.StandardEnvironment;
-import io.collap.bryg.FileSourceLoader;
-import io.collap.bryg.SourceLoader;
 import io.collap.bryg.GlobalVariableModel;
+import io.collap.bryg.module.GenericModule;
+import io.collap.bryg.module.MemberVariable;
+import io.collap.bryg.module.Module;
 import io.collap.bryg.test.object.TestObject;
 
 import java.io.File;
@@ -43,7 +42,15 @@ public class Domain {
         classResolver.addFilter (new PrefixFilter ("io.collap.bryg.test.object"));
         classResolver.resolveClassNames ();
 
+
+
+
         Library library = new BasicLibrary ();
+
+
+        GenericModule globalVariableModule = new GenericModule("test", Visibility.global);
+        globalVariableModule.setMember("globalString", new MemberVariable());
+
 
         GlobalVariableModel commonModel = new GlobalVariableModel ();
         commonModel.declareVariable ("globalString", String.class, "This is the value of a global variable.");

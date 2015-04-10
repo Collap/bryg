@@ -3,7 +3,7 @@ package io.collap.bryg.internal.compiler.ast.expression.unary;
 import bryg.org.objectweb.asm.Opcodes;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.ast.expression.coercion.UnboxingExpression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.BrygJitException;
@@ -12,8 +12,8 @@ public class NegationExpression extends Expression {
 
     private Expression child;
 
-    public NegationExpression (Context context, Expression child, int line) {
-        super (context);
+    public NegationExpression (CompilationContext compilationContext, Expression child, int line) {
+        super (compilationContext);
         this.child = child;
         setLine (line);
 
@@ -22,7 +22,7 @@ public class NegationExpression extends Expression {
             if (primitiveType == null) {
                 throw new BrygJitException ("Can only negate numeric primitive types!", line);
             }
-            this.child = new UnboxingExpression (context, child, primitiveType);
+            this.child = new UnboxingExpression (compilationContext, child, primitiveType);
             setType (primitiveType);
         }else {
             setType (child.getType ());
@@ -41,7 +41,7 @@ public class NegationExpression extends Expression {
 
         /* Negate the value. */
         int op = type.getOpcode (Opcodes.INEG);
-        context.getMethodVisitor ().visitInsn (op);
+        compilationContext.getMethodVisitor ().visitInsn (op);
         // T -> T
     }
 

@@ -6,7 +6,7 @@ import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.ast.expression.arithmetic.BinaryAdditionExpression;
 import io.collap.bryg.internal.compiler.ast.expression.literal.IntegerLiteralExpression;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.scope.Variable;
 import io.collap.bryg.internal.compiler.util.OperationUtil;
 import io.collap.bryg.BrygJitException;
@@ -32,13 +32,13 @@ public class IncDecExpression extends Expression {
     private Expression set;
     private Expression action;
 
-    public IncDecExpression (Context context, BrygParser.ExpressionContext childCtx,
+    public IncDecExpression (CompilationContext compilationContext, BrygParser.ExpressionContext childCtx,
                              boolean isIncrement, boolean isPrefix, int line) {
-        super (context);
+        super (compilationContext);
         setLine (line);
 
         if (childCtx instanceof BrygParser.VariableExpressionContext) {
-            VariableExpression getExpr = new VariableExpression (context,
+            VariableExpression getExpr = new VariableExpression (compilationContext,
                     (BrygParser.VariableExpressionContext) childCtx, AccessMode.get);
             Variable variable = getExpr.getVariable ();
             setType (variable.getType ());
@@ -51,14 +51,14 @@ public class IncDecExpression extends Expression {
                 amount = -1;
             }
 
-            action = new BinaryAdditionExpression (context,
-                    new DummyExpression (context, type, getLine ()), /* The get expression is already compiled before! */
-                    new IntegerLiteralExpression (context, amount, getLine ()),
+            action = new BinaryAdditionExpression (compilationContext,
+                    new DummyExpression (compilationContext, type, getLine ()), /* The get expression is already compiled before! */
+                    new IntegerLiteralExpression (compilationContext, amount, getLine ()),
                     getLine ());
 
             Expression valueExpr;
             if (isPrefix) {
-                valueExpr = new Expression (context) {
+                valueExpr = new Expression (compilationContext) {
                     @Override
                     public void compile () {
                         action.compile ();
@@ -66,7 +66,7 @@ public class IncDecExpression extends Expression {
                     }
                 };
             }else { /* postfix */
-                valueExpr = new Expression (context) {
+                valueExpr = new Expression (compilationContext) {
                     @Override
                     public void compile () {
                         compileDuplicate ();
@@ -76,7 +76,7 @@ public class IncDecExpression extends Expression {
             }
 
             get = getExpr;
-            set = new VariableExpression (context, getLine (), variable, AccessMode.set, valueExpr);
+            set = new VariableExpression (compilationContext, getLine (), variable, AccessMode.set, valueExpr);
         }else {
             throw new BrygJitException ("Increment and decrement expressions are currently only supported for " +
                     "variables.", line);
@@ -95,7 +95,7 @@ public class IncDecExpression extends Expression {
     }
 
     private void compileDuplicate () {
-        OperationUtil.compileDup (context.getMethodVisitor (), type);
+        OperationUtil.compileDup (compilationContext.getMethodVisitor (), type);
     }
 
 }

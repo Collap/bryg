@@ -2,7 +2,7 @@ package io.collap.bryg.internal.compiler.ast.expression.bool;
 
 import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.parser.BrygLexer;
 import io.collap.bryg.parser.BrygParser;
@@ -16,8 +16,8 @@ public class ReferenceEqualityExpression extends BinaryBooleanExpression {
 
     private int operator;
 
-    public ReferenceEqualityExpression (Context context, BrygParser.BinaryReferenceEqualityExpressionContext ctx) {
-        super (context, ctx.expression (0), ctx.expression (1));
+    public ReferenceEqualityExpression (CompilationContext compilationContext, BrygParser.BinaryReferenceEqualityExpressionContext ctx) {
+        super (compilationContext, ctx.expression (0), ctx.expression (1));
         setLine (ctx.getStart ().getLine ());
 
         if (left.getType ().isPrimitive () ||
@@ -30,7 +30,7 @@ public class ReferenceEqualityExpression extends BinaryBooleanExpression {
 
     @Override
     public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         // TODO: Use null constants effectively.
 

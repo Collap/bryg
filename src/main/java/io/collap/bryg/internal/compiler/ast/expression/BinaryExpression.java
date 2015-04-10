@@ -1,6 +1,6 @@
 package io.collap.bryg.internal.compiler.ast.expression;
 
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.StandardVisitor;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
@@ -17,12 +17,12 @@ public abstract class BinaryExpression extends Expression {
      * Sets the line.
      * Visits and sets the left and right expressions.
      */
-    protected BinaryExpression (Context context, BrygParser.ExpressionContext leftCtx,
+    protected BinaryExpression (CompilationContext compilationContext, BrygParser.ExpressionContext leftCtx,
                                 BrygParser.ExpressionContext rightCtx) {
-        super (context);
+        super (compilationContext);
         setLine (leftCtx.getStart ().getLine ());
 
-        StandardVisitor ptv = context.getParseTreeVisitor ();
+        StandardVisitor ptv = compilationContext.getParseTreeVisitor ();
         left = (Expression) ptv.visit (leftCtx);
         right = (Expression) ptv.visit (rightCtx);
         if (left == null || right == null) {
@@ -33,16 +33,16 @@ public abstract class BinaryExpression extends Expression {
     /**
      * This constructor <b>only</b> sets the line.
      */
-    protected BinaryExpression (Context context, int line) {
-        super (context);
+    protected BinaryExpression (CompilationContext compilationContext, int line) {
+        super (compilationContext);
         setLine (line);
     }
 
     /**
      * Does <b>not</b> set the type.
      */
-    protected BinaryExpression (Context context, Expression left, Expression right, int line) {
-        super (context);
+    protected BinaryExpression (CompilationContext compilationContext, Expression left, Expression right, int line) {
+        super (compilationContext);
         setLine (line);
         this.left = left;
         this.right = right;

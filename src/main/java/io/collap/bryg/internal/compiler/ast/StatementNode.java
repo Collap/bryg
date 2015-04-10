@@ -4,7 +4,7 @@ import bryg.org.objectweb.asm.Label;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.ast.expression.literal.StringLiteralExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.util.StringBuilderCompileHelper;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.TypeHelper;
@@ -20,11 +20,11 @@ public class StatementNode extends Node {
 
     private Node child;
 
-    public StatementNode (Context context, BrygParser.StatementContext ctx) {
-        super (context);
+    public StatementNode (CompilationContext compilationContext, BrygParser.StatementContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
-        child = context.getParseTreeVisitor ().visit (ctx.getChild (0));
+        child = compilationContext.getParseTreeVisitor ().visit (ctx.getChild (0));
         if (child == null) {
             throw new BrygJitException ("Child of statement was expected but is null!", getLine ());
         }
@@ -32,7 +32,7 @@ public class StatementNode extends Node {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         /* Give ASM a line number. */
         Label here = new Label ();
@@ -50,7 +50,7 @@ public class StatementNode extends Node {
                     String text = (String) expression.getConstantValue ();
                     mv.writeConstantString (text);
                 }else {
-                    if (!context.shouldDiscardPrintOutput ()) {
+                    if (!compilationContext.shouldDiscardPrintOutput ()) {
                         mv.loadWriter ();
                         // -> Writer
 

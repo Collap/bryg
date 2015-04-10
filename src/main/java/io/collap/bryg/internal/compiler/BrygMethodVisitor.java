@@ -1,7 +1,6 @@
 package io.collap.bryg.internal.compiler;
 
 import bryg.org.objectweb.asm.*;
-import io.collap.bryg.internal.compiler.Context;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
@@ -12,7 +11,7 @@ import static bryg.org.objectweb.asm.Opcodes.*;
  */
 public class BrygMethodVisitor extends MethodVisitor {
 
-    private Context context;
+    private CompilationContext compilationContext;
     private StringBuilder builder;
 
     public BrygMethodVisitor (MethodVisitor visitor) {
@@ -21,13 +20,13 @@ public class BrygMethodVisitor extends MethodVisitor {
     }
 
     public void writeConstantString (String string) {
-        if (!context.shouldDiscardPrintOutput ()) {
+        if (!compilationContext.shouldDiscardPrintOutput ()) {
             builder.append (string);
         }
     }
 
-    public void setContext (Context context) {
-        this.context = context;
+    public void setCompilationContext(CompilationContext compilationContext) {
+        this.compilationContext = compilationContext;
     }
 
     /**

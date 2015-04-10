@@ -1,13 +1,12 @@
-package io.collap.bryg.internal.scope;
+package io.collap.bryg.internal;
 
 import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
-import io.collap.bryg.internal.Type;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.internal.compiler.ast.AccessMode;
 import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 
 import static bryg.org.objectweb.asm.Opcodes.ILOAD;
 import static bryg.org.objectweb.asm.Opcodes.ISTORE;
@@ -21,14 +20,17 @@ public class LocalVariable extends CompiledVariable {
      */
     private int id = INVALID_ID;
 
-    public LocalVariable(Type type, String name, Mutability mutability, Nullness nullness, int id) {
+    public LocalVariable(ParameterInfo parameter) {
+        this(parameter.getType(), parameter.getName(), parameter.getMutability(), parameter.getNullness());
+    }
+
+    public LocalVariable(Type type, String name, Mutability mutability, Nullness nullness) {
         super(type, name, mutability, nullness);
-        this.id = id;
     }
 
     @Override
-    public void compile(Context context, VariableExpression expression) {
-        BrygMethodVisitor mv = context.getMethodVisitor();
+    public void compile(CompilationContext compilationContext, VariableExpression expression) {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
         if (expression.getMode() == AccessMode.get) {
             mv.visitVarInsn(type.getOpcode(ILOAD), getId());
             // -> T

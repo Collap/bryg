@@ -1,6 +1,6 @@
 package io.collap.bryg.internal.compiler.ast.expression;
 
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.type.CompiledType;
 import io.collap.bryg.internal.type.TypeHelper;
 import io.collap.bryg.internal.type.Types;
@@ -36,11 +36,11 @@ public class MethodCallExpression extends Expression {
     private List<Expression> argumentExpressions;
     private Method method;
 
-    public MethodCallExpression (Context context, BrygParser.MethodCallExpressionContext ctx) {
-        super (context);
+    public MethodCallExpression (CompilationContext compilationContext, BrygParser.MethodCallExpressionContext ctx) {
+        super (compilationContext);
         setLine (ctx.getStart ().getLine ());
 
-        operandExpression = (Expression) context.getParseTreeVisitor ().visit (ctx.expression ());
+        operandExpression = (Expression) compilationContext.getParseTreeVisitor ().visit (ctx.expression ());
 
         if (!(operandExpression.getType () instanceof CompiledType)) {
             throw new BrygJitException ("Can't call a Java method on a non-Java type.", getLine ());
@@ -52,7 +52,7 @@ public class MethodCallExpression extends Expression {
         }
 
         /* Init argument expressions. */
-        List<ArgumentExpression> arguments = FunctionUtil.parseArgumentList (context, ctx.functionCall ().argumentList ());
+        List<ArgumentExpression> arguments = FunctionUtil.parseArgumentList (compilationContext, ctx.functionCall ().argumentList ());
         argumentExpressions = new ArrayList<> (arguments.size ());
 
         /* Validate arguments. */
@@ -128,7 +128,7 @@ public class MethodCallExpression extends Expression {
             Expression expression = argumentExpressions.get (i);
             if (!expression.getType ().similarTo (paramType)) { /* Check if the exact types match. */
                 if (coerce) {
-                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion (context, expression,
+                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion (compilationContext, expression,
                             Types.fromClass (paramType));
                     if (coercionExpression == null) {
                         return null;
@@ -159,7 +159,7 @@ public class MethodCallExpression extends Expression {
         }
         // -> A1, A2, ...
 
-        context.getMethodVisitor ().visitMethodInsn (isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
+        compilationContext.getMethodVisitor ().visitMethodInsn (isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
                 operandType.getInternalName (),
                 method.getName (),
                 TypeHelper.generateMethodDesc (

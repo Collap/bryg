@@ -4,7 +4,7 @@ import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.internal.compiler.ast.expression.unary.CastExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
-import io.collap.bryg.internal.compiler.Context;
+import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.BrygJitException;
@@ -16,10 +16,10 @@ public class BitwiseNotExpression extends Expression {
 
     private Expression child;
 
-    public BitwiseNotExpression (Context context, BrygParser.ExpressionContext childCtx) {
-        super (context);
+    public BitwiseNotExpression (CompilationContext compilationContext, BrygParser.ExpressionContext childCtx) {
+        super (compilationContext);
         setLine (childCtx.getStart ().getLine ());
-        child = (Expression) context.getParseTreeVisitor ().visit (childCtx);
+        child = (Expression) compilationContext.getParseTreeVisitor ().visit (childCtx);
 
         if (!child.getType ().isPrimitive ()) {
             /* Possibly unbox. */
@@ -27,7 +27,7 @@ public class BitwiseNotExpression extends Expression {
             if (primitiveType == null) {
                 throw new BrygJitException ("The expression with the type " + child.getType () + " can not be unboxed!", getLine ());
             }
-            child = new UnboxingExpression (context, child, primitiveType);
+            child = new UnboxingExpression (compilationContext, child, primitiveType);
         }
 
         if (!child.getType ().isIntegralType ()) {
@@ -36,7 +36,7 @@ public class BitwiseNotExpression extends Expression {
 
         /* Promote byte and short to int, since there are no opcodes for BNOT for byte and short. */
         if (child.getType ().similarTo (Byte.TYPE) || child.getType ().similarTo (Short.TYPE)) {
-            child = new CastExpression (context, Types.fromClass (Integer.TYPE), child, getLine ());
+            child = new CastExpression (compilationContext, Types.fromClass (Integer.TYPE), child, getLine ());
         }
 
         setType (child.getType ());
@@ -44,7 +44,7 @@ public class BitwiseNotExpression extends Expression {
 
     @Override
     public void compile () {
-        BrygMethodVisitor mv = context.getMethodVisitor ();
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
         /*
             ~i is the same as i ^ -1:

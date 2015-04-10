@@ -1,14 +1,18 @@
 package io.collap.bryg.module;
 
+import io.collap.bryg.Visibility;
+
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class GenericModule implements Module {
 
     protected String name;
     protected Visibility visibility;
-    private Map<String, Member> members = new HashMap<>();
+    private Map<String, Member<?>> members = new HashMap<>();
 
     public GenericModule(String name, Visibility visibility) {
         this.name = name;
@@ -30,7 +34,12 @@ public class GenericModule implements Module {
         return members.get(name);
     }
 
-    public void setMember(String name, Member member) {
+    @Override
+    public Iterator<? extends Member<?>> getMemberIterator() {
+        return Collections.unmodifiableCollection(members.values()).iterator();
+    }
+
+    public void setMember(String name, Member<?> member) {
         members.put(name, member);
     }
 

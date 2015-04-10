@@ -1,79 +1,47 @@
 package io.collap.bryg.internal;
 
-import io.collap.bryg.internal.type.TypeHelper;
+import io.collap.bryg.Mutability;
+import io.collap.bryg.Nullness;
 import io.collap.bryg.internal.type.Types;
 
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 
-public abstract class FragmentInfo {
+/**
+ * The implicit writer parameter is added to the parameter list automatically.
+ */
+public class FragmentInfo extends FunctionInfo {
 
-    protected UnitType owner;
-    protected String name;
-    protected List<VariableInfo> localParameters;
-    protected String desc;
+    public final static String DIRECT_CALL_PREFIX = "__direct_";
 
-    public FragmentInfo (String name) {
-        this.name = name;
-        this.localParameters = new ArrayList<> ();
-        generateDesc ();
+    private String directName;
+
+    public FragmentInfo(TemplateType owner, FragmentCompileInfo compileInfo) {
+        this(owner, compileInfo.getName(), compileInfo.getParameters());
     }
 
-    public FragmentInfo (String name, List<VariableInfo> localParameters) {
-        this.name = name;
-        this.localParameters = localParameters;
-        generateDesc ();
+    public FragmentInfo(TemplateType owner, String name, List<ParameterInfo> parameters) {
+        super(owner, name, addImplicitParameters(parameters));
+        initializeDirectName(name);
     }
 
-    private void generateDesc () {
-        int size = 1 + localParameters.size ();
-        Type[] parameterTypes = new Type[size];
-        parameterTypes[0] = Types.fromClass (Writer.class);
-        for (int i = 1; i < size; ++i) {
-            parameterTypes[i] = localParameters.get (i - 1).getType ();
-        }
-
-        desc = TypeHelper.generateMethodDesc (parameterTypes, Types.fromClass (Void.TYPE));
+    private static List<ParameterInfo> addImplicitParameters(List<ParameterInfo> parameters) {
+        parameters.add(0, new ParameterInfo(Types.fromClass(Writer.class), "writer", Mutability.immutable,
+                Nullness.notnull, null));
+        return parameters;
     }
 
-    public String getName () {
-        return name;
+    private void initializeDirectName(String delegatorName) {
+        this.directName = DIRECT_CALL_PREFIX + delegatorName;
     }
 
-    public void addParameter (VariableInfo parameter) {
-        localParameters.add (parameter);
+    @Override
+    public TemplateType getOwner() {
+        return (TemplateType) super.getOwner();
     }
 
-    /**
-     * @return Local parameters expected by the fragment, excluding general parameters (if applicable).
-     */
-    public List<VariableInfo> getLocalParameters () {
-        return localParameters;
-    }
-
-    public List<VariableInfo> getGeneralParameters () {
-        return new ArrayList<> (0);
-    }
-
-    /**
-     * This method should be overridden.
-     * @return All parameters expected by the fragment, including general parameters (if applicable).
-     */
-    public List<VariableInfo> getAllParameters () {
-        return localParameters;
-    }
-
-    public UnitType getOwner () {
-        return owner;
-    }
-
-    public void setOwner (UnitType owner) {
-        this.owner = owner;
-    }
-
-    public String getDesc () {
-        return desc;
+    public String getDirectName() {
+        return directName;
     }
 
 }
