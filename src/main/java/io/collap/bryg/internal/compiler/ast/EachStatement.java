@@ -30,8 +30,7 @@ public class EachStatement extends Node {
     private Node statementOrBlock;
 
     public EachStatement (CompilationContext compilationContext, BrygParser.EachStatementContext ctx) {
-        super (compilationContext);
-        setLine (ctx.getStart ().getLine ());
+        super (compilationContext, ctx.getStart().getLine());
 
         StandardVisitor ptv = compilationContext.getParseTreeVisitor ();
 

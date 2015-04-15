@@ -1,9 +1,9 @@
 package io.collap.bryg.internal;
 
-import io.collap.bryg.CompilationException;
-import io.collap.bryg.Template;
-import io.collap.bryg.Environment;
-import io.collap.bryg.Model;
+import io.collap.bryg.*;
+import io.collap.bryg.internal.compiler.util.IdUtil;
+import io.collap.bryg.internal.type.TypeInterpreter;
+import io.collap.bryg.parser.BrygParser;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
@@ -25,10 +25,11 @@ public class TemplateType extends UnitType {
     /**
      * Also extracts fragments from the compile infos and adds them to the UnitType.
      */
-    public TemplateType(String className, TemplateCompilationData compilationData) {
+    public TemplateType(String className, TemplateCompilationData compilationData, ClassResolver classResolver) {
         super(className);
         this.compilationData = compilationData;
         configureFragments();
+        configureFields(classResolver);
     }
 
     private void configureFragments() {
@@ -38,6 +39,23 @@ public class TemplateType extends UnitType {
 
         for (FragmentCompileInfo compileInfo : compilationData.getFragmentCompileInfos()) {
             addFragment(new FragmentInfo(this, compileInfo));
+        }
+    }
+
+    private void configureFields(ClassResolver classResolver) {
+        if (compilationData == null) {
+            throw new IllegalStateException("Compilation data is null.");
+        }
+
+        for (BrygParser.FieldDeclarationContext fieldContext : compilationData.getFieldContexts()) {
+            addField(
+                    new FieldInfo(
+                            new TypeInterpreter(classResolver).interpretType(fieldContext.type()),
+                            IdUtil.idToString(fieldContext.id()),
+                            Mutability.immutable,
+                            Nullness.notnull
+                    )
+            );
         }
     }
 

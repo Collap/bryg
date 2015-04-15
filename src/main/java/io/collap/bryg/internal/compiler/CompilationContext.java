@@ -26,8 +26,9 @@ public class CompilationContext {
 
     /**
      * The current scope is the scope each node resides in at its creation.
+     * This is a local scope, because this is at least the function scope and at most any local sub-scope.
      */
-    private Scope currentScope;
+    private LocalScope currentScope;
 
     /**
      * Modules are allowed to register fragment-wide states in this map.
@@ -41,7 +42,7 @@ public class CompilationContext {
      * @param methodVisitor May be null, but should be set before compiling any nodes.
      */
     public CompilationContext(StandardEnvironment environment, FunctionInfo functionInfo, UnitType unitType,
-                              @Nullable BrygMethodVisitor methodVisitor, FunctionScope fragmentScope,
+                              @Nullable BrygMethodVisitor methodVisitor, FunctionScope functionScope,
                               UnitScope unitScope) {
         // TODO: Change the order of the parameters to: environment, unitType, unitScope, functionInfo, functionScope, methodVisitor
         this.environment = environment;
@@ -49,9 +50,9 @@ public class CompilationContext {
         this.unitType = unitType;
         this.parseTreeVisitor = new StandardVisitor();
         this.methodVisitor = methodVisitor;
-        this.fragmentScope = fragmentScope;
+        this.fragmentScope = functionScope;
         this.unitScope = unitScope;
-        currentScope = fragmentScope;
+        currentScope = functionScope;
         closureBlockId = 0;
 
         /* Set context instance for the parameters. */
@@ -116,11 +117,11 @@ public class CompilationContext {
         return unitScope;
     }
 
-    public Scope getCurrentScope() {
+    public LocalScope getCurrentScope() {
         return currentScope;
     }
 
-    public void setCurrentScope(Scope currentScope) {
+    public void setCurrentScope(LocalScope currentScope) {
         this.currentScope = currentScope;
     }
 

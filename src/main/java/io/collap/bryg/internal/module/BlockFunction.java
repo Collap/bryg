@@ -1,20 +1,26 @@
 package io.collap.bryg.internal.module;
 
-import io.collap.bryg.module.Function;
-import io.collap.bryg.internal.compiler.ast.expression.FunctionCallExpression;
+import io.collap.bryg.internal.MemberFunctionCallInfo;
+import io.collap.bryg.module.MemberFunction;
 import io.collap.bryg.internal.compiler.CompilationContext;
 
-public abstract class BlockFunction extends Function {
+public abstract class BlockFunction extends MemberFunction {
 
-    @Override
-    public void compile(CompilationContext compilationContext, FunctionCallExpression call) {
-        enter(compilationContext, call);
-        call.getStatementOrBlock().compile();
-        exit(compilationContext, call);
+    public BlockFunction(String name) {
+        super(name);
     }
 
-    public abstract void enter(CompilationContext compilationContext, FunctionCallExpression call);
+    @Override
+    public void compile(CompilationContext compilationContext, MemberFunctionCallInfo callInfo) {
+        enter(compilationContext, callInfo);
+        if (callInfo.getStatementOrBlock() != null) {
+            callInfo.getStatementOrBlock().compile();
+        }
+        exit(compilationContext, callInfo);
+    }
 
-    public abstract void exit(CompilationContext compilationContext, FunctionCallExpression call);
+    public abstract void enter(CompilationContext compilationContext, MemberFunctionCallInfo callInfo);
+
+    public abstract void exit(CompilationContext compilationContext, MemberFunctionCallInfo callInfo);
 
 }

@@ -6,15 +6,20 @@ import java.io.PrintStream;
 
 public abstract class Node {
 
+    /**
+     * Indicates that the line of the node is not known.
+     * Using this should be avoided where possible, but in some cases it might
+     * just not be feasible to attach a source line to some node in the AST.
+     */
+    public static final int UNKNOWN_LINE = -1;
+
     protected CompilationContext compilationContext;
 
-    /**
-     * A line of -1 indicates that the line has not been set!
-     */
-    private int line = -1;
+    private int line;
 
-    protected Node(CompilationContext compilationContext) {
+    protected Node(CompilationContext compilationContext, int line) {
         this.compilationContext = compilationContext;
+        this.line = line;
     }
 
     /**
@@ -50,7 +55,7 @@ public abstract class Node {
         return line;
     }
 
-    protected void setLine(int line) {
+    private void setLine(int line) {
         this.line = line;
     }
 

@@ -35,12 +35,32 @@ public class TemplateParser implements Parser<TemplateType> {
 
     @Override
     public TemplateType parse() {
-        long parseStart = System.nanoTime();
+        @Nullable BrygParser.StartContext startContext = createParseTree();
+        if (startContext == null) {
+            throw new CompilationException("Could not build a parse tree from the supplied source!");
+        }
 
-        boolean usedSLL = false;
+        if (environment.getDebugConfiguration().shouldPrintParseTree()) {
+            PrintTreeVisitor printTreeVisitor = new PrintTreeVisitor();
+            printTreeVisitor.visit(startContext);
+            System.out.println();
+        }
+
+        List<BrygParser.FragmentFunctionContext> fragmentContexts = startContext.fragmentFunction();
+        // TODO: Use parallel stream here?
+        List<FragmentCompileInfo> compileInfos = fragmentContexts.stream().map(this::parseFragment).collect(Collectors.toList());
+
+        return new TemplateType(className, new TemplateCompilationData(compileInfos,
+                startContext.fieldDeclaration(), new HashSet<>()), environment.getClassResolver());
+    }
+
+    private @Nullable BrygParser.StartContext createParseTree() {
         @Nullable BrygParser.StartContext startContext = null;
+
         InputStream stream = new ByteArrayInputStream(source.getBytes());
         try {
+            long parseStart = System.nanoTime();
+
             BrygLexer lexer = new BrygLexer(new ANTLRInputStream(stream));
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
 
@@ -63,10 +83,11 @@ public class TemplateParser implements Parser<TemplateType> {
             parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
             parser.removeErrorListeners();
             parser.setErrorHandler(new BailErrorStrategy());
+            boolean usedSLL = false;
             try {
                 startContext = parser.start();
                 usedSLL = true;
-            } catch (ParseCancellationException ex) {
+            } catch (ParseCancellationException ex) { // Occurs when the SLL(*) parser did not find a result.
                 if (ex.getCause() instanceof RecognitionException) {
                     /* Try again with LL(*). */
                     tokenStream.reset();
@@ -79,61 +100,32 @@ public class TemplateParser implements Parser<TemplateType> {
                     startContext = parser.start();
                 }
             }
+
+            double parseTime = (System.nanoTime() - parseStart) / 1.0e9;
+            System.out.println("Parsing with " + (usedSLL ? "SLL(*)" : "LL(*)") +
+                    " took " + parseTime + "s.");
         } catch (IOException e) {
             throw new CompilationException("IO exception occurred during ANTLR parsing.", e);
         }
 
-        if (startContext == null) {
-            throw new CompilationException("Could not build a parse tree from the supplied source!");
-        }
-
-        if (environment.getDebugConfiguration().shouldPrintParseTree()) {
-            PrintTreeVisitor printTreeVisitor = new PrintTreeVisitor();
-            printTreeVisitor.visit(startContext);
-            System.out.println();
-        }
-
-        double parseTime = (System.nanoTime() - parseStart) / 1.0e9;
-
-        List<BrygParser.FragmentFunctionContext> fragmentContexts = startContext.fragmentFunction();
-        // TODO: Use parallel stream here?
-        List<FragmentCompileInfo> compileInfos = fragmentContexts.stream().map(this::parseFragment).collect(Collectors.toList());
-
-        // TODO: Parse fields.
-
-        TemplateType templateType = new TemplateType(className, new TemplateCompilationData(compileInfos,
-                startContext.inDeclaration(), new HashSet<>()));
-
-        System.out.println("Parsing with " + (usedSLL ? "SLL(*)" : "LL(*)") +
-                " took " + parseTime + "s.");
-
-        return templateType;
+        return startContext;
     }
 
     private FragmentCompileInfo parseFragment(BrygParser.FragmentFunctionContext ctx) {
         BrygParser.FragmentBlockContext fragBlockCtx = ctx.fragmentBlock();
-        List<ParameterInfo> parameters = parseParameters(fragBlockCtx.inDeclaration());
+        List<ParameterInfo> parameters = parseParameters(ctx.parameterList().parameterDeclaration());
         return new FragmentCompileInfo(IdUtil.idToString(ctx.id()), parameters, fragBlockCtx.statement());
     }
 
-    private List<FieldInfo> parseFields(List<BrygParser.InDeclarationContext> contexts) {
-        List<FieldInfo> fields = new ArrayList<>();
-
-        // TODO: Implement.
-
-        return fields;
-    }
-
-    private List<ParameterInfo> parseParameters(List<BrygParser.InDeclarationContext> contexts) {
+    private List<ParameterInfo> parseParameters(List<BrygParser.ParameterDeclarationContext> contexts) {
         List<ParameterInfo> parameters = new ArrayList<>();
-        for (BrygParser.InDeclarationContext context : contexts) {
+        for (BrygParser.ParameterDeclarationContext context : contexts) {
             String name = IdUtil.idToString(context.id());
             Type type = new TypeInterpreter(environment.getClassResolver()).interpretType(context.type());
 
-            // TODO: Change qualifier from opt to nullable.
-            boolean isNullable = context.qualifier.getType() == BrygLexer.OPT;
-            parameters.add(new ParameterInfo(type, name, Mutability.immutable,
-                    isNullable ? Nullness.nullable : Nullness.notnull, null)); // TODO: Handle default values.
+            // TODO: Handle default values.
+            Nullness nullness = context.nullable.getType() == BrygLexer.NULLABLE ? Nullness.nullable : Nullness.notnull;
+            parameters.add(new ParameterInfo(type, name, Mutability.immutable, nullness, null));
         }
         return parameters;
     }

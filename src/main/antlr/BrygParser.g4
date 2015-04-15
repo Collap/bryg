@@ -12,14 +12,15 @@ options {
 
 
 start
-    :   (inDeclaration | NEWLINE)*
-        (statement | NEWLINE)*
+    :   (fieldDeclaration | NEWLINE)*
         (fragmentFunction | NEWLINE)*
-        EOF // EOF is needed for SLL(*) parsing! Otherwise no exception is thrown, which is needed to induce LL(*) parsing.
+        EOF // EOF is needed for SLL(*) parsing! Otherwise no exception is thrown, which is needed to fallback to LL(*) parsing.
     ;
 
-inDeclaration
-    :   qualifier=(IN | OPT) type id
+
+// TODO: Nullable?
+fieldDeclaration
+    :   type id
         NEWLINE
     ;
 
@@ -31,13 +32,11 @@ statement
     |   variableDeclaration
         NEWLINE
     |   blockFunctionCall
+    |   statementFunctionCall  // TODO: Is it alright that this is placed before the expression now?
     |   expression
         NEWLINE
-    |   statementFunctionCall   /* This rule has to be placed after expression, because otherwise an expression
-                                   like a - 7 would be interpreted as a statementFunctionCall with an arithmetic
-                                   negation (that leads to the number -7) instead of a binary subtraction. */
-    |   templateFragmentCall
     ;
+
 
 /**
  *  This rule is executed separately when the compiler finds an unescaped interpolation sequence (\{...}) in a string.
@@ -48,23 +47,22 @@ interpolation
 
 
 fragmentFunction
-    :   FRAG id NEWLINE
+    :   (DEFAULT FRAG | DEFAULT FRAG id | FRAG id) parameterList?
         fragmentBlock
     ;
 
 fragmentBlock
     :   INDENT
-        (inDeclaration | NEWLINE)*
         (statement | NEWLINE)*
         DEDENT
     ;
 
+parameterList
+    :   '(' parameterDeclaration? (',' parameterDeclaration)* ')'
+    ;
 
-closure
-    :   INDENT
-        (inDeclaration | NEWLINE)*
-        (statement | NEWLINE)*
-        DEDENT
+parameterDeclaration
+    :   nullable=NULLABLE? type id
     ;
 
 expression
@@ -74,6 +72,8 @@ expression
     |   expression '.' functionCall                         # methodCallExpression
     |   functionCall                                        # functionCallExpression
     |   variable                                            # variableExpression
+    |   closure                                             # closureExpression
+    |   templateInstantiation                               # templateInstantiationExpression
     |   '(' type ')' expression                             # castExpression
     |   expression op=('++' | '--')                         # unaryPostfixExpression
     |   (   op=('++' | '--') expression
@@ -137,9 +137,24 @@ whileStatement
         )
     ;
 
+closure
+    :   '\\' parameterList?
+        closureBody
+    ;
+
+closureBody
+    :   INDENT
+        (statement | NEWLINE)*
+        DEDENT
+    ;
+
+templateInstantiation
+    :   templateId argumentList
+    ;
+
 block
     :   INDENT
-        statement*
+        (statement | NEWLINE)*
         DEDENT
     ;
 
@@ -172,18 +187,8 @@ statementFunctionCall
         statement
     ;
 
-/* Calls functions of other templates. By default, 'render' is called. */
-templateFragmentCall
-    :   templateId frag=id? argumentList?
-        NEWLINE closure?
-    ;
-
-templateId
-    :   '@' currentPackage='.'? (id '.')* id
-    ;
-
 argumentList
-    :   '(' (argument (',' argument)*)? ')'
+    :   '(' argument? (',' argument)* ')'
     ;
 
 argument
@@ -210,8 +215,12 @@ literal
     ;
 
 type
-    :   id
-        ('<' type (',' type)* '>')?
+    :   id ('<' type (',' type)* '>')?
+    |   templateId
+    ;
+
+templateId
+    :   '@' currentPackage='.'? (id '.')* id
     ;
 
 id
@@ -224,7 +233,6 @@ keyword
     |   AND
     |   OR
     |   IN
-    |   OPT
     |   IS
     |   EACH
     |   WHILE
@@ -236,4 +244,6 @@ keyword
     |   TRUE
     |   FALSE
     |   FRAG
+    |   NULLABLE
+    |   DEFAULT
     ;

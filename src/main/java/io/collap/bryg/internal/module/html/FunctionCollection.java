@@ -1,6 +1,6 @@
 package io.collap.bryg.internal.module.html;
 
-import io.collap.bryg.module.Function;
+import io.collap.bryg.module.MemberFunction;
 import io.collap.bryg.module.Member;
 
 import javax.annotation.Nullable;
@@ -17,7 +17,7 @@ public class FunctionCollection {
         return instance;
     }
 
-    private Map<String, Function> functionMap = new HashMap<>();
+    private Map<String, MemberFunction> functionMap = new HashMap<>();
 
     public FunctionCollection() {
         initialize();
@@ -26,7 +26,7 @@ public class FunctionCollection {
     /**
      * This method is thread-safe, since the map is only read.
      */
-    public Function getFunction(String name) {
+    public MemberFunction getFunction(String name) {
         return functionMap.get(name);
     }
 
@@ -275,7 +275,7 @@ public class FunctionCollection {
     }
 
     private void addContentTag(String name, @Nullable String[] validAttributes) {
-        Function function;
+        MemberFunction function;
         if (validAttributes != null) {
             Arrays.sort(validAttributes); // Make sure that the arrays are sorted!
             function = new HtmlFunction(name, validAttributes, true);
@@ -290,7 +290,7 @@ public class FunctionCollection {
     }
 
     private void addTag(String name, @Nullable String[] validAttributes) {
-        Function function;
+        MemberFunction function;
         if (validAttributes != null) {
             Arrays.sort(validAttributes); // Make sure that the arrays are sorted!
             function = new HtmlFunction(name, validAttributes, false);

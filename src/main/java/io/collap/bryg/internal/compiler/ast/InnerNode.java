@@ -8,24 +8,22 @@ import java.util.List;
 
 public abstract class InnerNode extends Node {
 
-    protected List<Node> children = new ArrayList<> ();
+    protected List<Node> children = new ArrayList<>();
 
-    protected InnerNode (CompilationContext compilationContext) {
-        super (compilationContext);
+    protected InnerNode(CompilationContext compilationContext, int line) {
+        super(compilationContext, line);
     }
 
     @Override
-    public void compile () {
-        for (Node child : children) {
-            child.compile ();
-        }
+    public void compile() {
+        children.forEach(Node::compile);
     }
 
     @Override
-    public void print (PrintStream out, int depth) {
-        super.print (out, depth);
+    public void print(PrintStream out, int depth) {
+        super.print(out, depth);
         for (Node child : children) {
-            child.print (out, depth + 1);
+            child.print(out, depth + 1);
         }
     }
 

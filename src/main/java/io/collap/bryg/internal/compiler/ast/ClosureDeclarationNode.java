@@ -21,8 +21,7 @@ public class ClosureDeclarationNode extends Node {
     private ClosureScope closureScope;
 
     public ClosureDeclarationNode(CompilationContext compilationContext, BrygParser.ClosureContext ctx) {
-        super(compilationContext);
-        setLine(ctx.getStart().getLine());
+        super(compilationContext, ctx.getStart().getLine());
 
         ClosureScope closureScope = new ClosureScope(compilationContext.getCurrentScope());
 

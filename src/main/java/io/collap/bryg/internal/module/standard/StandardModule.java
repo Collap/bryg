@@ -7,7 +7,7 @@ public class StandardModule extends GenericModule {
 
     public StandardModule() {
         super("standard", Visibility.global);
-        setMember("discard", new DiscardFunction());
+        setMember("discard", new DiscardFunction("discard"));
     }
 
 }

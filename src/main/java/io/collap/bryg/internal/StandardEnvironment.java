@@ -61,6 +61,14 @@ public class StandardEnvironment implements Environment {
         return modules.get(name);
     }
 
+    public @Nullable Member<?> getGlobalMember(String name) {
+        @Nullable Module module = globalNameToModuleMap.get(name);
+        if (module == null) {
+            return null;
+        }
+        return module.getMember(name);
+    }
+
     public void addSourceLoader(SourceLoader sourceLoader) {
         sourceLoaders.add(sourceLoader);
     }

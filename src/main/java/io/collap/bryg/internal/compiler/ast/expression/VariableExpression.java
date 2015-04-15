@@ -27,8 +27,7 @@ public class VariableExpression extends Expression {
 
     public VariableExpression(CompilationContext compilationContext, BrygParser.VariableExpressionContext ctx,
                               VariableUsageInfo usage) {
-        super(compilationContext);
-        setLine(ctx.getStart().getLine());
+        super(compilationContext, ctx.getStart().getLine());
         this.usage = usage;
 
         String variableName = IdUtil.idToString(ctx.variable().id());
@@ -45,8 +44,7 @@ public class VariableExpression extends Expression {
 
     public VariableExpression(CompilationContext compilationContext, int line, CompiledVariable variable,
                               VariableUsageInfo usage) {
-        super(compilationContext);
-        setLine(line);
+        super(compilationContext, line);
         this.usage = usage;
         this.variable = variable;
 

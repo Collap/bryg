@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class TemplateCompilationData {
 
-    private List<BrygParser.InDeclarationContext> fieldContexts;
+    private List<BrygParser.FieldDeclarationContext> fieldContexts;
     private List<FragmentCompileInfo> fragmentCompileInfos;
 
     /**
@@ -20,7 +20,7 @@ public class TemplateCompilationData {
     private Set<TemplateType> referencedTemplates;
 
     public TemplateCompilationData(List<FragmentCompileInfo> fragmentCompileInfos,
-                                   List<BrygParser.InDeclarationContext> fieldContexts,
+                                   List<BrygParser.FieldDeclarationContext> fieldContexts,
                                    Set<TemplateType> referencedTemplates) {
         this.fragmentCompileInfos = fragmentCompileInfos;
         this.fieldContexts = fieldContexts;
@@ -31,7 +31,7 @@ public class TemplateCompilationData {
         return fragmentCompileInfos;
     }
 
-    public List<BrygParser.InDeclarationContext> getFieldContexts() {
+    public List<BrygParser.FieldDeclarationContext> getFieldContexts() {
         return fieldContexts;
     }
 

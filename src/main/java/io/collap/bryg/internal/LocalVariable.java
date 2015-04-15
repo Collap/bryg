@@ -29,13 +29,13 @@ public class LocalVariable extends CompiledVariable {
     }
 
     @Override
-    public void compile(CompilationContext compilationContext, VariableExpression expression) {
+    public void compile(CompilationContext compilationContext, VariableUsageInfo usageInfo) {
         BrygMethodVisitor mv = compilationContext.getMethodVisitor();
-        if (expression.getMode() == AccessMode.get) {
+        if (usageInfo.getAccessMode() == AccessMode.get) {
             mv.visitVarInsn(type.getOpcode(ILOAD), getId());
             // -> T
         } else { /* AccessMode.set */
-            expression.getRightExpression().compile();
+            usageInfo.getRightExpression().compile();
             mv.visitVarInsn(type.getOpcode(ISTORE), getId());
             // T ->
         }

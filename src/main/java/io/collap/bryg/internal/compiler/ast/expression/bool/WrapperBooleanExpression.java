@@ -19,13 +19,12 @@ import static bryg.org.objectweb.asm.Opcodes.IFEQ;
  *
  * Expressions that return a boolean value are automatically wrapped in this node by the StandardVisitor.
  */
-public class ExpressionBooleanExpression extends BooleanExpression {
+public class WrapperBooleanExpression extends BooleanExpression {
 
     private Expression expression;
 
-    public ExpressionBooleanExpression (CompilationContext compilationContext, Expression expression) {
-        super (compilationContext);
-        setLine (expression.getLine ());
+    public WrapperBooleanExpression(CompilationContext compilationContext, Expression expression) {
+        super (compilationContext, expression.getLine());
         this.expression = expression;
 
         if (!expression.getType ().similarTo (Boolean.TYPE)) {

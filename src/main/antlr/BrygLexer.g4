@@ -141,7 +141,6 @@ NOT                 : 'not';
 AND                 : 'and';
 OR                  : 'or';
 IN                  : 'in';
-OPT                 : 'opt';
 IS                  : 'is';
 EACH                : 'each';
 WHILE               : 'while';
@@ -153,6 +152,8 @@ NULL                : 'null';
 TRUE                : 'true';
 FALSE               : 'false';
 FRAG                : 'frag';
+NULLABLE            : 'nullable';
+DEFAULT             : 'default';
 
 Identifier
     :   Letter
@@ -274,6 +275,7 @@ DOT                 : '.';
 COMMA               : ',';
 COLON               : ':';
 BACKTICK            : '`';
+BACKSLASH           : '\\';
 
 AT                  : '@';
 QUEST               : '?';

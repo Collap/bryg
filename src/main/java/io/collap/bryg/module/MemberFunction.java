@@ -1,15 +1,15 @@
 package io.collap.bryg.module;
 
+import io.collap.bryg.internal.MemberFunctionCallInfo;
 import io.collap.bryg.internal.ParameterInfo;
-import io.collap.bryg.internal.compiler.ast.expression.FunctionCallExpression;
 
 import java.util.List;
 
-public abstract class Function implements Member<FunctionCallExpression> {
+public abstract class MemberFunction implements Member<MemberFunctionCallInfo> {
 
     protected String name;
 
-    public Function(String name) {
+    public MemberFunction(String name) {
         this.name = name;
     }
 

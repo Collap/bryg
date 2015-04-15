@@ -16,8 +16,7 @@ public class BoxingExpression extends Expression {
     private Expression child;
 
     public BoxingExpression (CompilationContext compilationContext, Expression child, Type boxedType) {
-        super (compilationContext);
-        setLine (child.getLine ());
+        super (compilationContext, child.getLine());
         setType (boxedType);
         this.child = child;
     }

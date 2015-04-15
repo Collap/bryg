@@ -13,8 +13,8 @@ public abstract class Expression extends Node {
      */
     protected Type type;
 
-    protected Expression (CompilationContext compilationContext) {
-        super (compilationContext);
+    protected Expression (CompilationContext compilationContext, int line) {
+        super (compilationContext, line);
     }
 
     public Type getType () {

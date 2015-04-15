@@ -20,8 +20,7 @@ public class IfStatement extends Node {
     private Node elseStatementOrBlock;
 
     public IfStatement (CompilationContext compilationContext, BrygParser.IfStatementContext ctx) {
-        super (compilationContext);
-        setLine (ctx.getStart ().getLine ());
+        super (compilationContext, ctx.getStart().getLine());
 
         StandardVisitor ptv = compilationContext.getParseTreeVisitor ();
 
