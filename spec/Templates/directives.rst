@@ -20,3 +20,9 @@ The ``import`` directive overrides the environment-wide *simple name* to *full n
 .. code-block:: bryg
 
   import some.package.ClassName
+
+This can also be used to import template names.
+
+.. code-block:: bryg
+
+  import @some.package.Template
