@@ -5,9 +5,6 @@ import io.collap.bryg.Closure;
 import io.collap.bryg.internal.*;
 import io.collap.bryg.internal.compiler.ast.Node;
 import io.collap.bryg.internal.type.*;
-import io.collap.bryg.Model;
-
-import java.io.Writer;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
@@ -46,13 +43,11 @@ public class ClosureCompiler extends UnitCompiler<ClosureType> {
             // Make sure the node is created before these methods are called, so every captured variable
             // is correctly turned into a field and constructor parameter.
             compileFields(classVisitor, unitType.getFields());
-            compileConstructor(classVisitor, unitType, true);
+            unitType.configureConstructorInfo();
+            compileConstructor(classVisitor, unitType);
 
-            BrygMethodVisitor mv = (BrygMethodVisitor) classVisitor.visitMethod(ACC_PUBLIC, fragmentInfo.getName(),
-                    TypeHelper.generateMethodDesc(
-                            new Class<?>[]{Writer.class, Model.class},
-                            Void.TYPE
-                    ), null, null);
+            BrygMethodVisitor mv = (BrygMethodVisitor) classVisitor.visitMethod(ACC_PUBLIC, fragmentInfo.getDirectName(),
+                    fragmentInfo.getDesc(), null, null);
             {
                 compilationContext.setMethodVisitor(mv);
 

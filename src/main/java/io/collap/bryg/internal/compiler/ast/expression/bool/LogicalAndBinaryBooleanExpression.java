@@ -8,15 +8,14 @@ import javax.annotation.Nullable;
 
 public class LogicalAndBinaryBooleanExpression extends BinaryBooleanExpression {
 
-    public LogicalAndBinaryBooleanExpression (CompilationContext compilationContext, BrygParser.BinaryLogicalAndExpressionContext ctx) {
-        super (compilationContext, ctx.expression (0), ctx.expression (1));
-        setLine (ctx.getStart ().getLine ());
+    public LogicalAndBinaryBooleanExpression(CompilationContext compilationContext, BrygParser.BinaryLogicalAndExpressionContext ctx) {
+        super(compilationContext, ctx.expression(0), ctx.expression(1));
     }
 
     @Override
-    public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
-        ((BooleanExpression) left).compile (nextFalse, null, false);
-        ((BooleanExpression) right).compile (nextFalse, nextTrue, lastExpressionInChain);
+    public void compile(Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
+        ((BooleanExpression) left).compile(nextFalse, null, false);
+        ((BooleanExpression) right).compile(nextFalse, nextTrue, lastExpressionInChain);
     }
 
 }

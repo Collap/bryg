@@ -10,6 +10,7 @@ import io.collap.bryg.parser.BrygParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,7 @@ public class InterpolationUtil {
         while (nextInterpolation < value.length()) {
             nextInterpolation = value.indexOf('\\', nextInterpolation);
             if (nextInterpolation >= 0) {
-                String interpolationString = null;
+                @Nullable String interpolationString = null;
                 if (nextInterpolation > 0) {
                     char before = value.charAt(nextInterpolation - 1);
                     if (before != '\\') {
@@ -86,7 +87,7 @@ public class InterpolationUtil {
      * @return The source of the interpolation without the braces and backslash, or null if the
      * string fragment is no interpolation.
      */
-    private static String getInterpolationString(String value, int interpolationStart) {
+    private static @Nullable String getInterpolationString(String value, int interpolationStart) {
         int afterIndex = interpolationStart + 1;
         if (afterIndex < value.length()) {
             char after = value.charAt(afterIndex);

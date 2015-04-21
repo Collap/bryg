@@ -28,6 +28,11 @@ public class LocalVariable extends CompiledVariable {
         super(type, name, mutability, nullness);
     }
 
+    public LocalVariable(Type type, String name, Mutability mutability, Nullness nullness, int id) {
+        this(type, name, mutability, nullness);
+        this.id = id;
+    }
+
     @Override
     public void compile(CompilationContext compilationContext, VariableUsageInfo usageInfo) {
         BrygMethodVisitor mv = compilationContext.getMethodVisitor();

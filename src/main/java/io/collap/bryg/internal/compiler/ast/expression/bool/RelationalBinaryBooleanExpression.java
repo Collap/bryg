@@ -5,9 +5,8 @@ import io.collap.bryg.parser.BrygParser;
 
 public class RelationalBinaryBooleanExpression extends OperatorBinaryBooleanExpression {
 
-    public RelationalBinaryBooleanExpression (CompilationContext compilationContext, BrygParser.BinaryRelationalExpressionContext ctx) {
-        super (compilationContext, ctx.expression (0), ctx.expression (1), ctx.op.getType ());
-        setLine (ctx.getStart ().getLine ());
+    public RelationalBinaryBooleanExpression(CompilationContext compilationContext, BrygParser.BinaryRelationalExpressionContext ctx) {
+        super(compilationContext, ctx.expression(0), ctx.expression(1), ctx.op.getType());
     }
 
 }

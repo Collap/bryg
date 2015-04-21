@@ -7,16 +7,16 @@ import io.collap.bryg.parser.BrygParser;
 
 public class BinarySignedLeftShiftExpression extends BinaryShiftExpression {
 
-    public BinarySignedLeftShiftExpression (CompilationContext compilationContext, BrygParser.BinaryShiftExpressionContext ctx) {
-        super (compilationContext, ctx);
+    public BinarySignedLeftShiftExpression(CompilationContext compilationContext, BrygParser.BinaryShiftExpressionContext ctx) {
+        super(compilationContext, ctx);
     }
 
-    public BinarySignedLeftShiftExpression (CompilationContext compilationContext, Expression left, Expression right, int line) {
-        super (compilationContext, left, right, line);
+    public BinarySignedLeftShiftExpression(CompilationContext compilationContext, Expression left, Expression right, int line) {
+        super(compilationContext, left, right, line);
     }
 
     @Override
-    protected int getOpcode () {
+    protected int getOpcode() {
         return Opcodes.ISHL;
     }
 

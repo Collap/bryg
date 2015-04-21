@@ -12,36 +12,35 @@ public class NegationExpression extends Expression {
 
     private Expression child;
 
-    public NegationExpression (CompilationContext compilationContext, Expression child, int line) {
-        super (compilationContext);
+    public NegationExpression(CompilationContext compilationContext, Expression child, int line) {
+        super(compilationContext, line);
         this.child = child;
-        setLine (line);
 
-        if (!child.getType ().isNumeric ()) {
-            Type primitiveType = child.getType ().getPrimitiveType ();
+        if (!child.getType().isNumeric()) {
+            Type primitiveType = child.getType().getPrimitiveType();
             if (primitiveType == null) {
-                throw new BrygJitException ("Can only negate numeric primitive types!", line);
+                throw new BrygJitException("Can only negate numeric primitive types!", line);
             }
-            this.child = new UnboxingExpression (compilationContext, child, primitiveType);
-            setType (primitiveType);
-        }else {
-            setType (child.getType ());
+            this.child = new UnboxingExpression(compilationContext, child, primitiveType);
+            setType(primitiveType);
+        } else {
+            setType(child.getType());
         }
 
-        /* "Convert" to integer if byte or short, since there are no neg operators for byte or short. */
-        if (type.similarTo (Byte.TYPE) || type.similarTo (Short.TYPE)) {
-            setType (Types.fromClass (Integer.TYPE));
+        // "Convert" to integer if byte or short, since there are no neg operators for byte or short.
+        if (getType().similarTo(Byte.TYPE) || getType().similarTo(Short.TYPE)) {
+            setType(Types.fromClass(Integer.TYPE));
         }
     }
 
     @Override
-    public void compile () {
-        child.compile ();
+    public void compile() {
+        child.compile();
         // -> T
 
-        /* Negate the value. */
-        int op = type.getOpcode (Opcodes.INEG);
-        compilationContext.getMethodVisitor ().visitInsn (op);
+        // Negate the value.
+        int op = getType().getOpcode(Opcodes.INEG);
+        compilationContext.getMethodVisitor().visitInsn(op);
         // T -> T
     }
 

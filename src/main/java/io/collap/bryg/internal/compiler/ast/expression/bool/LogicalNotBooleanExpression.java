@@ -15,30 +15,29 @@ public class LogicalNotBooleanExpression extends BooleanExpression {
 
     private Expression child;
 
-    public LogicalNotBooleanExpression (CompilationContext compilationContext, BrygParser.ExpressionContext childCtx) {
-        super (compilationContext);
-        setLine (childCtx.getStart ().getLine ());
-        child = (Expression) compilationContext.getParseTreeVisitor ().visit (childCtx);
+    public LogicalNotBooleanExpression(CompilationContext compilationContext, BrygParser.ExpressionContext childCtx) {
+        super(compilationContext, childCtx.getStart().getLine());
+        child = (Expression) compilationContext.getParseTreeVisitor().visit(childCtx);
 
-        if (!child.getType ().similarTo (Boolean.TYPE)) {
-            throw new BrygJitException ("The NOT (`not`) operation can only be applied to boolean types.",
-                    getLine ());
+        if (!child.getType().similarTo(Boolean.TYPE)) {
+            throw new BrygJitException("The NOT (`not`) operation can only be applied to boolean types.",
+                    getLine());
         }
     }
 
     @Override
-    public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
-        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
+    public void compile(Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-        child.compile ();
+        child.compile();
         // -> boolean
 
         /* Jump to the false label when the boolean is not 0;
            In other words: Jump to the false label when the boolean is true.*/
-        mv.visitJumpInsn (IFNE, nextFalse);
+        mv.visitJumpInsn(IFNE, nextFalse);
 
         /* Otherwise, jump to nextTrue if the boolean is false. */
-        super.compile (nextFalse, nextTrue, lastExpressionInChain);
+        super.compile(nextFalse, nextTrue, lastExpressionInChain);
     }
 
 }

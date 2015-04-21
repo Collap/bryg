@@ -5,9 +5,9 @@ import bryg.org.objectweb.asm.util.TraceClassVisitor;
 import io.collap.bryg.*;
 import io.collap.bryg.internal.*;
 import io.collap.bryg.internal.Type;
-import io.collap.bryg.internal.compiler.ast.DelegatorRootNode;
+import io.collap.bryg.internal.compiler.ast.DelegatorBodyNode;
 import io.collap.bryg.internal.compiler.ast.Node;
-import io.collap.bryg.internal.compiler.ast.RootNode;
+import io.collap.bryg.internal.compiler.ast.FunctionBodyNode;
 import io.collap.bryg.internal.compiler.ast.expression.ModelLoadExpression;
 import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.type.AsmTypes;
@@ -75,14 +75,13 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
             CompilationContext compilationContext = new CompilationContext(environment, fragmentInfo, unitType, mv,
                     fragmentScope, unitScope);
 
-            RootNode node = new RootNode(compilationContext, compileInfo.getStatementContexts());
+            FunctionBodyNode node = new FunctionBodyNode(compilationContext, compileInfo.getStatementContexts());
 
             if (environment.getDebugConfiguration().shouldPrintAst()) {
                 node.print(System.out, 0);
                 System.out.println();
             }
 
-            node.addGlobalVariableLoads(fragmentScope);
             node.compile();
 
             mv.voidReturn();
@@ -111,12 +110,12 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
             CompiledVariable writerVariable = fragmentScope.getWriterVariable();
             CompiledVariable modelVariable = fragmentScope.getMandatoryVariable("model");
 
-            DelegatorRootNode root = new DelegatorRootNode(compilationContext);
-            root.addChild(new VariableExpression(compilationContext, -1, thisVariable, VariableUsageInfo.withGetMode()));
+            DelegatorBodyNode root = new DelegatorBodyNode(compilationContext);
+            root.addChild(new VariableExpression(compilationContext, Node.UNKNOWN_LINE, thisVariable, VariableUsageInfo.withGetMode()));
             // -> unitType
 
             /* Add all parameters in order. */
-            root.addChild(new VariableExpression(compilationContext, -1, writerVariable, VariableUsageInfo.withGetMode()));
+            root.addChild(new VariableExpression(compilationContext, Node.UNKNOWN_LINE, writerVariable, VariableUsageInfo.withGetMode()));
             // -> Writer
 
             List<ParameterInfo> directParameters = fragmentInfo.getParameters();
@@ -126,7 +125,7 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
             }
 
             /* Call the actual fragment function. */
-            root.addChild(new Node(compilationContext) {
+            root.addChild(new Node(compilationContext, Node.UNKNOWN_LINE) {
                 @Override
                 public void compile() {
                     mv.visitMethodInsn(INVOKEVIRTUAL, fragmentInfo.getOwner().getInternalName(),
@@ -151,29 +150,20 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
     /**
      * The only implicit parameter is the environment.
      * Also sets the constructorDesc field of the unitType.
+     *
+     * // TODO: Set constructor info in unit type.
      */
-    protected void compileConstructor(ClassVisitor classVisitor, UnitType unitType, boolean shouldSetConstructorDesc) {
-        List<Type> parameterTypes = new ArrayList<>();
-        List<FieldInfo> fields = unitType.getFields();
-        parameterTypes.add(Types.fromClass(StandardEnvironment.class)); /* This is the only parameter for the StandardUnit. */
-        for (FieldInfo field : fields) {
-            parameterTypes.add(field.getType());
-        }
+    protected void compileConstructor(ClassVisitor classVisitor, UnitType unitType) {
+        ConstructorInfo constructorInfo = unitType.getConstructorInfo();
 
-        String desc = TypeHelper.generateMethodDesc(
-                parameterTypes.toArray(new Type[parameterTypes.size()]),
-                Types.fromClass(Void.TYPE)
-        );
-        if (shouldSetConstructorDesc) {
-            unitType.setConstructorDesc(desc);
-        }
-
-        BrygMethodVisitor constructor = (BrygMethodVisitor) classVisitor.visitMethod(ACC_PUBLIC, "<init>", desc, null, null);
+        BrygMethodVisitor constructor = (BrygMethodVisitor) classVisitor.visitMethod(ACC_PUBLIC, "<init>",
+                constructorInfo.getDesc(), null, null);
         compileSuperConstructorCall(constructor);
 
         // Set fields.
-        for (int i = 0, id = parameterTypes.size() - fields.size() + 1; // params - fields + "this" = id of first field
-             i < fields.size(); ++i) {
+        // params - fields + "this" = id of first field
+        List<FieldInfo> fields = unitType.getFields();
+        for (int i = 0, id = constructorInfo.getParameters().size() - fields.size() + 1; i < fields.size(); ++i) {
             FieldInfo field = fields.get(i);
             Type fieldType = field.getType();
 
@@ -226,7 +216,7 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
                 unitScope
         );
 
-        DelegatorRootNode root = new DelegatorRootNode(compilationContext);
+        DelegatorBodyNode root = new DelegatorBodyNode(compilationContext);
 
         /* Load and store. */
         List<FieldInfo> fields = unitType.getFields();
@@ -237,7 +227,7 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
                         " variable in the unit scope, which should NOT happen and is definitely a compiler bug.");
             }
 
-            root.addChild(new VariableExpression(compilationContext, -1, instanceVariable,
+            root.addChild(new VariableExpression(compilationContext, Node.UNKNOWN_LINE, instanceVariable,
                     VariableUsageInfo.withSetMode(new ModelLoadExpression(compilationContext, field,
                             constructorScope.getMandatoryVariable("model")))));
         }

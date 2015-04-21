@@ -11,45 +11,45 @@ import io.collap.bryg.parser.BrygParser;
 
 public abstract class BinaryBitwiseExpression extends BinaryExpression {
 
-    protected BinaryBitwiseExpression (CompilationContext compilationContext, BrygParser.ExpressionContext leftCtx,
-                                       BrygParser.ExpressionContext rightCtx) {
-        super (compilationContext, leftCtx, rightCtx);
-        init ();
+    protected BinaryBitwiseExpression(CompilationContext compilationContext, BrygParser.ExpressionContext leftCtx,
+                                      BrygParser.ExpressionContext rightCtx) {
+        super(compilationContext, leftCtx, rightCtx);
+        init();
     }
 
-    protected BinaryBitwiseExpression (CompilationContext compilationContext, Expression left, Expression right, int line) {
-        super (compilationContext, left, right, line);
-        init ();
+    protected BinaryBitwiseExpression(CompilationContext compilationContext, Expression left, Expression right, int line) {
+        super(compilationContext, left, right, line);
+        init();
     }
 
-    private void init () {
-        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (compilationContext, left, right);
+    private void init() {
+        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion(compilationContext, left, right);
         left = result.a;
         right = result.b;
-        setType (left.getType ());
+        setType(left.getType());
 
-        if (!type.isIntegralType ()) {
-            throw new BrygJitException ("Bitwise operands must have integral types (byte, short, int, long).",
-                    getLine ());
+        if (!getType().isIntegralType()) {
+            throw new BrygJitException("Bitwise operands must have integral types (byte, short, int, long).",
+                    getLine());
         }
     }
 
     @Override
-    public void compile () {
-        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
+    public void compile() {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-        left.compile ();
-        right.compile ();
+        left.compile();
+        right.compile();
         // -> T, T
 
-        int opcode = type.getOpcode (getOpcode ());
-        mv.visitInsn (opcode);
+        int opcode = getType().getOpcode(getOpcode());
+        mv.visitInsn(opcode);
         // T, T -> T
     }
 
     /**
      * @return The opcode for the bitwise expression in the integer (IAND, IOR, IXOR) form.
      */
-    protected abstract int getOpcode ();
+    protected abstract int getOpcode();
 
 }

@@ -280,8 +280,6 @@ BACKSLASH           : '\\';
 AT                  : '@';
 QUEST               : '?';
 
-INC                 : '++';
-DEC                 : '--';
 PLUS                : '+';
 MINUS               : '-';
 MUL                 : '*';

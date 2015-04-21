@@ -63,7 +63,7 @@ public class UnboxingExpression extends Expression {
         compilationContext.getMethodVisitor().visitMethodInsn(INVOKEVIRTUAL, boxTypeName, valueMethodName,
                 TypeHelper.generateMethodDesc(
                         null,
-                        type
+                        getType()
                 ),
                 false
         );

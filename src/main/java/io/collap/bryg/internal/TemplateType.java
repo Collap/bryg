@@ -3,10 +3,13 @@ package io.collap.bryg.internal;
 import io.collap.bryg.*;
 import io.collap.bryg.internal.compiler.util.IdUtil;
 import io.collap.bryg.internal.type.TypeInterpreter;
+import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TemplateType extends UnitType {
 
@@ -30,6 +33,7 @@ public class TemplateType extends UnitType {
         this.compilationData = compilationData;
         configureFragments();
         configureFields(classResolver);
+        configureConstructorInfo();
     }
 
     private void configureFragments() {
@@ -60,6 +64,11 @@ public class TemplateType extends UnitType {
     }
 
     @Override
+    protected void addConstructorParameters(List<ParameterInfo> parameters) {
+        // Nothing to do here.
+    }
+
+    @Override
     public Class<?> getStandardUnitClass() {
         return StandardTemplate.class;
     }
@@ -71,7 +80,7 @@ public class TemplateType extends UnitType {
 
     @Override
     public FragmentInfo getFragment(String name) {
-        return (FragmentInfo) super.getFragment(name);
+        return super.getFragment(name);
     }
 
     /**

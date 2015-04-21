@@ -16,54 +16,52 @@ public class CastExpression extends Expression {
     private boolean isPrimitiveCast;
     private int conversionOpcode;
 
-    public CastExpression (CompilationContext compilationContext, BrygParser.CastExpressionContext ctx) {
-        this (
+    public CastExpression(CompilationContext compilationContext, BrygParser.CastExpressionContext ctx) {
+        this(
                 compilationContext,
-                new TypeInterpreter (compilationContext.getEnvironment ().getClassResolver ()).interpretType (ctx.type ()),
-                (Expression) compilationContext.getParseTreeVisitor ().visit (ctx.expression ()),
-                ctx.getStart ().getLine ()
+                new TypeInterpreter(compilationContext.getEnvironment().getClassResolver()).interpretType(ctx.type()),
+                (Expression) compilationContext.getParseTreeVisitor().visit(ctx.expression()),
+                ctx.getStart().getLine()
         );
     }
 
-    public CastExpression (CompilationContext compilationContext, Type targetType, Expression child, int line) {
-        super (compilationContext);
+    public CastExpression(CompilationContext compilationContext, Type targetType, Expression child, int line) {
+        super(compilationContext, line);
         this.child = child;
-        setType (targetType);
-        setLine (line);
+        setType(targetType);
 
-        Type from = child.getType ();
-        Type to = type;
-        if (from.isPrimitive () && to.isPrimitive ()) {
-            conversionOpcode = CoercionUtil.getConversionOpcode (from, to, getLine ());
+        Type from = child.getType();
+        Type to = getType();
+        if (from.isPrimitive() && to.isPrimitive()) {
+            conversionOpcode = CoercionUtil.getConversionOpcode(from, to, getLine());
             isPrimitiveCast = true;
-        }else {
+        } else {
             isPrimitiveCast = false;
         }
     }
 
-    public CastExpression (CompilationContext compilationContext, Type targetType, Expression child, int conversionOpcode, int line) {
-        super (compilationContext);
+    public CastExpression(CompilationContext compilationContext, Type targetType, Expression child, int conversionOpcode, int line) {
+        super(compilationContext, line);
         this.child = child;
         this.conversionOpcode = conversionOpcode;
         isPrimitiveCast = true;
-        setType (targetType);
-        setLine (line);
+        setType(targetType);
     }
 
     @Override
-    public void compile () {
-        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
+    public void compile() {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-        child.compile ();
+        child.compile();
         // -> from
 
         if (isPrimitiveCast) {
             if (conversionOpcode != NOP) {
-                mv.visitInsn (conversionOpcode);
+                mv.visitInsn(conversionOpcode);
                 // from -> to
             }
-        }else { /* Object cast. */
-            mv.visitTypeInsn (CHECKCAST, type.getInternalName ());
+        } else { /* Object cast. */
+            mv.visitTypeInsn(CHECKCAST, getType().getInternalName());
             // from -> to
         }
     }

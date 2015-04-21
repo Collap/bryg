@@ -4,6 +4,8 @@ import io.collap.bryg.*;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
+import java.util.List;
+
 public class ClosureType extends UnitType {
 
     private TemplateType parentTemplateType;
@@ -18,6 +20,12 @@ public class ClosureType extends UnitType {
 
         addField(new FieldInfo(Types.fromClass(Unit.class), StandardClosure.PARENT_FIELD_NAME, Mutability.immutable,
                 Nullness.notnull));
+    }
+
+    @Override
+    protected void addConstructorParameters(List<ParameterInfo> parameters) {
+        parameters.add(new ParameterInfo(parentTemplateType, StandardClosure.PARENT_FIELD_NAME,
+                Mutability.immutable, Nullness.notnull, null));
     }
 
     @Override

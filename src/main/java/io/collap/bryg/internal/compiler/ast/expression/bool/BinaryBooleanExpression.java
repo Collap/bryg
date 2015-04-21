@@ -15,19 +15,20 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
     protected Expression left;
     protected Expression right;
 
-    protected BinaryBooleanExpression (CompilationContext compilationContext, BrygParser.ExpressionContext left, BrygParser.ExpressionContext right) {
-        super (compilationContext);
+    protected BinaryBooleanExpression(CompilationContext compilationContext, BrygParser.ExpressionContext left,
+                                      BrygParser.ExpressionContext right) {
+        super(compilationContext, left.getStart().getLine());
 
-        StandardVisitor ptv = compilationContext.getParseTreeVisitor ();
-        this.left = (Expression) ptv.visit (left);
-        this.right = (Expression) ptv.visit (right);
+        StandardVisitor ptv = compilationContext.getParseTreeVisitor();
+        this.left = (Expression) ptv.visit(left);
+        this.right = (Expression) ptv.visit(right);
     }
 
     @Override
-    public void print (PrintStream out, int depth) {
-        super.print (out, depth);
-        left.print (out, depth + 1);
-        right.print (out, depth + 1);
+    public void print(PrintStream out, int depth) {
+        super.print(out, depth);
+        left.print(out, depth + 1);
+        right.print(out, depth + 1);
     }
 
 }

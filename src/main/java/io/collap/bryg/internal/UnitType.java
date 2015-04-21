@@ -1,7 +1,10 @@
 package io.collap.bryg.internal;
 
+import io.collap.bryg.Mutability;
+import io.collap.bryg.Nullness;
 import io.collap.bryg.internal.type.RuntimeType;
 import io.collap.bryg.internal.type.TypeHelper;
+import io.collap.bryg.internal.type.Types;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -19,9 +22,8 @@ public abstract class UnitType extends RuntimeType {
     protected String classPackage;
 
     protected List<FieldInfo> fields = new ArrayList<>();
+    protected @Nullable ConstructorInfo constructorInfo;
     protected Map<String, FragmentInfo> fragments = new HashMap<>();
-
-    private @Nullable String constructorDesc;
 
     public UnitType(String fullName) {
         super(TypeHelper.toInternalName(fullName));
@@ -36,6 +38,26 @@ public abstract class UnitType extends RuntimeType {
             classPackage = "";
         }
     }
+
+    /**
+     * This method should only be called once all fields have been set.
+     */
+    public void configureConstructorInfo() {
+        List<ParameterInfo> parameters = new ArrayList<>();
+        parameters.add(new ParameterInfo(Types.fromClass(StandardEnvironment.class), StandardUnit.ENVIRONMENT_FIELD_NAME,
+                Mutability.immutable, Nullness.notnull, null));
+        addConstructorParameters(parameters);
+        for (FieldInfo field : fields) {
+            parameters.add(new ParameterInfo(field, null)); // TODO: Default values?
+        }
+        setConstructorInfo(new ConstructorInfo(this, "<init>", parameters));
+    }
+
+    /**
+     * Allows any subclass to add constructor parameters before the field parameters are set, but after the
+     * environment field.
+     */
+    protected abstract void addConstructorParameters(List<ParameterInfo> parameters);
 
     public void addField(FieldInfo field) {
         fields.add(field);
@@ -79,16 +101,15 @@ public abstract class UnitType extends RuntimeType {
         return classPackage;
     }
 
-    public String getConstructorDesc() {
-        if (constructorDesc == null) {
-            throw new IllegalStateException("The constructor description has not been set yet at the time of retrieval.");
+    public ConstructorInfo getConstructorInfo() {
+        if (constructorInfo == null) {
+            throw new IllegalStateException("The constructor info must be set before it can be retrieved.");
         }
-
-        return constructorDesc;
+        return constructorInfo;
     }
 
-    public void setConstructorDesc(String constructorDesc) {
-        this.constructorDesc = constructorDesc;
+    public void setConstructorInfo(@Nullable ConstructorInfo constructorInfo) {
+        this.constructorInfo = constructorInfo;
     }
 
     public List<FieldInfo> getFields() {

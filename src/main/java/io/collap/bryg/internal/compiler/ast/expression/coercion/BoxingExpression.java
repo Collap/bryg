@@ -25,7 +25,7 @@ public class BoxingExpression extends Expression {
     public void compile () {
         BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
 
-        Type boxType = type;
+        Type boxType = getType();
         String boxTypeName = boxType.getInternalName ();
         Type paramType = child.getType ();
 

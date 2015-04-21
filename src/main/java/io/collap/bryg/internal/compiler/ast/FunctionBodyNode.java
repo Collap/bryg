@@ -5,20 +5,14 @@ import io.collap.bryg.parser.BrygParser;
 
 import java.util.List;
 
-public class RootNode extends InnerNode {
+public class FunctionBodyNode extends InnerNode {
 
-    public RootNode(CompilationContext compilationContext, List<BrygParser.StatementContext> statementContexts) {
-        super(compilationContext);
+    public FunctionBodyNode(CompilationContext compilationContext, List<BrygParser.StatementContext> statementContexts) {
+        super(compilationContext, Node.UNKNOWN_LINE);
 
         for (BrygParser.StatementContext sc : statementContexts) {
             children.add(new StatementNode(compilationContext, sc));
         }
-    }
-
-    @Override
-    public void compile() {
-        /* Compile statements. */
-        super.compile();
     }
 
 }

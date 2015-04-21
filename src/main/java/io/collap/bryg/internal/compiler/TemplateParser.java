@@ -4,6 +4,7 @@ import io.collap.bryg.CompilationException;
 import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
 import io.collap.bryg.internal.*;
+import io.collap.bryg.internal.compiler.util.FunctionUtil;
 import io.collap.bryg.internal.type.TypeInterpreter;
 import io.collap.bryg.internal.compiler.util.IdUtil;
 import io.collap.bryg.parser.BrygLexer;
@@ -16,7 +17,6 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -113,21 +113,9 @@ public class TemplateParser implements Parser<TemplateType> {
 
     private FragmentCompileInfo parseFragment(BrygParser.FragmentFunctionContext ctx) {
         BrygParser.FragmentBlockContext fragBlockCtx = ctx.fragmentBlock();
-        List<ParameterInfo> parameters = parseParameters(ctx.parameterList().parameterDeclaration());
+        List<ParameterInfo> parameters = FunctionUtil.parseParameterList(environment,
+                ctx.parameterList().parameterDeclaration());
         return new FragmentCompileInfo(IdUtil.idToString(ctx.id()), parameters, fragBlockCtx.statement());
-    }
-
-    private List<ParameterInfo> parseParameters(List<BrygParser.ParameterDeclarationContext> contexts) {
-        List<ParameterInfo> parameters = new ArrayList<>();
-        for (BrygParser.ParameterDeclarationContext context : contexts) {
-            String name = IdUtil.idToString(context.id());
-            Type type = new TypeInterpreter(environment.getClassResolver()).interpretType(context.type());
-
-            // TODO: Handle default values.
-            Nullness nullness = context.nullable.getType() == BrygLexer.NULLABLE ? Nullness.nullable : Nullness.notnull;
-            parameters.add(new ParameterInfo(type, name, Mutability.immutable, nullness, null));
-        }
-        return parameters;
     }
 
 }

@@ -39,8 +39,7 @@ public class MethodCallExpression extends Expression {
     private Method method;
 
     public MethodCallExpression(CompilationContext compilationContext, BrygParser.MethodCallExpressionContext ctx) {
-        super(compilationContext);
-        setLine(ctx.getStart().getLine());
+        super(compilationContext, ctx.getStart().getLine());
 
         operandExpression = (Expression) compilationContext.getParseTreeVisitor().visit(ctx.expression());
 

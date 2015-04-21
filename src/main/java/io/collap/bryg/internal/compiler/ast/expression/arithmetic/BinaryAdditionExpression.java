@@ -9,6 +9,7 @@ import io.collap.bryg.parser.BrygParser;
 
 /**
  * If one of the operands is a String, neither 'left' nor 'right' may be DummyExpressions.
+ * TODO: To hell with these dummies.
  */
 public class BinaryAdditionExpression extends BinaryArithmeticExpression {
 
@@ -33,7 +34,7 @@ public class BinaryAdditionExpression extends BinaryArithmeticExpression {
     @Override
     public void compile () {
         /* Build String. */
-        if (type.similarTo (String.class)) {
+        if (getType().similarTo (String.class)) {
             buildString ();
             // -> String
         }else {

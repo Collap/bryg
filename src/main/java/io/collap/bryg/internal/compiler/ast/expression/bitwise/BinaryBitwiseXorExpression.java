@@ -5,6 +5,8 @@ import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.parser.BrygParser;
 
+// TODO: Reduce footprint by removing these simple classes?
+
 public class BinaryBitwiseXorExpression extends BinaryBitwiseExpression {
 
     public BinaryBitwiseXorExpression (CompilationContext compilationContext, BrygParser.BinaryBitwiseXorExpressionContext ctx) {

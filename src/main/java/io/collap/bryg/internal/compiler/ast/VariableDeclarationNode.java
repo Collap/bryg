@@ -4,7 +4,6 @@ import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
 import io.collap.bryg.internal.VariableUsageInfo;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
-import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.LocalVariable;
 import io.collap.bryg.internal.Type;
@@ -23,8 +22,7 @@ public class VariableDeclarationNode extends Node {
     private Expression expression;
 
     public VariableDeclarationNode(CompilationContext compilationContext, BrygParser.VariableDeclarationContext ctx) {
-        super(compilationContext);
-        setLine(ctx.getStart().getLine());
+        super(compilationContext, ctx.getStart().getLine());
 
         String name = IdUtil.idToString(ctx.id());
         @Nullable Type expectedType = null;

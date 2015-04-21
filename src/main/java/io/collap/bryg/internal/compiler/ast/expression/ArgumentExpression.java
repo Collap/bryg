@@ -10,9 +10,8 @@ import javax.annotation.Nullable;
 
 public class ArgumentExpression extends Expression {
 
-    private @Nullable String name;
-
     private Expression expression;
+    private @Nullable String name;
 
     /**
      * The argument is skipped if the predicate is false.
@@ -20,27 +19,22 @@ public class ArgumentExpression extends Expression {
     private @Nullable BooleanExpression predicate;
 
     public ArgumentExpression(CompilationContext compilationContext, BrygParser.ArgumentContext ctx) {
-        super(compilationContext);
-        setLine(ctx.getStart().getLine());
+        super(compilationContext, ctx.getStart().getLine());
 
+        // Check for expression.
+        if (ctx.expression() == null) {
+            throw new BrygJitException("Expression parse tree context is null!", getLine());
+        }
+
+        checkAndSetExpression((Expression) compilationContext.getParseTreeVisitor().visit(ctx.expression()));
+
+        // Check for name.
         @Nullable BrygParser.ArgumentIdContext id = ctx.argumentId();
         if (id != null) {
             name = id.getText();
         }
 
-        if (ctx.expression() == null) {
-            throw new BrygJitException("Expression parse tree context is null!", getLine());
-        }
-
-        expression = (Expression) compilationContext.getParseTreeVisitor().visit(ctx.expression());
-
-        if (expression.getType().similarTo(Void.TYPE)) {
-            throw new BrygJitException("An argument expression must not return void.", getLine());
-        }
-
-        setType(expression.getType());
-
-        /* Check for predicate. */
+        // Check for predicate.
         @Nullable BrygParser.ArgumentPredicateContext predicateContext = ctx.argumentPredicate();
         if (predicateContext != null) {
             Expression predicateExpression = (Expression) compilationContext.getParseTreeVisitor().visit(predicateContext);
@@ -52,6 +46,26 @@ public class ArgumentExpression extends Expression {
         } else {
             predicate = null;
         }
+    }
+
+    public ArgumentExpression(CompilationContext compilationContext, int line, Expression expression,
+                              @Nullable String name, @Nullable BooleanExpression predicate) {
+        super(compilationContext, line);
+        this.name = name;
+        this.predicate = predicate;
+        checkAndSetExpression(expression);
+    }
+
+    /**
+     * Also sets the type.
+     */
+    private void checkAndSetExpression(Expression expression) {
+        if (expression.getType().similarTo(Void.TYPE)) {
+            throw new BrygJitException("An argument expression must not return void.", getLine());
+        }
+
+        this.expression = expression;
+        setType(expression.getType());
     }
 
     @Override

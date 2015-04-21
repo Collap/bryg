@@ -16,11 +16,11 @@ public class FragmentInfo extends FunctionInfo {
 
     private String directName;
 
-    public FragmentInfo(TemplateType owner, FragmentCompileInfo compileInfo) {
+    public FragmentInfo(UnitType owner, FragmentCompileInfo compileInfo) {
         this(owner, compileInfo.getName(), compileInfo.getParameters());
     }
 
-    public FragmentInfo(TemplateType owner, String name, List<ParameterInfo> parameters) {
+    public FragmentInfo(UnitType owner, String name, List<ParameterInfo> parameters) {
         super(owner, name, addImplicitParameters(parameters));
         initializeDirectName(name);
     }
@@ -33,11 +33,6 @@ public class FragmentInfo extends FunctionInfo {
 
     private void initializeDirectName(String delegatorName) {
         this.directName = DIRECT_CALL_PREFIX + delegatorName;
-    }
-
-    @Override
-    public TemplateType getOwner() {
-        return (TemplateType) super.getOwner();
     }
 
     public String getDirectName() {

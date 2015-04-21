@@ -55,8 +55,4 @@ public abstract class Node {
         return line;
     }
 
-    private void setLine(int line) {
-        this.line = line;
-    }
-
 }

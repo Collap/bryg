@@ -75,10 +75,7 @@ expression
     |   closure                                             # closureExpression
     |   templateInstantiation                               # templateInstantiationExpression
     |   '(' type ')' expression                             # castExpression
-    |   expression op=('++' | '--')                         # unaryPostfixExpression
-    |   (   op=('++' | '--') expression
-        |   '(' op='-' expression ')'
-        )                                                   # unaryPrefixExpression
+    |   '(' '-' expression ')'                              # unaryNegationExpression
     |   op=('~' | NOT) expression                           # unaryOperationExpression
     |   expression op=('*' | '/' | '%') expression          # binaryMulDivRemExpression
     |   expression op=('+' | '-') expression                # binaryAddSubExpression

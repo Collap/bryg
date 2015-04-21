@@ -20,7 +20,6 @@ import io.collap.bryg.internal.compiler.ast.expression.shift.BinarySignedLeftShi
 import io.collap.bryg.internal.compiler.ast.expression.shift.BinarySignedRightShiftExpression;
 import io.collap.bryg.internal.compiler.ast.expression.shift.BinaryUnsignedRightShiftExpression;
 import io.collap.bryg.internal.compiler.ast.expression.unary.CastExpression;
-import io.collap.bryg.internal.compiler.ast.expression.unary.IncDecExpression;
 import io.collap.bryg.internal.compiler.ast.expression.unary.NegationExpression;
 import io.collap.bryg.internal.compiler.util.FunctionUtil;
 import io.collap.bryg.internal.compiler.util.IdUtil;
@@ -60,7 +59,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         if (node instanceof Expression) {
             Expression expression = (Expression) node;
 
-            /* Wrap appropriate expressions in a ExpressionBooleanExpression.*/
+            /* Wrap appropriate expressions in a WrapperBooleanExpression.*/
             if ((expression.getType().similarTo(Boolean.TYPE) || expression.getType().similarTo(Boolean.class))
                     && !(expression instanceof BooleanExpression)) {
                 node = new WrapperBooleanExpression(compilationContext, expression);
@@ -70,13 +69,8 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public RootNode visitStart(@NotNull BrygParser.StartContext ctx) {
-        return new RootNode(compilationContext, ctx);
-    }
-
-    @Override
-    public Node visitClosure(@NotNull BrygParser.ClosureContext ctx) {
-        return new ClosureDeclarationNode(compilationContext, ctx);
+    public Node visitStart(@NotNull BrygParser.StartContext ctx) {
+        throw new RuntimeException("The start context should not be visited!");
     }
 
     @Override
@@ -144,6 +138,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public MemberFunctionCallExpression visitFunctionCall(@NotNull BrygParser.FunctionCallContext ctx) {
+        // TODO: Check for direct closure call: closure(a, b, c)
         return createMemberFunctionCallNode(ctx.id(), ctx.getStart().getLine(),
                 ctx.argumentList(), null);
     }
@@ -183,6 +178,21 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public WhileStatement visitWhileStatement(@NotNull BrygParser.WhileStatementContext ctx) {
         return new WhileStatement(compilationContext, ctx);
+    }
+
+
+    //
+    //  Instantiation
+    //
+
+    @Override
+    public Node visitTemplateInstantiation(@NotNull BrygParser.TemplateInstantiationContext ctx) {
+        return new TemplateInstantiationExpression(compilationContext, ctx);
+    }
+
+    @Override
+    public ClosureInstantiationExpression visitClosure(@NotNull BrygParser.ClosureContext ctx) {
+        return new ClosureInstantiationExpression(compilationContext, ctx);
     }
 
 
@@ -301,21 +311,9 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public IncDecExpression visitUnaryPostfixExpression(@NotNull BrygParser.UnaryPostfixExpressionContext ctx) {
-        final int op = ctx.op.getType();
-        final int line = ctx.getStart().getLine();
-        return new IncDecExpression(compilationContext, ctx.expression(), op == BrygLexer.INC, false, line);
-    }
-
-    @Override
-    public Node visitUnaryPrefixExpression(@NotNull BrygParser.UnaryPrefixExpressionContext ctx) {
-        final int op = ctx.op.getType();
-        final int line = ctx.getStart().getLine();
-        if (op == BrygLexer.MINUS) {
-            return new NegationExpression(compilationContext, (Expression) visit(ctx.expression()), line);
-        } else {
-            return new IncDecExpression(compilationContext, ctx.expression(), op == BrygLexer.INC, true, line);
-        }
+    public Node visitUnaryNegationExpression(@NotNull BrygParser.UnaryNegationExpressionContext ctx) {
+        return new NegationExpression(compilationContext, (Expression) visit(ctx.expression()),
+                ctx.getStart().getLine());
     }
 
     @Override

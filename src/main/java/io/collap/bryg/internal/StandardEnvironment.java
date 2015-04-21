@@ -205,4 +205,8 @@ public class StandardEnvironment implements Environment {
         this.debugConfiguration = debugConfiguration;
     }
 
+    public StandardClassLoader getStandardClassLoader() {
+        return standardClassLoader;
+    }
+
 }

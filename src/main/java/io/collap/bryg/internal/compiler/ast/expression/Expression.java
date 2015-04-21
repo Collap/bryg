@@ -11,13 +11,17 @@ public abstract class Expression extends Node {
     /**
      * The type must be set up <b>in the constructor</b>.
      */
-    protected Type type;
+    protected @Nullable Type type;
 
     protected Expression (CompilationContext compilationContext, int line) {
         super (compilationContext, line);
     }
 
     public Type getType () {
+        if (type == null) {
+            throw new IllegalStateException("Result type of expression not set.");
+        }
+
         return type;
     }
 

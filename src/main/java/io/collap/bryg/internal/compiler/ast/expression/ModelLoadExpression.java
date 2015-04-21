@@ -2,6 +2,7 @@ package io.collap.bryg.internal.compiler.ast.expression;
 
 import io.collap.bryg.Nullness;
 import io.collap.bryg.internal.*;
+import io.collap.bryg.internal.compiler.ast.Node;
 import io.collap.bryg.internal.compiler.ast.expression.coercion.UnboxingExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 import io.collap.bryg.internal.compiler.CompilationContext;
@@ -23,8 +24,7 @@ public class ModelLoadExpression extends Expression {
 
     public ModelLoadExpression(CompilationContext compilationContext, VariableInfo target,
                                CompiledVariable modelVariable) {
-        super(compilationContext);
-        setLine(-1); // TODO: There can definitely be a line here for normal fragments.
+        super(compilationContext, Node.UNKNOWN_LINE); // TODO: There can definitely be a line here for normal fragments.
         setType(target.getType());
 
         this.target = target;

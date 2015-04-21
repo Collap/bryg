@@ -17,8 +17,7 @@ public class BitwiseNotExpression extends Expression {
     private Expression child;
 
     public BitwiseNotExpression (CompilationContext compilationContext, BrygParser.ExpressionContext childCtx) {
-        super (compilationContext);
-        setLine (childCtx.getStart ().getLine ());
+        super (compilationContext, childCtx.getStart ().getLine ());
         child = (Expression) compilationContext.getParseTreeVisitor ().visit (childCtx);
 
         if (!child.getType ().isPrimitive ()) {
@@ -59,14 +58,14 @@ public class BitwiseNotExpression extends Expression {
         child.compile ();
         // -> T
 
-        if (type.similarTo (Long.TYPE)) {
+        if (getType().similarTo (Long.TYPE)) {
             mv.visitLdcInsn (-1L);
         }else { /* byte, short, int */
             mv.visitLdcInsn (-1);
         }
         // -> T
 
-        int xorOp = type.getOpcode (IXOR);
+        int xorOp = getType().getOpcode (IXOR);
         mv.visitInsn (xorOp);
         // T, T -> T
     }

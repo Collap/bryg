@@ -5,6 +5,7 @@ import bryg.org.objectweb.asm.Opcodes;
 import io.collap.bryg.Unit;
 import io.collap.bryg.Closure;
 import io.collap.bryg.internal.*;
+import io.collap.bryg.internal.compiler.ast.expression.ClosureInstantiationExpression;
 import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.util.ObjectCompileHelper;
 import io.collap.bryg.internal.type.Types;
@@ -46,7 +47,7 @@ public class TemplateFragmentCall extends Node {
 
     private @Nullable List<ArgumentExpression> generalArgumentExpressions;
     private @Nullable List<ArgumentExpression> localArgumentExpressions;
-    private ClosureDeclarationNode closure;
+    private ClosureInstantiationExpression closure;
 
     public TemplateFragmentCall (CompilationContext compilationContext, BrygParser.TemplateFragmentCallContext ctx) {
         super (compilationContext);
@@ -106,7 +107,7 @@ public class TemplateFragmentCall extends Node {
         }
 
         if (ctx.closure () != null) {
-            closure = new ClosureDeclarationNode (compilationContext, ctx.closure ());
+            closure = new ClosureInstantiationExpression(compilationContext, ctx.closure ());
         }else {
             if (calledFragment != null) {
                 /* Check if closure is expected and if an argument exists. */

@@ -1,5 +1,6 @@
 package io.collap.bryg.internal.compiler.ast.expression.arithmetic;
 
+import io.collap.bryg.internal.Type;
 import io.collap.bryg.internal.compiler.ast.expression.BinaryExpression;
 import io.collap.bryg.internal.compiler.ast.expression.Expression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
@@ -17,46 +18,42 @@ import io.collap.bryg.parser.BrygParser;
  */
 public abstract class BinaryArithmeticExpression extends BinaryExpression {
 
-    protected BinaryArithmeticExpression (CompilationContext compilationContext, BrygParser.ExpressionContext leftCtx,
-                                          BrygParser.ExpressionContext rightCtx) {
-        super (compilationContext, leftCtx, rightCtx);
-        setupType ();
+    protected BinaryArithmeticExpression(CompilationContext compilationContext, BrygParser.ExpressionContext leftCtx,
+                                         BrygParser.ExpressionContext rightCtx) {
+        super(compilationContext, leftCtx, rightCtx);
+        setupType();
     }
 
-    protected BinaryArithmeticExpression (CompilationContext compilationContext, int line) {
-        super (compilationContext, line);
-        setupType ();
+    protected BinaryArithmeticExpression(CompilationContext compilationContext, Expression left, Expression right, int line) {
+        super(compilationContext, left, right, line);
+        setupType();
     }
 
-    protected BinaryArithmeticExpression (CompilationContext compilationContext, Expression left, Expression right, int line) {
-        super (compilationContext, left, right, line);
-        setupType ();
-    }
-
-    protected void setupType () {
-        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion (compilationContext, left, right);
+    protected void setupType() {
+        Pair<Expression, Expression> result = CoercionUtil.applyBinaryCoercion(compilationContext, left, right);
         left = result.a;
         right = result.b;
-        setType (left.getType ());
+        setType(left.getType());
     }
 
     @Override
-    public void compile () {
-        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
-        if (type.isPrimitive ()) {
-            left.compile ();
-            right.compile ();
+    public void compile() {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
+        Type typeNonNull = getType();
+        if (typeNonNull.isPrimitive()) {
+            left.compile();
+            right.compile();
 
-            int op = type.getOpcode (getOpcode ());
-            mv.visitInsn (op);
-        }else {
-            throw new BrygJitException ("Unexpected type " + type, getLine ());
+            int op = typeNonNull.getOpcode(getOpcode());
+            mv.visitInsn(op);
+        } else {
+            throw new BrygJitException("Unexpected type " + type, getLine());
         }
     }
 
     /**
      * @return The opcode for the arithmetic expression in the integer (IADD, ISUB, etc.) form.
      */
-    protected abstract int getOpcode ();
+    protected abstract int getOpcode();
 
 }

@@ -16,35 +16,34 @@ public class ReferenceEqualityExpression extends BinaryBooleanExpression {
 
     private int operator;
 
-    public ReferenceEqualityExpression (CompilationContext compilationContext, BrygParser.BinaryReferenceEqualityExpressionContext ctx) {
-        super (compilationContext, ctx.expression (0), ctx.expression (1));
-        setLine (ctx.getStart ().getLine ());
+    public ReferenceEqualityExpression(CompilationContext compilationContext, BrygParser.BinaryReferenceEqualityExpressionContext ctx) {
+        super(compilationContext, ctx.expression(0), ctx.expression(1));
 
-        if (left.getType ().isPrimitive () ||
-                right.getType ().isPrimitive ()) {
-            throw new BrygJitException ("Primitive values can't be compared by reference equality.", getLine ());
+        if (left.getType().isPrimitive() ||
+                right.getType().isPrimitive()) {
+            throw new BrygJitException("Primitive values can't be compared by reference equality.", getLine());
         }
 
-        operator = ctx.op.getType ();
+        operator = ctx.op.getType();
     }
 
     @Override
-    public void compile (Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
-        BrygMethodVisitor mv = compilationContext.getMethodVisitor ();
+    public void compile(Label nextFalse, @Nullable Label nextTrue, boolean lastExpressionInChain) {
+        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
         // TODO: Use null constants effectively.
 
-        left.compile ();
-        right.compile ();
+        left.compile();
+        right.compile();
 
         if (operator == BrygLexer.REFEQ) {
-            mv.visitJumpInsn (IF_ACMPNE, nextFalse);
-        }else { /* BrygLexer.REFNE */
-            mv.visitJumpInsn (IF_ACMPEQ, nextFalse);
+            mv.visitJumpInsn(IF_ACMPNE, nextFalse);
+        } else { /* BrygLexer.REFNE */
+            mv.visitJumpInsn(IF_ACMPEQ, nextFalse);
         }
 
         /* Jump to nextTrue label. */
-        super.compile (nextFalse, nextTrue, lastExpressionInChain);
+        super.compile(nextFalse, nextTrue, lastExpressionInChain);
     }
 
 }
