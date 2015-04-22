@@ -3,12 +3,12 @@ package io.collap.bryg.internal.type;
 import io.collap.bryg.internal.Type;
 
 /**
- * Reserved for types that are not yet compiled, which means that a class object it not created yet.
+ * Reserved for types that are not yet compiled, which means that a class object is not created yet.
  * May not support all methods provided by the interface.
  *
  * This class makes a few assumptions:
  * - All types are classes.
- * - This type is not similar to any class objects.
+ * - This type is similar to any other type if and only if the internal names match exactly.
  * - The class represented by this type is not a wrapper type.
  */
 public class RuntimeType extends Type {
@@ -40,12 +40,12 @@ public class RuntimeType extends Type {
 
     @Override
     public boolean similarTo (Type type) {
-        return false;
+        return type.getInternalName().equals(internalName);
     }
 
     @Override
     public boolean similarTo (Class<?> type) {
-        return false;
+        return Types.fromClass(type).getInternalName().equals(internalName);
     }
 
     @Override
@@ -70,6 +70,7 @@ public class RuntimeType extends Type {
 
     /**
      * @return Since we can't check the class hierarchy for runtime types, this is always false.
+     * TODO: Really? What about hypothetical hierarchical unit types?
      */
     @Override
     public boolean isAssignableFrom (Type type) {
