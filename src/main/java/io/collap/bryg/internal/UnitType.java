@@ -116,4 +116,9 @@ public abstract class UnitType extends RuntimeType {
         return fields;
     }
 
+    @Override
+    public boolean isUnitType() {
+        return true;
+    }
+
 }

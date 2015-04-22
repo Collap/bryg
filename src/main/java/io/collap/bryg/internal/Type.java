@@ -46,6 +46,10 @@ public abstract class Type {
         return getStackSize() == 2;
     }
 
+    public boolean isUnitType() {
+        return false;
+    }
+
     public abstract int getStackSize();
 
     public abstract boolean isAssignableFrom(Type type);
