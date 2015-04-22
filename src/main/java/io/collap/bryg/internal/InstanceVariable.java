@@ -28,7 +28,7 @@ public class InstanceVariable extends CompiledVariable {
         BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
         new VariableExpression(compilationContext, expression.getLine(),
-                compilationContext.getFragmentScope().getThisVariable(), AccessMode.get).compile();
+                compilationContext.getFunctionScope().getThisVariable(), AccessMode.get).compile();
         // -> this
 
         int fieldOperation;

@@ -61,7 +61,7 @@ public class ClosureInstantiationExpression extends Expression {
             public void compile() {
                 BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-                compilationContext.getFragmentScope()
+                compilationContext.getFunctionScope()
                         .getThisVariable().compile(compilationContext, VariableUsageInfo.withGetMode());
                 // -> StandardUnit
 
@@ -73,7 +73,7 @@ public class ClosureInstantiationExpression extends Expression {
 
         /* Load "this" as "__parent" parameter. */
         arguments.add(new VariableExpression(compilationContext, getLine(),
-                compilationContext.getFragmentScope().getThisVariable(), VariableUsageInfo.withGetMode()));
+                compilationContext.getFunctionScope().getThisVariable(), VariableUsageInfo.withGetMode()));
 
         /* "Load" captured variables. */
         for (CompiledVariable capturedVariable : closureScope.getCapturedVariables()) {

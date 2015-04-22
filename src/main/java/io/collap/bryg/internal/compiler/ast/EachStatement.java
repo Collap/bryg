@@ -89,7 +89,7 @@ public class EachStatement extends Node {
         if (!isArray) {
             // Register iterator outside the scope.
             Type iteratorType = Types.fromClass(Iterator.class);
-            int id = compilationContext.getFragmentScope().getVariableIdCounter().next(iteratorType);
+            int id = compilationContext.getFunctionScope().getVariableIdCounter().next(iteratorType);
             iterator = new LocalVariable(iteratorType, "tmp_" + id, Mutability.immutable, Nullness.notnull);
             iterator.setId(id);
         }

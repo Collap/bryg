@@ -50,7 +50,7 @@ public class TemplateInstantiationExpression extends Expression {
     @Override
     public void compile() {
         BrygMethodVisitor mv = compilationContext.getMethodVisitor();
-        TemplateType templateType = (TemplateType) type;
+        TemplateType templateType = (TemplateType) getType();
 
         // Create new template instance.
         mv.visitTypeInsn(NEW, templateType.getInternalName());
@@ -61,7 +61,7 @@ public class TemplateInstantiationExpression extends Expression {
 
         // Load arguments.
         // Get environment as first argument.
-        compilationContext.getFragmentScope().getThisVariable().compile(compilationContext,
+        compilationContext.getFunctionScope().getThisVariable().compile(compilationContext,
                 VariableUsageInfo.withGetMode());
         // -> StandardUnit
 

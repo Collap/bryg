@@ -16,7 +16,7 @@ public class CompilationContext {
     private UnitType unitType;
     private StandardVisitor parseTreeVisitor;
     private @Nullable BrygMethodVisitor methodVisitor;
-    private FunctionScope fragmentScope;
+    private FunctionScope functionScope;
     private UnitScope unitScope;
     private int closureBlockId;
 
@@ -50,7 +50,7 @@ public class CompilationContext {
         this.unitType = unitType;
         this.parseTreeVisitor = new StandardVisitor();
         this.methodVisitor = methodVisitor;
-        this.fragmentScope = functionScope;
+        this.functionScope = functionScope;
         this.unitScope = unitScope;
         currentScope = functionScope;
         closureBlockId = 0;
@@ -109,8 +109,8 @@ public class CompilationContext {
         return methodVisitor;
     }
 
-    public FunctionScope getFragmentScope() {
-        return fragmentScope;
+    public FunctionScope getFunctionScope() {
+        return functionScope;
     }
 
     public UnitScope getUnitScope() {
