@@ -19,8 +19,6 @@ import java.util.List;
 import static bryg.org.objectweb.asm.Opcodes.INVOKEINTERFACE;
 import static bryg.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
-// TODO: This also needs to handle template calls now.
-
 public class MethodCallExpression extends Expression {
 
     private class CoercionResult {
@@ -76,6 +74,8 @@ public class MethodCallExpression extends Expression {
     }
 
     private void findMethod(String methodName, Class<?> objectType) {
+        // TODO: Try to only continue searching when the current candidate did not fit, instead of making a list of all candidates.
+
         Method[] methods = objectType.getMethods();
         List<CoercionResult> results = findMethods(methodName, methods, false);
 

@@ -10,26 +10,25 @@ public class InterpolationExpression extends Expression {
 
     List<Expression> expressions;
 
-    public InterpolationExpression (CompilationContext compilationContext, List<Expression> expressions, int line) {
-        super (compilationContext);
-        setType (Types.fromClass (String.class));
-        setLine (line);
+    public InterpolationExpression(CompilationContext compilationContext, List<Expression> expressions, int line) {
+        super(compilationContext, line);
+        setType(Types.fromClass(String.class));
         this.expressions = expressions;
     }
 
     @Override
-    public void compile () {
-        StringBuilderCompileHelper builder = new StringBuilderCompileHelper (compilationContext.getMethodVisitor ());
+    public void compile() {
+        StringBuilderCompileHelper builder = new StringBuilderCompileHelper(compilationContext.getMethodVisitor());
 
-        builder.compileNew ();
+        builder.compileNew();
         // -> StringBuilder
 
         for (Expression expression : expressions) {
-            builder.compileAppend (expression);
+            builder.compileAppend(expression);
             // StringBuilder -> StringBuilder
         }
 
-        builder.compileToString ();
+        builder.compileToString();
         // StringBuilder -> String
     }
 

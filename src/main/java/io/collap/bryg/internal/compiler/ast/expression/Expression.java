@@ -13,11 +13,11 @@ public abstract class Expression extends Node {
      */
     protected @Nullable Type type;
 
-    protected Expression (CompilationContext compilationContext, int line) {
-        super (compilationContext, line);
+    protected Expression(CompilationContext compilationContext, int line) {
+        super(compilationContext, line);
     }
 
-    public Type getType () {
+    public Type getType() {
         if (type == null) {
             throw new IllegalStateException("Result type of expression not set.");
         }
@@ -25,18 +25,18 @@ public abstract class Expression extends Node {
         return type;
     }
 
-    public void setType (Type type) {
+    public void setType(Type type) {
         this.type = type;
     }
 
-    public boolean isConstant () {
-        return getConstantValue () != null;
+    public boolean isConstant() {
+        return getConstantValue() != null;
     }
 
     /**
      * @return If not null, the type of the value is guaranteed to be an instance of the type returned by {@link #getType()}.
      */
-    public @Nullable Object getConstantValue () {
+    public @Nullable Object getConstantValue() {
         return null;
     }
 

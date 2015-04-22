@@ -4,7 +4,6 @@ import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.internal.compiler.ast.AccessMode;
-import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 import io.collap.bryg.internal.compiler.CompilationContext;
 

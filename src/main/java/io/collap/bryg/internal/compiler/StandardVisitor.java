@@ -139,6 +139,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public MemberFunctionCallExpression visitFunctionCall(@NotNull BrygParser.FunctionCallContext ctx) {
         // TODO: Check for direct closure call: closure(a, b, c)
+        // TODO: Check for fragment call.
         return createMemberFunctionCallNode(ctx.id(), ctx.getStart().getLine(),
                 ctx.argumentList(), null);
     }
@@ -157,6 +158,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public MethodCallExpression visitMethodCallExpression(@NotNull BrygParser.MethodCallExpressionContext ctx) {
+        // TODO: Check for template type.
         return new MethodCallExpression(compilationContext, ctx);
     }
 
