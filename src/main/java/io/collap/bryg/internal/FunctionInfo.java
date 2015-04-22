@@ -3,6 +3,8 @@ package io.collap.bryg.internal;
 import io.collap.bryg.internal.type.TypeHelper;
 import io.collap.bryg.internal.type.Types;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,10 +15,15 @@ public abstract class FunctionInfo {
     protected List<ParameterInfo> parameters;
     protected String desc;
 
-    public FunctionInfo(UnitType owner, String name, List<ParameterInfo> parameters) {
+    public FunctionInfo(UnitType owner, String name, @Nullable List<ParameterInfo> parameters) {
         this.owner = owner;
         this.name = name;
-        this.parameters = parameters;
+
+        if (parameters != null) {
+            this.parameters = parameters;
+        } else {
+            this.parameters = new ArrayList<>();
+        }
         generateDesc();
     }
 

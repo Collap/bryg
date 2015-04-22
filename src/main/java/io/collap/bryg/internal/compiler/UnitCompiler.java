@@ -196,6 +196,8 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
         ParameterInfo modelParameter = new ParameterInfo(Types.fromClass(Model.class), "model",
                 Mutability.immutable, Nullness.notnull, null);
         List<ParameterInfo> delegatorParameters = new ArrayList<>();
+        delegatorParameters.add(new ParameterInfo(Types.fromClass(StandardEnvironment.class),
+                StandardUnit.ENVIRONMENT_FIELD_NAME, Mutability.immutable, Nullness.notnull, null));
         delegatorParameters.add(modelParameter);
         final ConstructorScope constructorScope = new ConstructorScope(unitScope, unitType, delegatorParameters);
 
