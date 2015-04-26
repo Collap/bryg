@@ -90,9 +90,10 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
         mv.visitEnd();
     }
 
-    protected void compileFragmentDelegator(ClassVisitor classVisitor, FragmentInfo fragmentInfo, UnitScope unitScope) {
+    protected void compileFragmentDelegator(ClassVisitor classVisitor, String delegatorName,
+                                            FragmentInfo fragmentInfo, UnitScope unitScope) {
         final BrygMethodVisitor mv = (BrygMethodVisitor) classVisitor.visitMethod(ACC_PUBLIC,
-                fragmentInfo.getName(),
+                delegatorName,
                 TypeHelper.generateMethodDesc(
                         new Class<?>[]{Writer.class, Model.class},
                         Void.TYPE
@@ -101,6 +102,8 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
                 new String[]{AsmTypes.getAsmType(InvalidInputParameterException.class).getInternalName()});
         {
             List<ParameterInfo> delegatorParameters = new ArrayList<>();
+            delegatorParameters.add(new ParameterInfo(Types.fromClass(Writer.class), "writer", Mutability.immutable,
+                    Nullness.notnull, null));
             delegatorParameters.add(new ParameterInfo(Types.fromClass(Model.class), "model", Mutability.immutable,
                     Nullness.notnull, null));
             FragmentScope fragmentScope = new FragmentScope(unitScope, unitType, delegatorParameters);
@@ -118,8 +121,10 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
             root.addChild(new VariableExpression(compilationContext, Node.UNKNOWN_LINE, writerVariable, VariableUsageInfo.withGetMode()));
             // -> Writer
 
+            // i starts at 1, because we skip the already loaded Writer parameter.
             List<ParameterInfo> directParameters = fragmentInfo.getParameters();
-            for (ParameterInfo parameter : directParameters) {
+            for (int i = 1; i < directParameters.size(); i++) {
+                ParameterInfo parameter = directParameters.get(i);
                 root.addChild(new ModelLoadExpression(compilationContext, parameter, modelVariable));
                 // -> T
             }

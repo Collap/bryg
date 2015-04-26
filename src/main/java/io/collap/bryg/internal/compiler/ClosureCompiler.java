@@ -64,7 +64,7 @@ public class ClosureCompiler extends UnitCompiler<ClosureType> {
             mv.visitEnd();
 
             // Also compile the delegator to allow calling closures when no parameter information is available.
-            compileFragmentDelegator(classVisitor, fragmentInfo, closureScope);
+            compileFragmentDelegator(classVisitor, fragmentInfo.getName(), fragmentInfo, closureScope);
         }
         classVisitor.visitEnd();
     }

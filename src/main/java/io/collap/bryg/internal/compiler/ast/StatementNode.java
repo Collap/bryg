@@ -44,12 +44,12 @@ public class StatementNode extends Node {
             if (!type.similarTo(Void.TYPE)) {
                 if (!compilationContext.shouldDiscardPrintOutput()) {
                     // Append String constants to the constant string writer.
-                    if (expression.getType().similarTo(String.class)) {
+                    // TODO: What about other scalar constants?
+                    if (expression.isConstant() && expression.getType().similarTo(String.class)) {
                         @Nullable String text = (String) expression.getConstantValue();
                         if (text == null) {
                             throw new BrygJitException("A constant value was expected, but got null.", getLine());
                         }
-
                         mv.writeConstantString(text);
                     } else {
                         mv.loadWriter();

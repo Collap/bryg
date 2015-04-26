@@ -35,7 +35,7 @@ public class Stock {
     public double getRatio()  { return this.ratio; }
 
     public static List<Stock> dummyItems() {
-        List<Stock> items = new ArrayList<Stock>();
+        List<Stock> items = new ArrayList<>();
         items.add(new Stock("Adobe Systems", "Adobe Systems Inc.", "http://www.adobe.com", "ADBE", 39.26, 0.13, 0.33));
         items.add(new Stock("Advanced Micro Devices", "Advanced Micro Devices Inc.", "http://www.amd.com", "AMD", 16.22, 0.17, 1.06));
         items.add(new Stock("Amazon.com", "Amazon.com Inc", "http://www.amazon.com", "AMZN", 36.85, -0.23, -0.62));

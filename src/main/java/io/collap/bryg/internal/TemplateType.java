@@ -116,7 +116,7 @@ public class TemplateType extends UnitType {
         // each other.
         if (constructor == null) {
             try {
-                constructor = templateClass.getConstructor(Environment.class, Model.class);
+                constructor = templateClass.getConstructor(StandardEnvironment.class, Model.class);
             } catch (NoSuchMethodException e) {
                 throw new CompilationException("Constructor of template " + fullName + " could not be loaded!", e);
             }

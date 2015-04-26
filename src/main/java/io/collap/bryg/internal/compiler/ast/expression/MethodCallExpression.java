@@ -37,26 +37,34 @@ public class MethodCallExpression extends Expression {
     private Method method;
 
     public MethodCallExpression(CompilationContext compilationContext, BrygParser.MethodCallExpressionContext ctx) {
-        super(compilationContext, ctx.getStart().getLine());
+        this(
+                compilationContext, ctx.getStart().getLine(),
+                (Expression) compilationContext.getParseTreeVisitor().visit(ctx.expression()),
+                IdUtil.idToString(ctx.functionCall().id()),
+                FunctionUtil.parseArgumentList(compilationContext, ctx.functionCall().argumentList())
+        );
+    }
 
-        operandExpression = (Expression) compilationContext.getParseTreeVisitor().visit(ctx.expression());
+    public MethodCallExpression(CompilationContext compilationContext, int line, Expression operandExpression,
+                                String methodName, List<ArgumentExpression> arguments) {
+        super(compilationContext, line);
 
-        if (!(operandExpression.getType() instanceof CompiledType)) {
-            throw new BrygJitException("Can't call a Java method on a non-Java type.", getLine());
+        if (operandExpression.getType().isUnitType()) {
+            throw new BrygJitException("Can't call a Java method on a unit type.", getLine());
         }
+        this.operandExpression = operandExpression;
 
         operandType = ((CompiledType) operandExpression.getType());
         if (operandType.getJavaType().isPrimitive()) {
             throw new BrygJitException("Methods can not be invoked on primitives.", getLine());
         }
 
-        /* Init argument expressions. */
-        List<ArgumentExpression> arguments = FunctionUtil.parseArgumentList(compilationContext, ctx.functionCall().argumentList());
+        // Init argument expressions.
         argumentExpressions = new ArrayList<>(arguments.size());
 
-        /* Validate arguments. */
+        // Validate arguments.
         for (ArgumentExpression argument : arguments) {
-            /* Check that no argument is named or has a predicate. */
+            // Check that no argument is named or has a predicate.
             if (argument.getName() != null) {
                 throw new BrygJitException("Named arguments are not supported with method calls.", getLine());
             }
@@ -68,8 +76,8 @@ public class MethodCallExpression extends Expression {
             argumentExpressions.add(argument);
         }
 
-        /* Find method. */
-        findMethod(IdUtil.idToString(ctx.functionCall().id()), operandType.getJavaType());
+        // Find method.
+        findMethod(methodName, operandType.getJavaType());
         setType(Types.fromClass(method.getReturnType()));
     }
 
@@ -79,7 +87,7 @@ public class MethodCallExpression extends Expression {
         Method[] methods = objectType.getMethods();
         List<CoercionResult> results = findMethods(methodName, methods, false);
 
-        /* If method was not found, try with coercion. */
+        // If method was not found, try with coercion.
         if (results.size() == 0) {
             System.out.println("Try with coercion!");
             results = findMethods(methodName, methods, true);
@@ -123,14 +131,16 @@ public class MethodCallExpression extends Expression {
             arguments = new ArrayList<>(numParams);
         }
 
-        /* Check if the types match. */
+        // Check if the types match.
         for (int i = 0; i < numParams; ++i) {
             Class<?> paramType = parameterTypes[i];
             Expression expression = argumentExpressions.get(i);
             if (!expression.getType().similarTo(paramType)) { /* Check if the exact types match. */
                 if (coerce) {
-                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion(compilationContext, expression,
-                            Types.fromClass(paramType));
+                    Expression coercionExpression = CoercionUtil.tryUnaryCoercion(
+                            compilationContext, expression,
+                            Types.fromClass(paramType)
+                    );
                     if (coercionExpression == null) {
                         return null;
                     }

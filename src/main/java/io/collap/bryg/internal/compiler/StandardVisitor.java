@@ -1,8 +1,6 @@
 package io.collap.bryg.internal.compiler;
 
-import io.collap.bryg.internal.CompiledVariable;
-import io.collap.bryg.internal.MemberFunctionCallInfo;
-import io.collap.bryg.internal.VariableUsageInfo;
+import io.collap.bryg.internal.*;
 import io.collap.bryg.internal.compiler.ast.*;
 import io.collap.bryg.internal.compiler.ast.EachStatement;
 import io.collap.bryg.internal.compiler.ast.IfStatement;
@@ -137,11 +135,25 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public MemberFunctionCallExpression visitFunctionCall(@NotNull BrygParser.FunctionCallContext ctx) {
-        // TODO: Check for direct closure call: closure(a, b, c)
-        // TODO: Check for fragment call.
-        return createMemberFunctionCallNode(ctx.id(), ctx.getStart().getLine(),
-                ctx.argumentList(), null);
+    public Expression visitFunctionCall(@NotNull BrygParser.FunctionCallContext ctx) {
+        // TODO: Check for direct (default) fragment call: unit(a, b, c)
+        String name = IdUtil.idToString(ctx.id());
+        @Nullable FragmentInfo fragment = compilationContext.getUnitType().getFragment(name);
+        int line = ctx.getStart().getLine();
+        if (fragment != null) { // Fragments shadow member functions.
+            return new FragmentCallExpression(compilationContext, line,
+                    // The fragment is called on 'this' template.
+                    new VariableExpression(
+                            compilationContext, line,
+                            compilationContext.getFunctionScope().getThisVariable(),
+                            VariableUsageInfo.withGetMode()
+                    ),
+                    fragment,
+                    FunctionUtil.parseArgumentList(compilationContext, ctx.argumentList()));
+        } else {
+            return createMemberFunctionCallNode(ctx.id(), line,
+                    ctx.argumentList(), null);
+        }
     }
 
     @Override
@@ -157,9 +169,24 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     }
 
     @Override
-    public MethodCallExpression visitMethodCallExpression(@NotNull BrygParser.MethodCallExpressionContext ctx) {
-        // TODO: Check for template type.
-        return new MethodCallExpression(compilationContext, ctx);
+    public Expression visitMethodCallExpression(@NotNull BrygParser.MethodCallExpressionContext ctx) {
+        int line = ctx.getStart().getLine();
+        String functionName = IdUtil.idToString(ctx.functionCall().id());
+        List<ArgumentExpression> arguments = FunctionUtil.parseArgumentList(
+                compilationContext, ctx.functionCall().argumentList()
+        );
+        Expression expression = (Expression) visit(ctx.expression());
+
+        if (expression.getType().isUnitType()) {
+            @Nullable FragmentInfo fragment = ((UnitType) expression.getType()).getFragment(functionName);
+            if (fragment == null) {
+                throw new BrygJitException("Fragment " + functionName + " for type "
+                        + expression.getType() + " not found.", line);
+            }
+            return new FragmentCallExpression(compilationContext, line, expression, fragment, arguments);
+        } else {
+            return new MethodCallExpression(compilationContext, line, expression, functionName, arguments);
+        }
     }
 
 

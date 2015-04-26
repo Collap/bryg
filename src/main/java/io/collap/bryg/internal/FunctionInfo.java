@@ -29,7 +29,7 @@ public abstract class FunctionInfo {
 
     private void generateDesc() {
         desc = TypeHelper.generateMethodDesc(
-                parameters.stream().map(VariableInfo::getType).toArray(Type[]::new), // Collects all parameter types.
+                parameters.stream().map(VariableInfo::getType).toArray(Type[]::new),
                 Types.fromClass(Void.TYPE)
         );
     }

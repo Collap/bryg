@@ -39,13 +39,6 @@ public class PrintTreeVisitor extends BrygParserBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitInDeclaration (@NotNull BrygParser.InDeclarationContext ctx) {
-        printContext (ctx);
-        super.visitInDeclaration (ctx);
-        return 0;
-    }
-
-    @Override
     public Integer visitStatement (@NotNull BrygParser.StatementContext ctx) {
         printContext (ctx);
         super.visitStatement (ctx);
@@ -128,13 +121,6 @@ public class PrintTreeVisitor extends BrygParserBaseVisitor<Integer> {
     public Integer visitMethodCallExpression (@NotNull BrygParser.MethodCallExpressionContext ctx) {
         printContext (ctx);
         super.visitMethodCallExpression (ctx);
-        return 0;
-    }
-
-    @Override
-    public Integer visitTemplateFragmentCall (@NotNull BrygParser.TemplateFragmentCallContext ctx) {
-        printContext (ctx);
-        super.visitTemplateFragmentCall (ctx);
         return 0;
     }
 
@@ -260,20 +246,6 @@ public class PrintTreeVisitor extends BrygParserBaseVisitor<Integer> {
     public Integer visitCastExpression (@NotNull BrygParser.CastExpressionContext ctx) {
         printContext (ctx);
         super.visitCastExpression (ctx);
-        return 0;
-    }
-
-    @Override
-    public Integer visitUnaryPostfixExpression (@NotNull BrygParser.UnaryPostfixExpressionContext ctx) {
-        printContext (ctx, ctx.op.getText ());
-        super.visitUnaryPostfixExpression (ctx);
-        return 0;
-    }
-
-    @Override
-    public Integer visitUnaryPrefixExpression (@NotNull BrygParser.UnaryPrefixExpressionContext ctx) {
-        printContext (ctx, ctx.op.getText ());
-        super.visitUnaryPrefixExpression (ctx);
         return 0;
     }
 

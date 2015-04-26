@@ -1,5 +1,4 @@
-in List<String> names
-
-ul
-  each name in names
-    li name
+default frag render(List<String> names)
+  ul
+    each name in names
+      li name

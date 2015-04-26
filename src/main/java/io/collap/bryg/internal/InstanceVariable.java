@@ -3,7 +3,6 @@ package io.collap.bryg.internal;
 import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
 import io.collap.bryg.internal.compiler.ast.AccessMode;
-import io.collap.bryg.internal.compiler.ast.expression.VariableExpression;
 import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 
@@ -24,26 +23,27 @@ public class InstanceVariable extends CompiledVariable {
     }
 
     @Override
-    public void compile(CompilationContext compilationContext, VariableExpression expression) {
+    public void compile(CompilationContext compilationContext, VariableUsageInfo usage) {
         BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-        new VariableExpression(compilationContext, expression.getLine(),
-                compilationContext.getFunctionScope().getThisVariable(), AccessMode.get).compile();
+        compilationContext.getFunctionScope().getThisVariable()
+                .compile(compilationContext, VariableUsageInfo.withGetMode());
         // -> this
 
         int fieldOperation;
-        if (expression.getMode() == AccessMode.get) {
+        if (usage.getAccessMode() == AccessMode.get) {
             fieldOperation = GETFIELD;
             // When compiled: this -> T
         } else {
-            expression.getRightExpression().compile();
+            usage.getRightExpression().compile();
             // -> T
 
             fieldOperation = PUTFIELD;
             // When compiled: this, T ->
         }
 
-        mv.visitFieldInsn(fieldOperation, compilationContext.getUnitType().getInternalName(), name, type.getDescriptor());
+        mv.visitFieldInsn(fieldOperation, compilationContext.getUnitType().getInternalName(),
+                name, type.getDescriptor());
     }
 
 }

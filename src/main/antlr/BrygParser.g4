@@ -48,7 +48,7 @@ interpolation
 
 fragmentFunction
     :   (DEFAULT FRAG | DEFAULT FRAG id | FRAG id) parameterList?
-        fragmentBlock
+        NEWLINE fragmentBlock
     ;
 
 fragmentBlock
@@ -212,7 +212,8 @@ literal
     ;
 
 type
-    :   id ('<' type (',' type)* '>')?
+    :   id
+        ('<' type (',' type)* '>')?
     |   templateId
     ;
 

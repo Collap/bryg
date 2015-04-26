@@ -1,5 +1,10 @@
 package io.collap.bryg.internal;
 
+import io.collap.bryg.Mutability;
+import io.collap.bryg.Nullness;
+import io.collap.bryg.internal.type.Types;
+
+import java.io.Writer;
 import java.util.List;
 
 public class FragmentInfo extends FunctionInfo {
@@ -13,8 +18,14 @@ public class FragmentInfo extends FunctionInfo {
     }
 
     public FragmentInfo(UnitType owner, String name, List<ParameterInfo> parameters) {
-        super(owner, name, parameters);
+        super(owner, name, addWriterParameter(parameters));
         initializeDirectName(name);
+    }
+
+    private static List<ParameterInfo> addWriterParameter(List<ParameterInfo> parameters) {
+        parameters.add(0, new ParameterInfo(Types.fromClass(Writer.class), "writer",
+                Mutability.immutable, Nullness.notnull, null));
+        return parameters;
     }
 
     private void initializeDirectName(String delegatorName) {

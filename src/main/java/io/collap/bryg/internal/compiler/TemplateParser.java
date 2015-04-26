@@ -115,7 +115,20 @@ public class TemplateParser implements Parser<TemplateType> {
         BrygParser.FragmentBlockContext fragBlockCtx = ctx.fragmentBlock();
         List<ParameterInfo> parameters = FunctionUtil.parseParameterList(environment,
                 ctx.parameterList().parameterDeclaration());
-        return new FragmentCompileInfo(IdUtil.idToString(ctx.id()), parameters, fragBlockCtx.statement());
+        String name;
+        if (ctx.id() != null) {
+            name = IdUtil.idToString(ctx.id());
+        } else {
+            name = UnitType.DEFAULT_FRAGMENT_NAME;
+        }
+        boolean isDefault = ctx.DEFAULT() != null;
+
+        // The function's name must not be "default", while it is not default. (For example via `default`)
+        if (!isDefault && name.equals(UnitType.DEFAULT_FRAGMENT_NAME)) {
+            throw new CompilationException("The fragment " + name + " is named 'default' but is not default.");
+        }
+
+        return new FragmentCompileInfo(name, isDefault, parameters, fragBlockCtx.statement());
     }
 
 }

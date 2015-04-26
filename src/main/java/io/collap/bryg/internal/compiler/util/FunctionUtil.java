@@ -26,7 +26,7 @@ public class FunctionUtil {
                 Type type = new TypeInterpreter(environment.getClassResolver()).interpretType(context.type());
 
                 // TODO: Handle default values.
-                Nullness nullness = context.nullable.getType() == BrygLexer.NULLABLE ? Nullness.nullable : Nullness.notnull;
+                Nullness nullness = context.nullable != null ? Nullness.nullable : Nullness.notnull;
                 parameters.add(new ParameterInfo(type, name, Mutability.immutable, nullness, null));
             }
         }

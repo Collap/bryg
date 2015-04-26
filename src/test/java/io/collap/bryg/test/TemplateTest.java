@@ -18,67 +18,67 @@ public abstract class TemplateTest {
     protected TemplateFactory templateFactory;
 
     @Before
-    public void init () {
-        templateFactory = Domain.getEnvironment ().getTemplateFactory (getTemplateName ());
+    public void init() {
+        templateFactory = Domain.getEnvironment().getTemplateFactory(getTemplateName());
     }
 
     @Test
-    public void render () throws IOException {
-        TestController testController = new TestController ();
+    public void render() throws IOException {
+        TestController testController = new TestController();
 
-        Model model = createModel ();
-        model.setVariable ("test", testController);
-        Template template = templateFactory.create (model);
-        render (template, model);
+        Model model = createModel();
+        model.setVariable("test", testController);
+        Template template = templateFactory.instantiate(model);
+        render(template, model);
     }
 
-    protected void render (Template template, Model model) throws IOException {
-        StringWriter writer = new StringWriter ();
-        template.render (writer, model);
-        System.out.println ("Result:");
-        System.out.println (writer.toString ());
-        System.out.println ();
+    protected void render(Template template, Model model) throws IOException {
+        StringWriter writer = new StringWriter();
+        template.call("default", writer, model);
+        System.out.println("Result:");
+        System.out.println(writer.toString());
+        System.out.println();
 
-        File outputFile = new File ("build/test/" + getTemplateName ().replace ('.', '/') + ".html");
-        outputFile.getParentFile ().mkdirs ();
-        FileWriter fileWriter = new FileWriter (outputFile);
-        fileWriter.write (writer.toString ());
-        fileWriter.close ();
+        File outputFile = new File("build/test/" + getTemplateName().replace('.', '/') + ".html");
+        outputFile.getParentFile().mkdirs();
+        FileWriter fileWriter = new FileWriter(outputFile);
+        fileWriter.write(writer.toString());
+        fileWriter.close();
     }
 
     // @Test
-    public void benchmark () throws IOException {
+    public void benchmark() throws IOException {
         final int iterations = 10000;
-        final Model model = createModel ();
+        final Model model = createModel();
 
-        Template template = templateFactory.create (model);
+        Template template = templateFactory.instantiate(model);
 
         StringWriter stringWriter;
         for (int i = 0; i < iterations; ++i) {
-            stringWriter = new StringWriter ();
-            template.render (stringWriter, model);
+            stringWriter = new StringWriter();
+            template.call("default", stringWriter, model);
         }
 
-        final long renderTime = System.nanoTime ();
+        final long renderTime = System.nanoTime();
         for (int i = 0; i < iterations; ++i) {
-            stringWriter = new StringWriter ();
-            template.render (stringWriter, model);
+            stringWriter = new StringWriter();
+            template.call("default", stringWriter, model);
         }
 
-        final long timeNs = System.nanoTime () - renderTime;
-        System.out.println ("Rendering " + template.getClass ().getName ()
+        final long timeNs = System.nanoTime() - renderTime;
+        System.out.println("Rendering " + template.getClass().getName()
                 + " took " + (timeNs / iterations) + "ns on average.");
-        System.out.println ("That are " + (timeNs / 1.0e9) + "s in total.");
+        System.out.println("That are " + (timeNs / 1.0e9) + "s in total.");
     }
 
-    private Model createModel () {
+    private Model createModel() {
         Model model = new MapModel();
-        configureModel (model);
+        configureModel(model);
         return model;
     }
 
-    protected abstract void configureModel (Model model);
+    protected abstract void configureModel(Model model);
 
-    protected abstract String getTemplateName ();
+    protected abstract String getTemplateName();
 
 }

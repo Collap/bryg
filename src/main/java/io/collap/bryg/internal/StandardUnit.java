@@ -32,6 +32,7 @@ public abstract class StandardUnit implements Unit {
             throw new FragmentCallException("Fragment '" + name + "' could not be found.", e);
         }
 
+        // TODO: Catch IOException of writer?
         try {
             method.invoke(this, writer, model);
         } catch (IllegalAccessException e) {

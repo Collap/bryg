@@ -1,9 +1,12 @@
 package io.collap.bryg.internal.compiler;
 
 import bryg.org.objectweb.asm.*;
+import io.collap.bryg.CompilationException;
 import io.collap.bryg.Template;
 import io.collap.bryg.internal.*;
 import io.collap.bryg.internal.type.*;
+
+import javax.annotation.Nullable;
 
 import static bryg.org.objectweb.asm.Opcodes.*;
 
@@ -29,13 +32,21 @@ public class TemplateCompiler extends UnitCompiler<TemplateType> {
             compileFields(classVisitor, unitType.getFields());
 
             UnitScope unitScope = new UnitScope(unitType.getFields());
-            compileConstructor(classVisitor, unitType, true);
+            compileConstructor(classVisitor, unitType);
             compileConstructorDelegator(classVisitor, unitScope);
 
             for (FragmentCompileInfo compileInfo : unitType.getCompilationData().getFragmentCompileInfos()) {
-                FragmentInfo fragmentInfo = unitType.getFragment(compileInfo.getName());
+                @Nullable FragmentInfo fragmentInfo = unitType.getFragment(compileInfo.getName());
+                if (fragmentInfo == null) {
+                    throw new CompilationException("The fragment " + compileInfo.getName() + " does not exist, " +
+                            "despite being listed in the unit's compilation data.");
+                }
                 compileFragment(classVisitor, fragmentInfo, compileInfo, unitScope);
-                compileFragmentDelegator(classVisitor, fragmentInfo, unitScope);
+                compileFragmentDelegator(classVisitor, fragmentInfo.getName(), fragmentInfo, unitScope);
+                if (compileInfo.isDefault() && !fragmentInfo.getName().equals(UnitType.DEFAULT_FRAGMENT_NAME)) {
+                    // TODO: Optimize by calling the OTHER delegator.
+                    compileFragmentDelegator(classVisitor, UnitType.DEFAULT_FRAGMENT_NAME, fragmentInfo, unitScope);
+                }
             }
         }
         classVisitor.visitEnd();

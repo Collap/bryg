@@ -14,7 +14,7 @@ import java.util.Map;
 
 public abstract class UnitType extends RuntimeType {
 
-    // TODO: What about the default fragment?
+    // TODO: Add default fragment field.
 
     public static final String DEFAULT_FRAGMENT_NAME = "default";
 
@@ -67,7 +67,7 @@ public abstract class UnitType extends RuntimeType {
         fragments.put(fragment.getName(), fragment);
     }
 
-    public FragmentInfo getFragment(String name) {
+    public @Nullable FragmentInfo getFragment(String name) {
         return fragments.get(name);
     }
 

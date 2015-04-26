@@ -1,3 +1,2 @@
-in int id
-
-a(rel 'nofollow', href 'http://wowhead.com/item=\{id}'): Item \{id}
+default frag render(int id)
+    a(rel 'nofollow', href 'http://wowhead.com/item=\{id}'): Item \{id}

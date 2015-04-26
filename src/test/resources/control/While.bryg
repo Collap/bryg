@@ -1,11 +1,10 @@
-in int iterations
-opt Closure closure
 
-ul
-  mut i = 0
-  while i < iterations
-    li
-      p: Iteration number \{i}!
-      if closure !== null
-        p @closure (name 'While')
-    discard ++i
+default frag render(int iterations, nullable Closure closure)
+  ul
+    mut i = 0
+    while i < iterations
+      li
+        p: Iteration number \{i}!
+        if closure !== null
+          p closure(name 'While')
+      i += 1

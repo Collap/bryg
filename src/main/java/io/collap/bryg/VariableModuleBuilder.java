@@ -27,7 +27,7 @@ public class VariableModuleBuilder {
 
         }
 
-        module.setMember(name, new MemberVariable<>(Types.fromClass(type), name, value, nullness));
+        module.setMember(name, new MemberVariable<>(module, Types.fromClass(type), name, value, nullness));
     }
 
     public Module build() {

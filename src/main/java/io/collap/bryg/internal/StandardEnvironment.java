@@ -27,7 +27,6 @@ public class StandardEnvironment implements Environment {
 
     public void initialize() {
         standardClassLoader = new StandardClassLoader(this);
-        // TODO: Find global module members (And put them in a Map that associates their name with their module name).
     }
 
     public void addModule(Module module) {

@@ -1,13 +1,13 @@
-package io.collap.bryg.internal.compiler.ast;
+package io.collap.bryg.internal.compiler.ast.expression;
 
 import io.collap.bryg.internal.*;
-import io.collap.bryg.internal.compiler.ast.expression.ArgumentExpression;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.util.FunctionUtil;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.internal.FragmentInfo;
 import io.collap.bryg.internal.TemplateType;
+import io.collap.bryg.internal.type.Types;
 
 import java.util.Iterator;
 import java.util.List;
@@ -17,17 +17,18 @@ import static bryg.org.objectweb.asm.Opcodes.*;
 // TODO: Add coercion to arguments.
 // TODO: Accept implicit closure argument.
 
-public class FragmentCallNode extends Node {
+public class FragmentCallExpression extends Expression {
 
-    private CompiledVariable callee;
+    private Expression callee;
     private FragmentInfo fragment;
     private List<ArgumentExpression> arguments;
 
     private CompiledVariable writerVariable;
 
-    public FragmentCallNode(CompilationContext compilationContext, int line, CompiledVariable callee,
-                            FragmentInfo fragment, List<ArgumentExpression> arguments) {
+    public FragmentCallExpression(CompilationContext compilationContext, int line, Expression callee,
+                                  FragmentInfo fragment, List<ArgumentExpression> arguments) {
         super(compilationContext, line);
+        setType(Types.fromClass(Void.TYPE));
 
         this.callee = callee;
         this.fragment = fragment;
@@ -73,7 +74,7 @@ public class FragmentCallNode extends Node {
     public void compile() {
         BrygMethodVisitor mv = compilationContext.getMethodVisitor();
 
-        callee.compile(compilationContext, VariableUsageInfo.withGetMode());
+        callee.compile();
         // -> T extends Unit
 
         writerVariable.compile(compilationContext, VariableUsageInfo.withGetMode());
