@@ -11,6 +11,9 @@ Function calls in bryg are not required to have parentheses if they take no argu
 
 In the example, ``br`` could be a variable or a function. If ``br`` is both a function and a variable, the variable supersedes the function, as specified in the Scopes section.
 
+.. todo::
+    This should probably only apply to member functions.
+
 
 Named Arguments
 ---------------
