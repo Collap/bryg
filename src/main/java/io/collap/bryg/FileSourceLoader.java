@@ -36,10 +36,6 @@ public class FileSourceLoader implements SourceLoader {
 
     @Override
     public @Nullable String getTemplateSource(String name) {
-        if (name.startsWith(StandardClassLoader.unitNamePrefix)) {
-            throw new RuntimeException("The name starts with the internal prefix!");
-        }
-
         String path = name.replace('.', File.separatorChar) + fileExtension;
         File sourceFile = new File(templateDirectory, path);
         if (!sourceFile.exists()) {
