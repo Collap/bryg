@@ -1,6 +1,7 @@
 package io.collap.bryg;
 
 import io.collap.bryg.internal.StandardEnvironment;
+import io.collap.bryg.internal.module.standard.StandardModule;
 import io.collap.bryg.module.Module;
 
 public class StandardEnvironmentBuilder implements EnvironmentBuilder {
@@ -9,6 +10,7 @@ public class StandardEnvironmentBuilder implements EnvironmentBuilder {
 
     public StandardEnvironmentBuilder() {
         environment = new StandardEnvironment();
+        environment.addModule(new StandardModule());
     }
 
     @Override
