@@ -33,7 +33,7 @@ public class StatementNode extends Node {
 
         // Give ASM a line number.
         Label here = new Label();
-        mv.visitLabel(here);
+        mv.visitLabel(here, false);
         mv.visitLineNumber(getLine(), here);
 
         // Every statement, whose direct child expression returns a value and is not a variable
