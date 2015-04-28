@@ -42,7 +42,7 @@ statement
  *  This rule is executed separately when the compiler finds an unescaped interpolation sequence (\{...}) in a string.
  */
 interpolation
-    :   expression NEWLINE
+    :   expression
     ;
 
 
@@ -113,7 +113,7 @@ ifStatement
                                             // in conjunction with normal parentheses in expressions!
         |   expression NEWLINE block
         )
-        (ELSE statementOrBlock)?
+        (NEWLINE* ELSE statementOrBlock)?
     ;
 
 eachStatement
@@ -136,7 +136,7 @@ whileStatement
 
 closure
     :   '\\' parameterList?
-        closureBody
+        NEWLINE closureBody
     ;
 
 closureBody

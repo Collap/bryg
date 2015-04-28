@@ -14,46 +14,61 @@ tokens { INDENT, DEDENT }
 
 @lexer::members {
 
-    // A queue where extra tokens are pushed on (see the NEWLINE lexer rule).
+    // A queue where the next consumed tokens can be added to.
     private java.util.Queue<Token> tokens = new java.util.LinkedList<> ();
 
-    // The stack that keeps track of the indentation level.
+    // Keeps track of the indentation level.
     private java.util.Stack<Integer> indents = new java.util.Stack<Integer> () {
         {
             push (0);
         }
     };
 
-    // The amount of opened braces, brackets and parenthesis.
+    // The amount of opened braces, brackets and parentheses.
     private int opened = 0;
 
     private String currentBlockString = null; // TODO: Make this a StringBuilder for improved performance!
 
   @Override
   public void emit(Token t) {
-    super.setToken(t);
     if (t instanceof CommonToken) {
         ((CommonToken) t).setLine (getLine ());
     }
-    tokens.offer(t);
+    super.emit(t);
+  }
+
+  public void queueToken(Token t) {
+    if (t instanceof CommonToken) {
+        ((CommonToken) t).setLine (getLine ());
+    }
+    tokens.add(t);
   }
 
   @Override
   public Token nextToken() {
-
-    // Check if the end-of-file is ahead and there are still some DEDENTS expected.
-    if (_input.LA(1) == EOF && !this.indents.isEmpty()) {
-
-      // First emit an extra line break that serves as the end of the statement.
-      this.emit(new CommonToken(NEWLINE, "NEWLINE"));
-
-      // Now emit as much DEDENT tokens until we reach the leftmost column.
-      dedent (0);
+    if (tokens.isEmpty()) {
+      queueToken(super.nextToken());
     }
 
-    Token next = super.nextToken();
+    // Check if the end-of-file is ahead and there are still some DEDENTS expected.
+    // There must be more than one indent. The remaining indent is always the 0 indent.
+    if (!tokens.isEmpty() && tokens.element().getType() == EOF && indents.size() > 1) {
+      System.out.println("Indent remaining: " + (indents.size() - 1));
 
-    return tokens.isEmpty() ? next : tokens.poll();
+      // Remove EOF token from the front of the queue.
+      Token eofToken = tokens.remove();
+
+      // First queue an extra line break that serves as the end of the statement.
+      queueToken(new CommonToken(NEWLINE, "NEWLINE"));
+
+      // Now queue as many DEDENT tokens as we need to reach the leftmost column.
+      dedent(0);
+
+      // Now add the EOF token to the end, after the NEWLINE and DEDENT tokens.
+      queueToken(eofToken);
+    }
+
+    return tokens.poll();
   }
 
     /**
@@ -76,12 +91,15 @@ tokens { INDENT, DEDENT }
     }
 
     /**
-     *  Pops indents from the stack until 'indent' is reached.
-     *  Also emits DEDENT tokens if shouldEmit is true.
+     *  Pops indents from the stack until 'indent' is reached and queues DEDENT tokens in the process.
      */
     private void dedent (int indent) {
         while (!indents.isEmpty () && indents.peek () > indent) {
-            emit (new CommonToken (DEDENT, "DEDENT"));
+            queueToken (new CommonToken (DEDENT, "DEDENT"));
+
+            // Queue a NEWLINE after each DEDENT, as some parser rules require a NEWLINE after a DEDENT.
+            // This is possible since every end of a block may be followed by a NEWLINE.
+            queueToken(new CommonToken(NEWLINE, "NEWLINE"));
             indents.pop ();
         }
     }
@@ -115,10 +133,10 @@ tokens { INDENT, DEDENT }
             }
 
             /* Close block string. */
-            emit (new CommonToken (String, currentBlockString));
-            emit (new CommonToken (NEWLINE, "NEWLINE")); /* As a block string counts as a string, much
+            queueToken(new CommonToken (String, currentBlockString));
+            queueToken(new CommonToken (NEWLINE, "NEWLINE")); /* As a block string counts as a string, much
                                                             like a string on a single line, a NEWLINE
-                                                            token must be emitted after it. */
+                                                            token must be queued after it. */
             indents.pop (); /* Pop the indent corresponding to the block string. */
             dedent (indent); /* Dedent the rest if applicable. */
             popMode ();
@@ -222,13 +240,13 @@ BlockString
             currentBlockString = "";
             pushMode (block_string);
         }else {
-            /* Otherwise, emit a string token with an empty string.
+            /* Otherwise, queue a string token with an empty string.
                This corresponds to the second alternative of String,
                which has specifically been narrowed to allow the
-               BlockString token. A NEWLINE token has to be emitted as well,
+               BlockString token. A NEWLINE token has to be queued as well,
                after one was consumed. */
-            emit (new CommonToken (String, ""));
-            emit (new CommonToken (NEWLINE, "NEWLINE"));
+            queueToken(new CommonToken (String, ""));
+            queueToken(new CommonToken (NEWLINE, "NEWLINE"));
         }
     }
     ;
@@ -240,29 +258,26 @@ NEWLINE
      String spaces = getText().replaceAll("[\r\n]+", ""); // TODO: Replace with faster algorithm!
      int next = _input.LA(1);
 
-     if (opened > 0 || next == '\r' || next == '\n' || next == ';') {
-       // If we're inside a list or on a blank line, ignore all indents,
-       // dedents and line breaks.
-       skip();
-     }
-     else {
-       emit(new CommonToken(NEWLINE, "NEWLINE"));
+     // If we're inside a list or on a blank line, ignore all indents,
+     // dedents and line breaks.
+     // _input.LA(x) always returns. When x > length-pos, it is EOF.
+     if (opened <= 0 && next != '\r' && next != '\n' && !(next == '/' && _input.LA(2) == '/')) {
+       queueToken(new CommonToken(NEWLINE, "NEWLINE"));
 
        int indent = getIndentationCount(spaces);
        int previous = indents.peek();
 
-       if (indent == previous) {
-         // skip indents of the same size as the present indent-size
-         skip();
-       }
-       else if (indent > previous) {
+       if (indent > previous) {
          indents.push(indent);
-         emit(new CommonToken(INDENT, "INDENT"));
+         queueToken(new CommonToken(INDENT, "INDENT"));
        }
        else {
          dedent (indent);
        }
      }
+
+     // Skip all since we only needed to queue some tokens.
+     skip();
    }
  ;
 
