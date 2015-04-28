@@ -1,19 +1,32 @@
 package io.collap.bryg.internal;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class Type {
 
-    // TODO: This lazy loading is ugly.
-    protected @Nullable List<Type> genericTypes; /* The list itself is lazily loaded. */
+    protected @Nullable List<Type> genericTypes;
 
+    /**
+     * @return An <b>immutable</b> list of generic types.
+     */
     public List<Type> getGenericTypes() {
         if (genericTypes == null) {
-            genericTypes = new ArrayList<>();
+            return Collections.emptyList();
+        } else {
+            return genericTypes;
         }
-        return genericTypes;
+    }
+
+    /**
+     * Makes the list immutable.
+     */
+    public void setGenericTypes(List<Type> types) {
+        if (genericTypes != null) {
+            throw new IllegalStateException("Generic types are immutable and must not be overwritten.");
+        }
+        genericTypes = Collections.unmodifiableList(types);
     }
 
     public abstract String getInternalName();

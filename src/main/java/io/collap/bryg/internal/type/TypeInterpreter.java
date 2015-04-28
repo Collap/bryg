@@ -7,6 +7,7 @@ import io.collap.bryg.BrygJitException;
 import io.collap.bryg.parser.BrygParser;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,14 +54,20 @@ public class TypeInterpreter {
 
         /* Possible class type. */
         try {
-            Type type = Types.fromClass(classResolver.getResolvedClass(typeName));
-
-            /* Resolve generics. */
             List<BrygParser.TypeContext> genericTypeContexts = ctx.type();
-            List<Type> genericTypes = type.getGenericTypes();
-            for (BrygParser.TypeContext genericTypeCtx : genericTypeContexts) {
-                Type genericType = interpretType(genericTypeCtx);
-                genericTypes.add(genericType);
+            boolean hasGenerics = !genericTypeContexts.isEmpty();
+
+            // Don't fetch a cached type if the type needs generics.
+            Type type = Types.fromClass(classResolver.getResolvedClass(typeName), hasGenerics);
+
+            if (hasGenerics) {
+                // Resolve generics.
+                List<Type> genericTypes = new ArrayList<>();
+                for (BrygParser.TypeContext genericTypeCtx : genericTypeContexts) {
+                    Type genericType = interpretType(genericTypeCtx);
+                    genericTypes.add(genericType);
+                }
+                type.setGenericTypes(genericTypes);
             }
 
             return type;

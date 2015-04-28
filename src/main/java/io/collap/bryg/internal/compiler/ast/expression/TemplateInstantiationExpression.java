@@ -6,7 +6,6 @@ import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.compiler.util.FunctionUtil;
 import io.collap.bryg.internal.compiler.util.IdUtil;
-import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
 import javax.annotation.Nullable;
@@ -60,15 +59,6 @@ public class TemplateInstantiationExpression extends Expression {
         // T -> T, T
 
         // Load arguments.
-        // Get environment as first argument.
-        compilationContext.getFunctionScope().getThisVariable().compile(compilationContext,
-                VariableUsageInfo.withGetMode());
-        // -> StandardUnit
-
-        mv.visitFieldInsn(GETFIELD, Types.fromClass(StandardUnit.class).getInternalName(),
-                StandardUnit.ENVIRONMENT_FIELD_NAME, Types.fromClass(StandardEnvironment.class).getDescriptor());
-        // StandardUnit -> StandardEnvironment
-
         for (ArgumentExpression argument : arguments) {
             argument.compile();
         }

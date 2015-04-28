@@ -45,6 +45,9 @@ public class CompiledType extends Type {
 
     @Override
     public String getInternalName() {
+        if (isPrimitive()) {
+            throw new IllegalStateException("The primitive type " + toString() + " does not have an internal name.");
+        }
         return asmType.getInternalName();
     }
 
@@ -137,7 +140,21 @@ public class CompiledType extends Type {
 
     @Override
     public String toString() {
-        return getJavaType().toString();
+        String str = getJavaType().toString();
+        for (int i = 0; i < getGenericTypes().size(); ++i) {
+            if (i == 0) {
+                str += "<";
+            }
+
+            str += getGenericTypes().get(i);
+
+            if (i < getGenericTypes().size() - 1) {
+                str += ", ";
+            } else {
+                str += ">";
+            }
+        }
+        return str;
     }
 
 }

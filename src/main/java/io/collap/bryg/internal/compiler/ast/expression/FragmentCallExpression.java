@@ -33,10 +33,10 @@ public class FragmentCallExpression extends Expression {
         this.callee = callee;
         this.fragment = fragment;
         this.arguments = arguments;
-        validateCallee();
-        reorderAndValidateArguments();
 
-        writerVariable = ((FragmentScope) compilationContext.getFunctionScope()).getWriterVariable();
+        validateCallee();
+        addWriterArgument();
+        reorderAndValidateArguments();
     }
 
     private void validateCallee() {
@@ -44,6 +44,18 @@ public class FragmentCallExpression extends Expression {
         if (!callee.getType().isUnitType()) {
             throw new BrygJitException("The callee object for a fragment call must be a template or closure.", getLine());
         }
+    }
+
+    private void addWriterArgument() {
+        arguments.add(0, new ArgumentExpression(
+                compilationContext, getLine(),
+                new VariableExpression(
+                        compilationContext, getLine(),
+                        ((FragmentScope) compilationContext.getFunctionScope()).getWriterVariable(),
+                        VariableUsageInfo.withGetMode()
+                ),
+                "writer", null
+        ));
     }
 
     private void reorderAndValidateArguments() {
@@ -77,11 +89,8 @@ public class FragmentCallExpression extends Expression {
         callee.compile();
         // -> T extends Unit
 
-        writerVariable.compile(compilationContext, VariableUsageInfo.withGetMode());
-        // -> Writer
-
         compileArguments();
-        // -> a0, a1, a2, ...
+        // -> Writer, a0, a1, a2, ...
 
         // Add template to the list of referenced templates.
         // TODO: IMPORTANT I feel like this should NOT be done here, but instead when a template type is resolved.
@@ -95,8 +104,6 @@ public class FragmentCallExpression extends Expression {
     }
 
     private void compileArguments() {
-        BrygMethodVisitor mv = compilationContext.getMethodVisitor();
-
         // TODO: Implement predicates.
         for (ArgumentExpression argument : arguments) {
             argument.compile();

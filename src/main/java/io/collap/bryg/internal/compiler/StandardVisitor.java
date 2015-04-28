@@ -327,10 +327,11 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
     @Override
     public AccessExpression visitAccessExpression(@NotNull BrygParser.AccessExpressionContext ctx) {
         try {
-            /* Note: This corresponds to the getter only, the setter scenario is handled by the assignment expression! */
+            // Note: This corresponds to the getter only, the setter scenario is handled by the assignment expression!
             return new AccessExpression(compilationContext, ctx, AccessMode.get);
         } catch (NoSuchFieldException e) {
-            throw new BrygJitException("Field not found.", ctx.getStart().getLine());
+            throw new BrygJitException("Field '" + IdUtil.idToString(ctx.id()) + "' not found.",
+                    ctx.getStart().getLine(), e);
         }
     }
 

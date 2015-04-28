@@ -40,12 +40,16 @@ public class RuntimeType extends Type {
 
     @Override
     public boolean similarTo (Type type) {
+        // Catch primitives, because they apparently don't have an internal name in ASM.
+        if (type.isPrimitive()) {
+            return false;
+        }
         return type.getInternalName().equals(internalName);
     }
 
     @Override
     public boolean similarTo (Class<?> type) {
-        return Types.fromClass(type).getInternalName().equals(internalName);
+        return similarTo(Types.fromClass(type));
     }
 
     @Override

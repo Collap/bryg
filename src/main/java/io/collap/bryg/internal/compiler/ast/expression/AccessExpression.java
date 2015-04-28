@@ -66,6 +66,7 @@ public class AccessExpression extends Expression {
         this.mode = mode;
         this.setFieldExpression = setFieldExpression;
         this.accessedObject = accessedObject;
+        this.field = field;
 
         CompiledType childType = ((CompiledType) accessedObject.getType());
 
