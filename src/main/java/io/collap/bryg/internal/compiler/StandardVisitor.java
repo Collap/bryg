@@ -81,6 +81,10 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         return new BlockNode(compilationContext, ctx);
     }
 
+    @Override
+    public BlockNode visitClosureBody(@NotNull BrygParser.ClosureBodyContext ctx) {
+        return new BlockNode(compilationContext, ctx);
+    }
 
     //
     //  General Statement

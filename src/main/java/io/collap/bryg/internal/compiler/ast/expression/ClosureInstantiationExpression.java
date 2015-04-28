@@ -28,7 +28,8 @@ public class ClosureInstantiationExpression extends Expression {
         try {
             StandardEnvironment environment = compilationContext.getEnvironment();
 
-            closureType = new ClosureType(compilationContext.getUnitType().getParentTemplateType(), className, ctx);
+            closureType = new ClosureType(compilationContext.getUnitType().getParentTemplateType(), className,
+                    ctx.closureBody());
             List<ParameterInfo> parameterList = FunctionUtil.parseParameterList(environment,
                     ctx.parameterList().parameterDeclaration());
             FragmentInfo defaultFragment = new FragmentInfo(closureType, UnitType.DEFAULT_FRAGMENT_NAME, parameterList);
@@ -39,6 +40,7 @@ public class ClosureInstantiationExpression extends Expression {
             ClosureCompiler compiler = new ClosureCompiler(environment, closureType, closureScope);
 
             StandardClassLoader classLoader = environment.getStandardClassLoader();
+            System.out.println("Load class " + className);
             classLoader.addCompiler(compiler);
             Class<? extends Closure> closureClass = (Class<? extends Closure>) classLoader.loadClass(className);
             closureType.setClosureClass(closureClass);
@@ -65,9 +67,12 @@ public class ClosureInstantiationExpression extends Expression {
                         .getThisVariable().compile(compilationContext, VariableUsageInfo.withGetMode());
                 // -> StandardUnit
 
-                mv.visitFieldInsn(GETFIELD, Types.fromClass(StandardUnit.class).getInternalName(),
-                        "environment", Types.fromClass(Environment.class).getDescriptor());
-                // StandardUnit -> Environment
+                mv.visitFieldInsn(
+                        GETFIELD, Types.fromClass(StandardUnit.class).getInternalName(),
+                        StandardUnit.ENVIRONMENT_FIELD_NAME,
+                        Types.fromClass(StandardEnvironment.class).getDescriptor()
+                );
+                // StandardUnit -> StandardEnvironment
             }
         });
 
@@ -77,9 +82,13 @@ public class ClosureInstantiationExpression extends Expression {
 
         /* "Load" captured variables. */
         for (CompiledVariable capturedVariable : closureScope.getCapturedVariables()) {
+            System.out.println("Load captured variable: " + capturedVariable.getName());
             arguments.add(new VariableExpression(compilationContext, getLine(),
                     capturedVariable, VariableUsageInfo.withGetMode()));
         }
+
+        System.out.println("Closure parameters: " + closureType.getConstructorInfo().getParameters().size() + " ["
+                + closureType.getConstructorInfo().getDesc() + "]");
 
         new ObjectCompileHelper(mv, closureType).compileNew(closureType.getConstructorInfo().getDesc(), arguments);
         // -> Closure

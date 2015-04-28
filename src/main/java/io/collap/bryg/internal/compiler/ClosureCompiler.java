@@ -21,7 +21,7 @@ public class ClosureCompiler extends UnitCompiler<ClosureType> {
     protected void compileClass(ClassVisitor classVisitor) {
         classVisitor.visit(
                 V1_7, ACC_PUBLIC, TypeHelper.toInternalName(unitType.getFullName()), null,
-                Types.fromClass(StandardUnit.class).getInternalName(),
+                Types.fromClass(StandardClosure.class).getInternalName(),
                 new String[]{Types.fromClass(Closure.class).getInternalName()});
         {
             classVisitor.visitSource(unitType.getParentTemplateType().getSimpleName() + ".bryg", null);
@@ -38,7 +38,7 @@ public class ClosureCompiler extends UnitCompiler<ClosureType> {
 
             // Also finds all variables that need to be captured!
             // Which are added as fields by the closure scope automatically.
-            Node node = compilationContext.getParseTreeVisitor().visit(unitType.getClosureContext());
+            Node node = compilationContext.getParseTreeVisitor().visit(unitType.getClosureBodyContext());
 
             // Make sure the node is created before these methods are called, so every captured variable
             // is correctly turned into a field and constructor parameter.
