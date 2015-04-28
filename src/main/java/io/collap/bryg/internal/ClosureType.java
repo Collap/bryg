@@ -1,31 +1,22 @@
 package io.collap.bryg.internal;
 
 import io.collap.bryg.*;
-import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.parser.BrygParser;
-
-import java.util.List;
 
 public class ClosureType extends UnitType {
 
     private TemplateType parentTemplateType;
-    private BrygParser.ClosureContext closureContext;
+    private BrygParser.ClosureBodyContext closureBodyContext;
 
     private Class<? extends Closure> closureClass;
 
-    public ClosureType(TemplateType parentTemplateType, String className, BrygParser.ClosureContext closureContext) {
+    public ClosureType(TemplateType parentTemplateType, String className, BrygParser.ClosureBodyContext closureBodyContext) {
         super(className);
         this.parentTemplateType = parentTemplateType;
-        this.closureContext = closureContext;
+        this.closureBodyContext = closureBodyContext;
 
-        addField(new FieldInfo(Types.fromClass(Unit.class), StandardClosure.PARENT_FIELD_NAME, Mutability.immutable,
+        addField(new FieldInfo(parentTemplateType, StandardClosure.PARENT_FIELD_NAME, Mutability.immutable,
                 Nullness.notnull));
-    }
-
-    @Override
-    protected void addConstructorParameters(List<ParameterInfo> parameters) {
-        parameters.add(new ParameterInfo(parentTemplateType, StandardClosure.PARENT_FIELD_NAME,
-                Mutability.immutable, Nullness.notnull, null));
     }
 
     @Override
@@ -33,8 +24,8 @@ public class ClosureType extends UnitType {
         return StandardClosure.class;
     }
 
-    public BrygParser.ClosureContext getClosureContext() {
-        return closureContext;
+    public BrygParser.ClosureBodyContext getClosureBodyContext() {
+        return closureBodyContext;
     }
 
     public Class<? extends Closure> getClosureClass() {

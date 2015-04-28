@@ -62,11 +62,6 @@ public class TemplateType extends UnitType {
     }
 
     @Override
-    protected void addConstructorParameters(List<ParameterInfo> parameters) {
-        // Nothing to do here.
-    }
-
-    @Override
     public Class<?> getStandardUnitClass() {
         return StandardTemplate.class;
     }

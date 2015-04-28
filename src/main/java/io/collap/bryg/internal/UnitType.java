@@ -46,18 +46,11 @@ public abstract class UnitType extends RuntimeType {
         List<ParameterInfo> parameters = new ArrayList<>();
         parameters.add(new ParameterInfo(Types.fromClass(StandardEnvironment.class), StandardUnit.ENVIRONMENT_FIELD_NAME,
                 Mutability.immutable, Nullness.notnull, null));
-        addConstructorParameters(parameters);
         for (FieldInfo field : fields) {
             parameters.add(new ParameterInfo(field, null)); // TODO: Default values?
         }
         setConstructorInfo(new ConstructorInfo(this, "<init>", parameters));
     }
-
-    /**
-     * Allows any subclass to add constructor parameters before the field parameters are set, but after the
-     * environment field.
-     */
-    protected abstract void addConstructorParameters(List<ParameterInfo> parameters);
 
     public void addField(FieldInfo field) {
         fields.add(field);
