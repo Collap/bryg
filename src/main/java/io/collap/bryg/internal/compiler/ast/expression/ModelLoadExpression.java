@@ -37,7 +37,7 @@ public class ModelLoadExpression extends Expression {
         loadVariable();
         // -> Object
 
-        if (target.getNullness() == Nullness.nullable) {
+        if (target.getNullness() == Nullness.notnull) {
             ifNullThrowException();
         }
 
