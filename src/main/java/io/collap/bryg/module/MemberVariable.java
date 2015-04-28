@@ -92,7 +92,10 @@ public class MemberVariable<T> extends CompiledVariable implements Member<Variab
                                     null,
                                     Object.class // T erases to Object
                             ), false);
-                    // MemberVariable -> T
+                    // MemberVariable -> Object
+
+                    mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+                    // Object -> T
                 }
             }
         } else {
