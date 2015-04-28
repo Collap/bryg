@@ -225,7 +225,7 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
 
         DelegatorBodyNode root = new DelegatorBodyNode(compilationContext);
 
-        /* Load and store. */
+        // Load and store.
         List<FieldInfo> fields = unitType.getFields();
         for (FieldInfo field : fields) {
             @Nullable CompiledVariable instanceVariable = unitScope.getVariable(field.getName());
@@ -234,9 +234,10 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
                         " variable in the unit scope, which should NOT happen and is definitely a compiler bug.");
             }
 
+            // Also forces the assignment, because the fields are immutable.
             root.addChild(new VariableExpression(compilationContext, Node.UNKNOWN_LINE, instanceVariable,
                     VariableUsageInfo.withSetMode(new ModelLoadExpression(compilationContext, field,
-                            constructorScope.getMandatoryVariable("model")))));
+                            constructorScope.getMandatoryVariable("model"))), true));
         }
 
         root.compile();

@@ -6,11 +6,7 @@ import io.collap.bryg.internal.VariableUsageInfo;
 import io.collap.bryg.internal.compiler.ast.AccessMode;
 import io.collap.bryg.internal.compiler.CompilationContext;
 import io.collap.bryg.internal.CompiledVariable;
-import io.collap.bryg.internal.compiler.util.IdUtil;
 import io.collap.bryg.BrygJitException;
-import io.collap.bryg.parser.BrygParser;
-
-import javax.annotation.Nullable;
 
 /**
  * This Node <b>may</b> be instantiated in other Node's compile methods, since
@@ -25,36 +21,26 @@ public class VariableExpression extends Expression {
     private CompiledVariable variable;
     private VariableUsageInfo usage;
 
-    public VariableExpression(CompilationContext compilationContext, BrygParser.VariableExpressionContext ctx,
+    public VariableExpression(CompilationContext compilationContext, int line, CompiledVariable variable,
                               VariableUsageInfo usage) {
-        super(compilationContext, ctx.getStart().getLine());
-        this.usage = usage;
-
-        String variableName = IdUtil.idToString(ctx.variable().id());
-        @Nullable CompiledVariable variable = compilationContext.getCurrentScope().getVariable(variableName);
-        if (variable == null) {
-            throw new BrygJitException("Variable " + variableName + " not found!", getLine());
-        }else {
-            this.variable = variable;
-        }
-
-        setType(variable.getType());
-        checkAccessAndMutability();
+        this(compilationContext, line, variable, usage, false);
     }
 
     public VariableExpression(CompilationContext compilationContext, int line, CompiledVariable variable,
-                              VariableUsageInfo usage) {
+                              VariableUsageInfo usage, boolean forceAssignment) {
         super(compilationContext, line);
         this.usage = usage;
         this.variable = variable;
 
         setType(variable.getType());
-        checkAccessAndMutability();
+        if (!forceAssignment) {
+            checkAccessAndMutability();
+        }
     }
 
     private void checkAccessAndMutability() {
         if (usage.getAccessMode() == AccessMode.set && variable.getMutability() == Mutability.immutable) {
-            throw new BrygJitException("The variable " + variable.getName() + " is one the left side of an assignment, " +
+            throw new BrygJitException("The variable '" + variable.getName() + "' is one the left side of an assignment, " +
                     "but it is immutable.", getLine());
         }
     }
