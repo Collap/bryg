@@ -1,2 +1,3 @@
+
 default frag render(int id)
     a(rel 'nofollow', href 'http://wowhead.com/item=\{id}'): Item \{id}

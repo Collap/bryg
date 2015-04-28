@@ -1,4 +1,4 @@
-; This test uses global variables.
 
-globalString
-testObject.testString(5)
+default frag render()
+  p globalString
+  p testObject.testString(5)

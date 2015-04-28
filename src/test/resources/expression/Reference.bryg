@@ -1,27 +1,27 @@
-opt Object a
-opt Object b
 
-if a === b
-  p: 'a' and 'b' are equal by reference
 
-if a !== b
-  p: 'a' and 'b' are not equal by reference
+default frag render(nullable Object a, nullable Object b)
+  if a === b
+    p: 'a' and 'b' are equal by reference
 
-if a === null
-  p: 'a' is null
+  if a !== b
+    p: 'a' and 'b' are not equal by reference
 
-if a !== null
-  p: 'a' is not null
+  if a === null
+    p: 'a' is null
 
-if b === null
-  p: 'b' is null
+  if a !== null
+    p: 'a' is not null
 
-if b !== null
-  p: 'b' is not null
+  if b === null
+    p: 'b' is null
 
-val flag = a === a
-if flag == true
-  p: Flag is true, like it should be.
+  if b !== null
+    p: 'b' is not null
 
-if flag == false
-  p: Flag is false, but this should not be.
+  val flag = a === a
+  if flag == true
+    p: a === a is true, like it should be.
+
+  if flag == false
+    p: a === a is false, but this should not be.

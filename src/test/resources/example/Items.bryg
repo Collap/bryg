@@ -1,4 +1,5 @@
-; This example tests the template call subpackage functionality.
 
-@.Item (48037)
-@.Item (64398)
+default frag render()
+  val item = @.Item()
+  item.render(48037)
+  item.render(64398)

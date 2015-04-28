@@ -1,23 +1,18 @@
-; This does of course not replace proper tests,
-; but it is a start for now!
+// This does of course not replace proper tests,
+// but it is a start for now!
 
-in Format format
-in int a
-in int b
+Format format
+int a
+int b
 
 html
   head @Table style ()
-  @body
+  body()
 
-frag section
-  in String heading
-  in Closure content
+frag section(String heading, Closure content)
   @Table section (heading, content, 'term', 'result')
 
-frag row
-  in boolean odd
-  in String term
-  in Object result
+frag row(boolean odd, String term, Object result)
   @Table row (odd, term, result)
 
 ; The duplicate terms are inefficient and hard to maintain,

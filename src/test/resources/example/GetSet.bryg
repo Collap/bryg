@@ -1,6 +1,5 @@
-in Stock stock
 
-stock.name = 'Imaginary Corp.'
-stock.symbol = 'IMGN'
-
-section: \{stock.name} (\{stock.symbol})
+default frag render(Stock stock)
+  stock.name = 'Imaginary Corp.'
+  stock.symbol = 'IMGN'
+  section: \{stock.name} (\{stock.symbol})
