@@ -41,8 +41,6 @@ public final class StandardClassLoader extends ClassLoader {
             return super.findClass(name);
         }
 
-        System.out.println("Class name: " + name);
-
         byte[] bytecode = compiler.compile();
         return defineClass(name, bytecode, 0, bytecode.length);
     }

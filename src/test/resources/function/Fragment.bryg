@@ -1,11 +1,12 @@
-in String name
+String name
 
-@head ()
-: Welcome, \{name}!
-@name ()
+default frag render()
+  head()
+  p: Welcome, \{name}!
+  name()
 
-frag head
+frag head()
   h2 name
 
-frag name
-  : Beep
+frag name()
+  p: Beep

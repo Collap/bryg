@@ -30,7 +30,7 @@ public class Domain {
 
         EnvironmentBuilder builder = new StandardEnvironmentBuilder();
         builder.setDebugConfiguration(new DebugConfiguration(
-                true,  // print tokens
+                true,   // print tokens
                 true,   // print parse tree
                 true,   // print bytecode
                 true    // print AST

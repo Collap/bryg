@@ -6,5 +6,5 @@ default frag render(int iterations, nullable Closure closure)
       li
         p: Iteration number \{i}!
         if closure !== null
-          p closure(name 'While')
+          closure(name 'While')
       i += 1

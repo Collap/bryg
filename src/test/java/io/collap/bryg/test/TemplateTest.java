@@ -15,6 +15,8 @@ import java.io.StringWriter;
 
 public abstract class TemplateTest {
 
+    // TODO: Separate the model into field and argument model.
+
     protected TemplateFactory templateFactory;
 
     @Before

@@ -15,7 +15,6 @@ public abstract class Scope {
 
     public @Nullable CompiledVariable getVariable(String name) {
         @Nullable CompiledVariable variable = variables.get(name);
-        System.out.println("Scope[" + getClass() + "]: " + name + "    " + variable);
         if (variable == null && parent != null) {
             variable = parent.getVariable(name);
         }

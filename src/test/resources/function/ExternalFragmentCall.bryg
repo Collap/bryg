@@ -1,2 +1,4 @@
 
-@.Fragment head ('Marco')
+default frag render()
+  val template = @.Fragment('Marco')
+  template.head()

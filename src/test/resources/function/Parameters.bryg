@@ -1,17 +1,10 @@
-in boolean z
-in char c
-in byte b
-in short s
-in int i
-in long l
-in float f
-in double d
 
-p: Boolean value: \{z}
-p: Char value: \{c}
-p: Byte value: \{b}
-p: Short value: \{s}
-p: Int value: \{i}
-p: Long value: \{l}
-p: Float value: \{f}
-p: Double value: \{d}
+default frag render(boolean z, char c, byte b, short s, int i, long l, float f, double d)
+  p: Boolean value: \{z}
+  p: Char value: \{c}
+  p: Byte value: \{b}
+  p: Short value: \{s}
+  p: Int value: \{i}
+  p: Long value: \{l}
+  p: Float value: \{f}
+  p: Double value: \{d}

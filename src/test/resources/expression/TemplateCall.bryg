@@ -1,9 +1,10 @@
-in int n
 
-mut i = 0
-while i < n
-  @control.While (n)
-    in String name
-    p: Hello, \{name}! - Closure
-    p: Captured variable: \{i}
-  discard ++i
+default frag render(int n)
+  val template = @control.While()
+  mut i = 0
+  while i < n
+    val closure = \(String name)
+      p: Hello, \{name}! - Closure
+      p: Captured variable: \{i}
+    i += 1
+    template.render(n, (Closure) closure)

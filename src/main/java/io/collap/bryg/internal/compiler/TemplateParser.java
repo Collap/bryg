@@ -67,9 +67,9 @@ public class TemplateParser implements Parser<TemplateType> {
             if (environment.getDebugConfiguration().shouldPrintTokens()) {
                 while (true) {
                     Token token = tokenStream.LT(1);
-                    if (token.getType() == -1 /* EOF */) break;
-                    else {
-                        System.out.println(token);
+                    System.out.println(token);
+                    if (token.getType() == -1 /* EOF */) {
+                        break;
                     }
                     tokenStream.consume();
                 }
