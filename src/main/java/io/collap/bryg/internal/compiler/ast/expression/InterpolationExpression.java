@@ -6,6 +6,9 @@ import io.collap.bryg.internal.type.Types;
 
 import java.util.List;
 
+// TODO: If the interpolation is directly written to the Writer, we can add the possible constant beginning and end of
+//       the interpolation to the constant string writer.
+
 public class InterpolationExpression extends Expression {
 
     List<Expression> expressions;
@@ -24,6 +27,11 @@ public class InterpolationExpression extends Expression {
         // -> StringBuilder
 
         for (Expression expression : expressions) {
+            // Don't write constant expressions that are empty.
+            if (expression.isConstant() && ((String) expression.getConstantValue()).isEmpty()) {
+                continue;
+            }
+
             builder.compileAppend(expression);
             // StringBuilder -> StringBuilder
         }
