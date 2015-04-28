@@ -354,7 +354,7 @@ fragment SPACES
  ;
 
 fragment COMMENT
- : ';' ~[\r\n]*
+ : '//' ~[\r\n]*
  ;
 
 
