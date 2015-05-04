@@ -11,7 +11,7 @@ public final class Models {
 
         /**
          * This particular implementation does <b>not</b> throw an exception,
-         * because the fragment that is called may only consist of
+         * because the fragment that is called may only have nullable parameters.
          * @return Always null.
          */
         @Override

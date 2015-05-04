@@ -37,8 +37,8 @@ public class Domain {
         ));
         builder.registerSourceLoader(new FileSourceLoader(new File("src/test/resources")));
         ClassResolver classResolver = new ClassResolver();
-        classResolver.addFilter(new PrefixFilter("io.collap.bryg.test.object"));
-        classResolver.resolveClassNames();
+        classResolver.getRootPackageTree().addPackage("io.collap.bryg.test.object");
+        classResolver.resolve();
         builder.setClassResolver(classResolver);
 
         // Register HTML module.
