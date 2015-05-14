@@ -1,5 +1,7 @@
 package io.collap.bryg;
 
+import io.collap.bryg.internal.PackageUtil;
+
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -18,7 +20,7 @@ public class PackageTree {
     }
 
     public void addPackage(String relativePackage) {
-        String[] nameAndRest = splitNameFromRest(relativePackage);
+        String[] nameAndRest = PackageUtil.extractFirstName(relativePackage, '.');
         String childName = nameAndRest[0];
 
         @Nullable PackageTree child = getChildren().get(childName);
@@ -36,7 +38,7 @@ public class PackageTree {
     }
 
     public @Nullable PackageTree findChild(String relativePackage) {
-        String[] nameAndRest = splitNameFromRest(relativePackage);
+        String[] nameAndRest = PackageUtil.extractFirstName(relativePackage, '.');
         @Nullable PackageTree child = getChildren().get(nameAndRest[0]);
         if (child != null) {
             if (nameAndRest.length >= 2) {
@@ -46,18 +48,6 @@ public class PackageTree {
             }
         } else {
             return null;
-        }
-    }
-
-    private String[] splitNameFromRest(String relativePackage) {
-        int firstDot = relativePackage.indexOf('.');
-        if (firstDot < 0) {
-            return new String[] { relativePackage };
-        }else {
-            return new String[] {
-                    relativePackage.substring (0, firstDot),
-                    relativePackage.substring (firstDot + 1)
-            };
         }
     }
 

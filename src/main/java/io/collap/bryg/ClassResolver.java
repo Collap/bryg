@@ -1,10 +1,14 @@
 package io.collap.bryg;
 
+import io.collap.bryg.internal.NameIndexManager;
+import io.collap.bryg.internal.NameIndexTree;
+
 import javax.annotation.Nullable;
 import java.io.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 public class ClassResolver {
 
@@ -170,20 +174,33 @@ public class ClassResolver {
 
     private void crawlJarFile(File jarFile) {
         if (!includedJarFiles.contains(jarFile.getName())) {
-            System.out.println("The JAR " + jarFile.getName() + " is not included in the class name search.");
+            // System.out.println("The JAR " + jarFile.getName() + " is not included in the class name search.");
             return;
         }
 
-        JarFile jar;
-        try {
-            jar = new JarFile(jarFile);
-        } catch (Exception ex) {
-            throw new RuntimeException("Jar file " + jarFile.getAbsolutePath() + " not found!", ex);
+
+        NameIndexManager indexManager = NameIndexManager.getInstance();
+        @Nullable NameIndexTree index = indexManager.getIndex(jarFile.getPath());
+        if (index == null) {
+            JarFile jar;
+            try {
+                jar = new JarFile(jarFile);
+            } catch (Exception ex) {
+                throw new RuntimeException("Jar file " + jarFile.getAbsolutePath() + " not found!", ex);
+            }
+
+            index = indexManager.createIndex(
+                    jarFile.getPath(),
+                    jar.stream()
+                            .map(ZipEntry::getName) // Get all names.
+                            .filter(name -> name.indexOf('$') <= -1) // Exclude inner classes and anonymous classes.
+            );
         }
 
-        System.out.println("Crawl JAR: " + jarFile.getName());
+        crawlIndexTree(index, rootPackageTree, "");
 
-        // crawlJar(jar, "", rootPackageTree);
+
+        // crawlIndexTree(jar, "", rootPackageTree);
 
 
         // TODO: Since we can't extract the directory information from a jar, we can index the jar file and
@@ -208,7 +225,7 @@ public class ClassResolver {
                 that filters potentially provide.
          */
 
-        Enumeration<JarEntry> entries = jar.entries();
+        /* Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
             String entryPath = entry.getName();
@@ -235,25 +252,25 @@ public class ClassResolver {
                     setResolvedClass(simpleName, fullName);
                 }
             }
-        }
+        } */
     }
 
-    private void crawlJar(JarFile jar, String parentPath, PackageTree packageTree) {
+    private void crawlIndexTree(NameIndexTree index, PackageTree packageTree, String parentPackage) {
+        Map<String, NameIndexTree> indexChildren = index.getChildren();
+
+        // Include all classes on the current package level if they should be included.
+        if (packageTree.shouldInclude()) {
+            indexChildren.values().stream().filter(NameIndexTree::isClass).forEach(
+                    c -> setResolvedClass(c.getName(), parentPackage + c.getName())
+            );
+        }
+
+        // Crawl all applicable subpackages.
         Collection<PackageTree> children = packageTree.getChildren().values();
         for (PackageTree child : children) {
-            String path = parentPath + child.getName() + "/";
-            @Nullable JarEntry entry = jar.getJarEntry(path);
-            if (entry != null && entry.isDirectory()) {
-                System.out.println("'" + path + "' found!");
-                try {
-                    InputStream inputStream = jar.getInputStream(entry);
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    reader.lines().forEach(System.out::println);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("'" + path + "' not found!");
+            @Nullable NameIndexTree childIndex = indexChildren.get(child.getName());
+            if (childIndex != null) {
+                crawlIndexTree(childIndex, child, parentPackage + child.getName() + ".");
             }
         }
     }
