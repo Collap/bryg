@@ -3,6 +3,9 @@ Directives
 
 Directives configure different aspects that concern the whole template.
 
+.. todo::
+  What about typedefs? The feature would be helpful to reduce verbosity with Closures.
+
 
 use
 ---
