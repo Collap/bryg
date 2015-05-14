@@ -5,131 +5,122 @@ Format format
 int a
 int b
 
-html
-  head @Table style ()
-  body()
+default frag render()
+  html
+    head @Table().style()
+    content()
 
-frag section(String heading, Closure content)
-  @Table section (heading, content, 'term', 'result')
+frag section(String heading, implicit Closure content)
+  @Table().section(heading, content, 'term', 'result', null, null)
 
 frag row(boolean odd, String term, Object result)
-  @Table row (odd, term, result)
+  @Table().row(odd, term, result, null, null)
 
-; The duplicate terms are inefficient and hard to maintain,
-; but I doubt that a template language should fix the problem
-; of printing the source code.
-frag body
+// The duplicate terms are inefficient and hard to maintain,
+// but I doubt that a template language should fix the problem
+// of printing the source code.
+frag content
   body
     div
-      @section ('Variables')
-        @row (false, 'a', a)
-        @row (true, 'b', b)
+      section('Variables') \
+        row(false, 'a', a)
+        row(true, 'b', b)
 
-      @section ('Addition')
-        @row (false, '5 + a', 5 + a)
-        @row (true, 'b + 7', b + 7)
-        @row (false, 'a + b', a + b)
-        @row (true, 'a + a + b', a + a + b)
-        @row (false, 'a + 1.0f', a + 1.0f)
-        @row (true, '1.0 + b', 1.0 + b)
-        @row (false, 'a + 0.0 + b', a + 0.0 + b)
+      section('Addition') \
+        row(false, '5 + a', 5 + a)
+        row(true, 'b + 7', b + 7)
+        row(false, 'a + b', a + b)
+        row(true, 'a + a + b', a + a + b)
+        row(false, 'a + 1.0f', a + 1.0f)
+        row(true, '1.0 + b', 1.0 + b)
+        row(false, 'a + 0.0 + b', a + 0.0 + b)
 
-      @section ('Subtraction')
-        @row (false, '5 - a', 5 - a)
-        @row (true, 'b - 7', b - 7)
-        @row (false, 'a - b', a - b)
-        @row (true, 'a - a - b', a - a - b)
-        @row (false, 'a - 1.0f', a - 1.0f)
-        @row (true, '1.0 - b', 1.0 - b)
-        @row (false, 'a - 0.0 - b', a - 0.0 - b)
+      section('Subtraction') \
+        row(false, '5 - a', 5 - a)
+        row(true, 'b - 7', b - 7)
+        row(false, 'a - b', a - b)
+        row(true, 'a - a - b', a - a - b)
+        row(false, 'a - 1.0f', a - 1.0f)
+        row(true, '1.0 - b', 1.0 - b)
+        row(false, 'a - 0.0 - b', a - 0.0 - b)
 
-      @section ('Multiplication')
-        @row (false, '5 * a', 5 * a)
-        @row (true, 'b * 7', b * 7)
-        @row (false, 'a * b', a * b)
-        @row (true, 'a * a * b', a * a * b)
-        @row (false, 'a * 1.0f', a * 1.0f)
-        @row (true, '1.0 * b', 1.0 * b)
-        @row (false, 'a * 0.0 * b', a * 0.0 * b)
+      section('Multiplication') \
+        row(false, '5 * a', 5 * a)
+        row(true, 'b * 7', b * 7)
+        row(false, 'a * b', a * b)
+        row(true, 'a * a * b', a * a * b)
+        row(false, 'a * 1.0f', a * 1.0f)
+        row(true, '1.0 * b', 1.0 * b)
+        row(false, 'a * 0.0 * b', a * 0.0 * b)
 
-      @section ('Division')
-        @row (false, '5 / a', 5 / a)
-        @row (true, 'b / 7', b / 7)
-        @row (false, 'a / b', a / b)
-        @row (true, 'a / a / b', a / a / b)
-        @row (false, 'a / 1.0f', a / 1.0f)
-        @row (true, '1.0 / b', 1.0 / b)
-        @row (false, 'a / 0.0 / b', a / 0.0 / b)
+      section('Division') \
+        row(false, '5 / a', 5 / a)
+        row(true, 'b / 7', b / 7)
+        row(false, 'a / b', a / b)
+        row(true, 'a / a / b', a / a / b)
+        row(false, 'a / 1.0f', a / 1.0f)
+        row(true, '1.0 / b', 1.0 / b)
+        row(false, 'a / 0.0 / b', a / 0.0 / b)
 
-      @section ('Remainder')
-        @row (false, '5 % a', 5 % a)
-        @row (true, 'b % 7', b % 7)
-        @row (false, 'a % b', a % b)
-        @row (true, 'a % a % b', a % a % b)
-        @row (false, 'a % 1.0f', a % 1.0f)
-        @row (true, '1.0 % b', 1.0 % b)
-        @row (false, 'a % 0.0 % b', a % 0.0 % b)
+      section('Remainder') \
+        row(false, '5 % a', 5 % a)
+        row(true, 'b % 7', b % 7)
+        row(false, 'a % b', a % b)
+        row(true, 'a % a % b', a % a % b)
+        row(false, 'a % 1.0f', a % 1.0f)
+        row(true, '1.0 % b', 1.0 % b)
+        row(false, 'a % 0.0 % b', a % 0.0 % b)
 
-      @section ('Increment and<br>Decrement')
-        mut int value = 0
-        @row (false, 'value', value)
-        @row (true, '++value', ++value)
-        @row (false, 'value++', value++)
-        @row (true, 'value', value)
-        @row (false, '--value', --value)
-        @row (true, 'value--', value--)
-        @row (false, 'value', value)
-
-      @section ('Bitwise')
+      section('Bitwise') \
         val byte x = (byte) a
         val byte y = (byte) b
-        @row (false, 'x', format.i2b((byte) x))
-        @row (true, 'y', format.i2b((byte) y))
-        @row (false, '~x', format.i2b((byte) ~x))
-        @row (true, 'x & y', format.i2b((byte) (x & y)))
-        @row (false, 'x ^ y', format.i2b((byte) (x ^ y)))
-        @row (true, 'x | y', format.i2b((byte) (x | y)))
+        row(false, 'x', format.i2b((byte) x))
+        row(true, 'y', format.i2b((byte) y))
+        row(false, '~x', format.i2b((byte) ~x))
+        row(true, 'x & y', format.i2b((byte) (x & y)))
+        row(false, 'x ^ y', format.i2b((byte) (x ^ y)))
+        row(true, 'x | y', format.i2b((byte) (x | y)))
 
-      @section ('Shift')
-        @row (false, '1 << 3', 1 << 3)
-        @row (true, '16 >> 2', 16 >> 2)
-        @row (false, '-16 >> 2', (-16) >> 2)
-        @row (true, '16 >>> 2', 16 >>> 2)
-        @row (false, '-16 >>> 2', (-16) >>> 2)
+      section('Shift') \
+        row(false, '1 << 3', 1 << 3)
+        row(true, '16 >> 2', 16 >> 2)
+        row(false, '-16 >> 2', (-16) >> 2)
+        row(true, '16 >>> 2', 16 >>> 2)
+        row(false, '-16 >>> 2', (-16) >>> 2)
 
-      @section ('Assignment')
+      section('Assignment') \
         mut int value = 0
-        @row (false, 'value', value)
+        row(false, 'value', value)
 
         value += 5
-        @row (true, 'value += 5', value)
+        row(true, 'value += 5', value)
 
         value -= 8
-        @row (false, 'value -= 8', value)
+        row(false, 'value -= 8', value)
 
         value *= 16
-        @row (true, 'value *= 16', value)
+        row(true, 'value *= 16', value)
 
         value /= 2
-        @row (false, 'value /= 2', value)
+        row(false, 'value /= 2', value)
 
         value %= 4
-        @row (true, 'value %= 4', value)
+        row(true, 'value %= 4', value)
 
         value &= 15
-        @row (false, 'value &= 15', value)
+        row(false, 'value &= 15', value)
 
         value ^= 16
-        @row (true, 'value ^= 16', value)
+        row(true, 'value ^= 16', value)
 
         value |= 15
-        @row (false, 'value |= 15', value)
+        row(false, 'value |= 15', value)
 
         value >>= 4
-        @row (true, 'value >>= 4', value)
+        row(true, 'value >>= 4', value)
 
         value <<= 3
-        @row (false, 'value <<= 3', value)
+        row(false, 'value <<= 3', value)
 
         value >>>= 1
-        @row (true, 'value >>>= 1', value)
+        row(true, 'value >>>= 1', value)

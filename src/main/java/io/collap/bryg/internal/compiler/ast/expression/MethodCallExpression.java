@@ -89,7 +89,6 @@ public class MethodCallExpression extends Expression {
 
         // If method was not found, try with coercion.
         if (results.size() == 0) {
-            System.out.println("Try with coercion!");
             results = findMethods(methodName, methods, true);
         }
 

@@ -1,10 +1,10 @@
 
-default frag render(int iterations, nullable Closure closure)
+default frag render(int iterations, nullable Closure<String> closure)
   ul
     mut i = 0
     while i < iterations
       li
         p: Iteration number \{i}!
         if closure !== null
-          closure(name 'While')
+          closure('While')
       i += 1

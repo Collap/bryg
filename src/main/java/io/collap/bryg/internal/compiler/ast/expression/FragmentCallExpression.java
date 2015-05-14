@@ -1,8 +1,11 @@
 package io.collap.bryg.internal.compiler.ast.expression;
 
+import io.collap.bryg.Closure;
 import io.collap.bryg.internal.*;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 import io.collap.bryg.internal.compiler.CompilationContext;
+import io.collap.bryg.internal.compiler.ast.expression.unary.CastExpression;
+import io.collap.bryg.internal.compiler.util.CoercionUtil;
 import io.collap.bryg.internal.compiler.util.FunctionUtil;
 import io.collap.bryg.BrygJitException;
 import io.collap.bryg.internal.FragmentInfo;
@@ -73,11 +76,11 @@ public class FragmentCallExpression extends Expression {
         while (argumentIterator.hasNext() && parameterIterator.hasNext()) {
             ArgumentExpression argument = argumentIterator.next();
             ParameterInfo parameter = parameterIterator.next();
-            // TODO: Perform coercion.
             if (!argument.getType().similarTo(parameter.getType())) {
-                throw new BrygJitException("Argument and parameter types are not compatible," +
-                        " coercion is currently disabled. Expected: " + parameter.getType()
-                        + ", but got: " + argument.getType() + ".", getLine());
+                // Try coercion.
+                argument.setExpression(CoercionUtil.applyUnaryCoercion(
+                        compilationContext, argument.getExpression(), parameter.getType()
+                ));
             }
         }
     }
@@ -99,8 +102,10 @@ public class FragmentCallExpression extends Expression {
                     .getReferencedTemplates().add((TemplateType) callee.getType());
         }
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, callee.getType().getInternalName(), fragment.getDirectName(),
-                fragment.getDesc(), false);
+        boolean isInterface = callee.getType().isInterface();
+        mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
+                callee.getType().getInternalName(), fragment.getDirectName(),
+                fragment.getDesc(), isInterface);
     }
 
     private void compileArguments() {

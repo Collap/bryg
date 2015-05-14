@@ -53,8 +53,6 @@ tokens { INDENT, DEDENT }
     // Check if the end-of-file is ahead and there are still some DEDENTS expected.
     // There must be more than one indent. The remaining indent is always the 0 indent.
     if (!tokens.isEmpty() && tokens.element().getType() == EOF && indents.size() > 1) {
-      System.out.println("Indent remaining: " + (indents.size() - 1));
-
       // Remove EOF token from the front of the queue.
       Token eofToken = tokens.remove();
 
@@ -172,6 +170,7 @@ FALSE               : 'false';
 FRAG                : 'frag';
 NULLABLE            : 'nullable';
 DEFAULT             : 'default';
+IMPLICIT            : 'implicit';
 
 Identifier
     :   Letter

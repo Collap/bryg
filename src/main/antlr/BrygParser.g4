@@ -32,9 +32,11 @@ statement
     |   variableDeclaration
         NEWLINE
     |   blockFunctionCall
-    |   statementFunctionCall  // TODO: Is it alright that this is placed before the expression now?
     |   expression
         NEWLINE
+    |   statementFunctionCall // This MUST be placed after 'expression'. Otherwise a call like
+                              // closure('While') is parsed as a statement function call to 'closure'
+                              // with a statement body ('While').
     ;
 
 
@@ -62,7 +64,7 @@ parameterList
     ;
 
 parameterDeclaration
-    :   nullable=NULLABLE? type id
+    :   (nullable=NULLABLE | implicit=IMPLICIT)* type id
     ;
 
 expression
@@ -171,7 +173,7 @@ variableDeclaration
     ;
 
 functionCall
-    :   id argumentList
+    :   id argumentList closure?
     ;
 
 blockFunctionCall
@@ -244,4 +246,5 @@ keyword
     |   FRAG
     |   NULLABLE
     |   DEFAULT
+    |   IMPLICIT
     ;

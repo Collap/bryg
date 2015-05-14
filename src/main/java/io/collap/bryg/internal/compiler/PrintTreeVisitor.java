@@ -113,6 +113,7 @@ public class PrintTreeVisitor extends BrygParserBaseVisitor<Integer> {
 
     @Override
     public Integer visitStatementFunctionCall (@NotNull BrygParser.StatementFunctionCallContext ctx) {
+        printContext(ctx);
         super.visitStatementFunctionCall (ctx);
         return 0;
     }

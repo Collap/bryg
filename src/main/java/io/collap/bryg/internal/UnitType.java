@@ -1,5 +1,6 @@
 package io.collap.bryg.internal;
 
+import io.collap.bryg.CompilationException;
 import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
 import io.collap.bryg.internal.type.RuntimeType;
@@ -7,15 +8,11 @@ import io.collap.bryg.internal.type.TypeHelper;
 import io.collap.bryg.internal.type.Types;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class UnitType extends RuntimeType {
 
-    // TODO: Add default fragment field.
-
+    // TODO: This is actually the name of the _delegator to_ the default fragment.
     public static final String DEFAULT_FRAGMENT_NAME = "default";
 
     protected String fullName;
@@ -24,6 +21,7 @@ public abstract class UnitType extends RuntimeType {
     protected List<FieldInfo> fields = new ArrayList<>();
     protected @Nullable ConstructorInfo constructorInfo;
     protected Map<String, FragmentInfo> fragments = new HashMap<>();
+    protected @Nullable FragmentInfo defaultFragment = null;
 
     public UnitType(String fullName) {
         super(TypeHelper.toInternalName(fullName));
@@ -56,12 +54,27 @@ public abstract class UnitType extends RuntimeType {
         fields.add(field);
     }
 
+    /**
+     * Also sets the default fragment field when a default fragment is supplied.
+     * @throws CompilationException When two or more default fragments are added to this type.
+     */
     public void addFragment(FragmentInfo fragment) {
         fragments.put(fragment.getName(), fragment);
+        if (fragment.isDefault()) {
+            if (defaultFragment != null) {
+                throw new CompilationException("The unit type " + this + " has two (or even more) default fragments: " +
+                        "'" + defaultFragment.getName() + "' and '" + fragment.getName() + "'");
+            }
+            this.defaultFragment = fragment;
+        }
     }
 
     public @Nullable FragmentInfo getFragment(String name) {
         return fragments.get(name);
+    }
+
+    public @Nullable FragmentInfo getDefaultFragment() {
+        return defaultFragment;
     }
 
     /**
@@ -107,6 +120,10 @@ public abstract class UnitType extends RuntimeType {
 
     public List<FieldInfo> getFields() {
         return fields;
+    }
+
+    public Iterator<FragmentInfo> getFragmentIterator() {
+        return fragments.values().iterator();
     }
 
     @Override

@@ -1,19 +1,18 @@
-package io.collap.bryg.test.control;
+package io.collap.bryg.test.function;
 
 import io.collap.bryg.Model;
 import io.collap.bryg.test.TemplateTest;
 
-public class WhileTest extends TemplateTest {
+public class ClosureRecursion extends TemplateTest {
 
     @Override
     protected void configureModel(Model model) {
-        model.setVariable("iterations", 10);
-        model.setVariable("closure", null);
+
     }
 
     @Override
     protected String getTemplateName() {
-        return "control.While";
+        return "function.ClosureRecursion";
     }
 
 }

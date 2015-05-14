@@ -1,0 +1,17 @@
+
+default frag render
+  html body table tableBody()
+
+frag tableBody
+  mut i = 1
+  while i <= 1000
+    tr
+      td i
+      tableRow()
+    i += 1
+
+frag tableRow
+  mut i = 1
+  while i <= 10
+    td i
+    i += 1

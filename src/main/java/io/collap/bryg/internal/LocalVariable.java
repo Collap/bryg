@@ -6,6 +6,7 @@ import io.collap.bryg.BrygJitException;
 import io.collap.bryg.internal.compiler.ast.AccessMode;
 import io.collap.bryg.internal.compiler.BrygMethodVisitor;
 import io.collap.bryg.internal.compiler.CompilationContext;
+import io.collap.bryg.internal.compiler.ast.Node;
 
 import static bryg.org.objectweb.asm.Opcodes.ILOAD;
 import static bryg.org.objectweb.asm.Opcodes.ISTORE;
@@ -47,7 +48,8 @@ public class LocalVariable extends CompiledVariable {
 
     public int getId() {
         if (id == INVALID_ID) {
-            throw new BrygJitException("The ID of the variable '" + getName() + "' has not been set yet.", -1); // TODO: Line?
+            throw new BrygJitException("The ID of the variable '" + getName() + "' has not been set yet.",
+                    Node.UNKNOWN_LINE); // TODO: Line?
         }
 
         return id;

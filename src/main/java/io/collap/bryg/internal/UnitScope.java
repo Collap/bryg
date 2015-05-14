@@ -20,7 +20,6 @@ public class UnitScope extends Scope {
 
         if (fields != null) {
             for (FieldInfo field : fields) {
-                System.out.println("Register field: " + field.getName());
                 registerInstanceVariable(new InstanceVariable(field));
             }
         }

@@ -19,7 +19,7 @@ public class CastExpression extends Expression {
     public CastExpression(CompilationContext compilationContext, BrygParser.CastExpressionContext ctx) {
         this(
                 compilationContext,
-                new TypeInterpreter(compilationContext.getEnvironment().getClassResolver()).interpretType(ctx.type()),
+                new TypeInterpreter(compilationContext.getEnvironment()).interpretType(ctx.type()),
                 (Expression) compilationContext.getParseTreeVisitor().visit(ctx.expression()),
                 ctx.getStart().getLine()
         );

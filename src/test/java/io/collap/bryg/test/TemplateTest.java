@@ -48,9 +48,9 @@ public abstract class TemplateTest {
         fileWriter.close();
     }
 
-    // @Test
+    @Test
     public void benchmark() throws IOException {
-        final int iterations = 10000;
+        final int iterations = 500;
         final Model model = createModel();
 
         Template template = templateFactory.instantiate(model);

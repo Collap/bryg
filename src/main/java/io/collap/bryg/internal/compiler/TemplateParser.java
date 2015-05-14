@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ public class TemplateParser implements Parser<TemplateType> {
         List<FragmentCompileInfo> compileInfos = fragmentContexts.stream().map(this::parseFragment).collect(Collectors.toList());
 
         return new TemplateType(className, new TemplateCompilationData(compileInfos,
-                startContext.fieldDeclaration(), new HashSet<>()), environment.getClassResolver());
+                startContext.fieldDeclaration(), new HashSet<>()), environment);
     }
 
     private @Nullable BrygParser.StartContext createParseTree() {
@@ -114,7 +115,7 @@ public class TemplateParser implements Parser<TemplateType> {
     private FragmentCompileInfo parseFragment(BrygParser.FragmentFunctionContext ctx) {
         BrygParser.FragmentBlockContext fragBlockCtx = ctx.fragmentBlock();
         List<ParameterInfo> parameters = FunctionUtil.parseParameterList(environment,
-                ctx.parameterList().parameterDeclaration());
+                ctx.parameterList() != null ? ctx.parameterList().parameterDeclaration() : Collections.emptyList());
         String name;
         if (ctx.id() != null) {
             name = IdUtil.idToString(ctx.id());

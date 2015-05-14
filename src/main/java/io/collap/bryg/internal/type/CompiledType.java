@@ -157,4 +157,17 @@ public class CompiledType extends Type {
         return str;
     }
 
+    @Override
+    public int hashCode() {
+        return javaType.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CompiledType)) {
+            return false;
+        }
+        return ((CompiledType) obj).javaType.equals(javaType);
+    }
+
 }

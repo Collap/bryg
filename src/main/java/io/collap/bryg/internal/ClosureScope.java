@@ -60,4 +60,8 @@ public class ClosureScope extends UnitScope {
         return capturedVariables;
     }
 
+    public CompiledVariable getParentVariable() {
+        return getMandatoryVariable(StandardClosure.PARENT_FIELD_NAME);
+    }
+
 }

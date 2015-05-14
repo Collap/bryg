@@ -7,19 +7,23 @@ import io.collap.bryg.internal.type.Types;
 import java.io.Writer;
 import java.util.List;
 
+// TODO: Delegators should have the prefix, not the direct methods.
+
 public class FragmentInfo extends FunctionInfo {
 
     public final static String DIRECT_CALL_PREFIX = "__direct_";
 
     private String directName;
+    private boolean isDefault;
 
     public FragmentInfo(UnitType owner, FragmentCompileInfo compileInfo) {
-        this(owner, compileInfo.getName(), compileInfo.getParameters());
+        this(owner, compileInfo.getName(), compileInfo.isDefault(), compileInfo.getParameters());
     }
 
-    public FragmentInfo(UnitType owner, String name, List<ParameterInfo> parameters) {
+    public FragmentInfo(UnitType owner, String name, boolean isDefault, List<ParameterInfo> parameters) {
         super(owner, name, addWriterParameter(parameters));
         initializeDirectName(name);
+        this.isDefault = isDefault;
     }
 
     private static List<ParameterInfo> addWriterParameter(List<ParameterInfo> parameters) {
@@ -34,6 +38,10 @@ public class FragmentInfo extends FunctionInfo {
 
     public String getDirectName() {
         return directName;
+    }
+
+    public boolean isDefault() {
+        return isDefault;
     }
 
 }

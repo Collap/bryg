@@ -78,7 +78,7 @@ public class RuntimeType extends Type {
      */
     @Override
     public boolean isAssignableFrom (Type type) {
-        return false;
+        return this.similarTo(type);
     }
 
     @Override
@@ -101,13 +101,26 @@ public class RuntimeType extends Type {
         return isInterface;
     }
 
-    public void setInterface (boolean isInterface) {
+    public void setIsInterface(boolean isInterface) {
         this.isInterface = isInterface;
     }
 
     @Override
     public String toString () {
         return descriptor;
+    }
+
+    @Override
+    public int hashCode() {
+        return internalName.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof RuntimeType)) {
+            return false;
+        }
+        return ((RuntimeType) obj).getInternalName().equals(internalName);
     }
 
 }

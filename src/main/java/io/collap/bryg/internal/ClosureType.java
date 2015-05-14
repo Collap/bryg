@@ -9,10 +9,13 @@ public class ClosureType extends UnitType {
     private BrygParser.ClosureBodyContext closureBodyContext;
 
     private Class<? extends Closure> closureClass;
+    private ClosureInterfaceType interfaceType;
 
-    public ClosureType(TemplateType parentTemplateType, String className, BrygParser.ClosureBodyContext closureBodyContext) {
+    public ClosureType(TemplateType parentTemplateType, ClosureInterfaceType interfaceType,
+                       String className, BrygParser.ClosureBodyContext closureBodyContext) {
         super(className);
         this.parentTemplateType = parentTemplateType;
+        this.interfaceType = interfaceType;
         this.closureBodyContext = closureBodyContext;
 
         addField(new FieldInfo(parentTemplateType, StandardClosure.PARENT_FIELD_NAME, Mutability.immutable,
@@ -30,6 +33,10 @@ public class ClosureType extends UnitType {
 
     public Class<? extends Closure> getClosureClass() {
         return closureClass;
+    }
+
+    public ClosureInterfaceType getInterfaceType() {
+        return interfaceType;
     }
 
     public void setClosureClass(Class<? extends Closure> closureClass) {

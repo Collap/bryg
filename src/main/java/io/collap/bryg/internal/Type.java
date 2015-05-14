@@ -29,6 +29,15 @@ public abstract class Type {
         genericTypes = Collections.unmodifiableList(types);
     }
 
+    /**
+     * This function distinguishes between a type that does not have any generic
+     * types and a type that has 0 generic types.
+     * This function is important to verify the integrity of Closure types.
+     */
+    public boolean hadGenericTypesSet() {
+        return genericTypes != null;
+    }
+
     public abstract String getInternalName();
 
     public abstract String getDescriptor();
@@ -65,6 +74,9 @@ public abstract class Type {
 
     public abstract int getStackSize();
 
+    /**
+     * Whether this type is a super-type or the same type as 'type'.
+     */
     public abstract boolean isAssignableFrom(Type type);
 
     public abstract boolean isWrapperType();

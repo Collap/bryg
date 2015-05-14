@@ -27,7 +27,7 @@ public class VariableDeclarationNode extends Node {
         String name = IdUtil.idToString(ctx.id());
         @Nullable Type expectedType = null;
         if (ctx.type() != null) {
-            expectedType = new TypeInterpreter(compilationContext.getEnvironment().getClassResolver()).interpretType(ctx.type());
+            expectedType = new TypeInterpreter(compilationContext.getEnvironment()).interpretType(ctx.type());
         }
 
         @Nullable Expression expression = null;
@@ -68,7 +68,6 @@ public class VariableDeclarationNode extends Node {
                 ctx.mutability.getType() == BrygLexer.MUT ? Mutability.mutable : Mutability.immutable,
                 Nullness.notnull
         );
-        System.out.println(compilationContext.getCurrentScope().getClass());
         compilationContext.getCurrentScope().registerLocalVariable(variable);
     }
 

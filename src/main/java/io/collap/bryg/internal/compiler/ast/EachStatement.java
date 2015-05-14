@@ -52,7 +52,7 @@ public class EachStatement extends Node {
         @Nullable BrygParser.TypeContext typeContext = headCtx.type();
         @Nullable Type declaredElementType = null;
         if (typeContext != null) {
-            declaredElementType = new TypeInterpreter(compilationContext.getEnvironment().getClassResolver()).interpretType(typeContext);
+            declaredElementType = new TypeInterpreter(compilationContext.getEnvironment()).interpretType(typeContext);
         }
 
         @Nullable Type elementType = null;

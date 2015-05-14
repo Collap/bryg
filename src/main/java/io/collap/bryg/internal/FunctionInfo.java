@@ -13,8 +13,12 @@ public abstract class FunctionInfo {
     protected UnitType owner;
     protected String name;
     protected List<ParameterInfo> parameters;
+    protected @Nullable ParameterInfo implicitParameter;
     protected String desc;
 
+    /**
+     * @param parameters At most ONE parameter may be explicit.
+     */
     public FunctionInfo(UnitType owner, String name, @Nullable List<ParameterInfo> parameters) {
         this.owner = owner;
         this.name = name;
@@ -24,7 +28,21 @@ public abstract class FunctionInfo {
         } else {
             this.parameters = new ArrayList<>();
         }
+        findImplicitParameter();
         generateDesc();
+    }
+
+    private void findImplicitParameter() {
+        for (ParameterInfo parameter : parameters) {
+            if (parameter.isImplicit()) {
+                if (implicitParameter == null) {
+                    implicitParameter = parameter;
+                } else {
+                    throw new IllegalArgumentException("The parameter list had two or more implicit parameters. This " +
+                            "must not be caught this late, and is thus a compiler bug.");
+                }
+            }
+        }
     }
 
     private void generateDesc() {
@@ -47,6 +65,10 @@ public abstract class FunctionInfo {
      */
     public List<ParameterInfo> getParameters() {
         return Collections.unmodifiableList(parameters);
+    }
+
+    public @Nullable ParameterInfo getImplicitParameter() {
+        return implicitParameter;
     }
 
     public String getDesc() {

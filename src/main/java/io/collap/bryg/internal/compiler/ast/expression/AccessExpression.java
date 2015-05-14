@@ -86,7 +86,6 @@ public class AccessExpression extends Expression {
 
         /* Either get the field directly, if it's public. */
         if (Modifier.isPublic(field.getModifiers())) {
-            System.out.println("Field " + field.getName() + " is public.");
             getterOrSetter = null;
         } else {
             /* Or find a getter/setter depending on the access mode. */

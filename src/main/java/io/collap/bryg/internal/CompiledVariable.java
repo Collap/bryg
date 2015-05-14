@@ -2,11 +2,7 @@ package io.collap.bryg.internal;
 
 import io.collap.bryg.Mutability;
 import io.collap.bryg.Nullness;
-import io.collap.bryg.internal.compiler.ast.AccessMode;
 import io.collap.bryg.internal.compiler.CompilationContext;
-import io.collap.bryg.internal.compiler.ast.expression.Expression;
-
-import javax.annotation.Nullable;
 
 public abstract class CompiledVariable extends VariableInfo {
 

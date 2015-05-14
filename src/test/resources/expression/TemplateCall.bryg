@@ -7,4 +7,4 @@ default frag render(int n)
       p: Hello, \{name}! - Closure
       p: Captured variable: \{i}
     i += 1
-    template.render(n, (Closure) closure)
+    template.render(n, closure)

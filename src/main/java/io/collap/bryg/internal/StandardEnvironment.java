@@ -3,6 +3,7 @@ package io.collap.bryg.internal;
 import io.collap.bryg.*;
 import io.collap.bryg.internal.compiler.TemplateCompiler;
 import io.collap.bryg.internal.compiler.TemplateParser;
+import io.collap.bryg.internal.compiler.UnitInterfaceCompiler;
 import io.collap.bryg.module.Member;
 import io.collap.bryg.module.Module;
 
@@ -16,6 +17,7 @@ import java.util.*;
 public class StandardEnvironment implements Environment {
 
     private final Map<String, TemplateType> templateTypes = Collections.synchronizedMap(new HashMap<>());
+    private final Map<List<Type>, ClosureInterfaceType> closureInterfaces = new HashMap<>();
 
     private Map<String, Module> modules = new HashMap<>();
     private Map<String, Module> globalNameToModuleMap = new HashMap<>();
@@ -70,6 +72,49 @@ public class StandardEnvironment implements Environment {
 
     public void addSourceLoader(SourceLoader sourceLoader) {
         sourceLoaders.add(sourceLoader);
+    }
+
+    /**
+     * Ensures that exactly one interface exists per different Closure&lt;...&gt; definition to
+     * allow interoperability.
+     */
+    public synchronized ClosureInterfaceType getOrCreateClosureInterface(List<Type> parameterTypes) {
+        @Nullable ClosureInterfaceType interfaceType = closureInterfaces.get(parameterTypes);
+        if (interfaceType == null) {
+            interfaceType = new ClosureInterfaceType("io.collap.bryg.closures.ClosureInterface" + closureInterfaces.size());
+
+            // Directly set the generic types as a precaution, so that they are not accidentally specified.
+            interfaceType.setGenericTypes(Collections.emptyList());
+
+            // We need to construct parameters.
+            List<ParameterInfo> parameters = new ArrayList<>(parameterTypes.size());
+            int i = 0;
+            for (Type parameterType : parameterTypes) {
+                parameters.add(new ParameterInfo(
+                        parameterType, "p" + i, Mutability.immutable, Nullness.notnull, null
+                ));
+                i += 1;
+            }
+
+            interfaceType.addFragment(
+                    new FragmentInfo(interfaceType, UnitType.DEFAULT_FRAGMENT_NAME, true, parameters)
+            );
+
+            // And finally compile the interface so the JVM knows what's up.
+            UnitInterfaceCompiler compiler = new UnitInterfaceCompiler(interfaceType);
+            standardClassLoader.addCompiler(compiler);
+            try {
+                Class<? extends Closure> interfaceClass = (Class<? extends Closure>)
+                        standardClassLoader.loadClass(interfaceType.getFullName());
+                interfaceType.setInterfaceClass(interfaceClass);
+            } catch (ClassNotFoundException e) {
+                throw new CompilationException("Could not create closure interface with the following parameter types: " +
+                        parameterTypes);
+            }
+
+            closureInterfaces.put(parameterTypes, interfaceType);
+        }
+        return interfaceType;
     }
 
     /**

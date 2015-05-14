@@ -24,10 +24,8 @@ import static bryg.org.objectweb.asm.Opcodes.*;
 
 public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
 
-    // TODO: Implement delegators for all units, not just templates?
-
-    // TODO: Note that due to the way constructors are created, you may not have a template with just a Model as a parameter.
-    //       Additionally, restrict this circumstance by actually checking for it in the UnitCompiler.
+    // TODO: Note that due to the way constructors are created, you are not allowed to have a template with just a Model
+    //       as a parameter. Either change this or throw a compilation error!
 
     protected StandardEnvironment environment;
     protected T unitType;
@@ -154,9 +152,8 @@ public abstract class UnitCompiler<T extends UnitType> implements Compiler<T> {
 
     /**
      * The only implicit parameter is the environment.
-     * Also sets the constructorDesc field of the unitType.
      *
-     * // TODO: Set constructor info in unit type.
+     * For this method to work, the desc info of the constructor info needs to be set prior to calling this method.
      */
     protected void compileConstructor(ClassVisitor classVisitor, UnitType unitType) {
         ConstructorInfo constructorInfo = unitType.getConstructorInfo();

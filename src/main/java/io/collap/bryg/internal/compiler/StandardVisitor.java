@@ -140,21 +140,78 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
 
     @Override
     public Expression visitFunctionCall(@NotNull BrygParser.FunctionCallContext ctx) {
-        // TODO: Check for direct (default) fragment call: unit(a, b, c)
         String name = IdUtil.idToString(ctx.id());
-        @Nullable FragmentInfo fragment = compilationContext.getUnitType().getFragment(name);
         int line = ctx.getStart().getLine();
+
+        // Checks for default fragment, which also covers closures: unit(...)
+        @Nullable CompiledVariable variable = compilationContext.getCurrentScope().getVariable(name);
+        if (variable != null) { // Variables and fields shadow fragments.
+            Type type = variable.getType();
+            if (type.isUnitType()) {
+                // Implicit closures and closures do not work together, currently.
+                if (ctx.closure() != null) {
+                    throw new BrygJitException("Currently, implicit closures may not be used with default fragment calls!", line);
+                }
+
+                FragmentInfo defaultFragment = ((UnitType) type).getDefaultFragment();
+                if (defaultFragment == null) {
+                    throw new BrygJitException("The variable " + variable.getName() + " overshadows fragments and module" +
+                            " functions, but the default fragment of the type " + type + " does not exist!", line);
+                }
+
+                return new FragmentCallExpression(
+                        compilationContext, line,
+                        new VariableExpression(
+                                compilationContext, line,
+                                variable, VariableUsageInfo.withGetMode()
+                        ),
+                        defaultFragment,
+                        FunctionUtil.parseArgumentList(compilationContext, ctx.argumentList())
+                );
+            }
+        }
+
+        UnitType unitType = compilationContext.getUnitType();
+        @Nullable FragmentInfo fragment = unitType.getFragment(name);
+        @Nullable VariableExpression callee = null;
+
+        // In closures, while the this(...) can be used to call the closure itself,
+        // fragments are searched for in both closure and parent template.
+        // TODO: This NEEDS to be added to the spec.
+        if (fragment == null && unitType instanceof ClosureType) {
+            fragment = unitType.getParentTemplateType().getFragment(name);
+            if (fragment != null) {
+                callee = new VariableExpression(
+                        compilationContext, line,
+                        ((ClosureScope) compilationContext.getUnitScope()).getParentVariable(),
+                        VariableUsageInfo.withGetMode()
+                );
+            }
+        }
+
         if (fragment != null) { // Fragments shadow member functions.
-            return new FragmentCallExpression(compilationContext, line,
-                    // The fragment is called on 'this' template.
-                    new VariableExpression(
-                            compilationContext, line,
-                            compilationContext.getFunctionScope().getThisVariable(),
-                            VariableUsageInfo.withGetMode()
-                    ),
-                    fragment,
-                    FunctionUtil.parseArgumentList(compilationContext, ctx.argumentList()));
+            // Load the 'this' of the current unit if it has not been set by the
+            // part that handles the specific closure scoping logic.
+            if (callee == null) {
+                callee = new VariableExpression(
+                        compilationContext, line,
+                        compilationContext.getFunctionScope().getThisVariable(),
+                        VariableUsageInfo.withGetMode()
+                );
+            }
+            return new FragmentCallExpression(
+                    compilationContext, line, callee,
+                    fragment, FunctionUtil.parseArgumentList(
+                            compilationContext, ctx.argumentList(),
+                            ctx.closure(), fragment
+                    )
+            );
         } else {
+            // Implicit closures only work with fragment functions!
+            if (ctx.closure() != null) {
+                throw new BrygJitException("An implicit closure may not be used with a module member function!", line);
+            }
+
             return createMemberFunctionCallNode(ctx.id(), line,
                     ctx.argumentList(), null);
         }
@@ -182,6 +239,7 @@ public class StandardVisitor extends BrygParserBaseVisitor<Node> {
         Expression expression = (Expression) visit(ctx.expression());
 
         if (expression.getType().isUnitType()) {
+            // TODO: Add support for implicit closures.
             @Nullable FragmentInfo fragment = ((UnitType) expression.getType()).getFragment(functionName);
             if (fragment == null) {
                 throw new BrygJitException("Fragment " + functionName + " for type "

@@ -7,7 +7,6 @@ import io.collap.bryg.parser.BrygParser;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
-import java.util.List;
 
 public class TemplateType extends UnitType {
 
@@ -26,11 +25,11 @@ public class TemplateType extends UnitType {
     /**
      * Also extracts fragments from the compile infos and adds them to the UnitType.
      */
-    public TemplateType(String className, TemplateCompilationData compilationData, ClassResolver classResolver) {
+    public TemplateType(String className, TemplateCompilationData compilationData, StandardEnvironment environment) {
         super(className);
         this.compilationData = compilationData;
         configureFragments();
-        configureFields(classResolver);
+        configureFields(environment);
         configureConstructorInfo();
     }
 
@@ -44,7 +43,7 @@ public class TemplateType extends UnitType {
         }
     }
 
-    private void configureFields(ClassResolver classResolver) {
+    private void configureFields(StandardEnvironment environment) {
         if (compilationData == null) {
             throw new IllegalStateException("Compilation data is null.");
         }
@@ -52,7 +51,7 @@ public class TemplateType extends UnitType {
         for (BrygParser.FieldDeclarationContext fieldContext : compilationData.getFieldContexts()) {
             addField(
                     new FieldInfo(
-                            new TypeInterpreter(classResolver).interpretType(fieldContext.type()),
+                            new TypeInterpreter(environment).interpretType(fieldContext.type()),
                             IdUtil.idToString(fieldContext.id()),
                             Mutability.immutable,
                             Nullness.notnull

@@ -111,8 +111,16 @@ public class ArgumentExpression extends Expression {
         return expression;
     }
 
+    public void setExpression(Expression expression) {
+        checkAndSetExpression(expression);
+    }
+
     public @Nullable BooleanExpression getPredicate() {
         return predicate;
+    }
+
+    public void setPredicate(@Nullable BooleanExpression predicate) {
+        this.predicate = predicate;
     }
 
 }

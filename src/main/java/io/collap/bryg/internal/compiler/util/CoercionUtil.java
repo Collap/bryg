@@ -238,7 +238,6 @@ public class CoercionUtil {
         if (targetType.similarTo(expr.getType())) return expr;
 
         if (targetType.isAssignableFrom(expr.getType())) {
-            System.out.println("Widening reference cast from " + expr.getType() + " to " + targetType);
             return new CastExpression(compilationContext, targetType, expr, expr.getLine());
         } else {
             return null;

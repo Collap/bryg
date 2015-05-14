@@ -37,54 +37,31 @@ frag style
       background: #DFDFDF;
     }
 
-frag section
-  in String heading
-  in Closure content
-
-  ; TODO: Here as well: We could really need a list.
-  opt String colDesc1
-  opt String colDesc2
-  opt String colDesc3
-  opt String colDesc4
-
+// TODO: There is currently no way to create lists in bryg, so the following parameters are hard-coded.
+frag section(String heading, implicit Closure content, nullable Object colDesc1, nullable Object colDesc2,
+             nullable Object colDesc3, nullable Object colDesc4)
   div(class 'box')
     h1 heading
     table
       thead tr
-        @th (colDesc1)
-        @th (colDesc2)
-        @th (colDesc3)
-        @th (colDesc4)
-      @content
+        header(colDesc1)
+        header(colDesc2)
+        header(colDesc3)
+        header(colDesc4)
+      content()
 
-frag row
-  in boolean odd
-
-  ; TODO: There is currently no way to create lists in bryg, so the following parameters are hard-coded.
-  opt Object col1
-  opt Object col2
-  opt Object col3
-  opt Object col4
-
+// TODO: There is currently no way to create lists in bryg, so the following parameters are hard-coded.
+frag row(boolean odd, nullable Object col1, nullable Object col2, nullable Object col3, nullable Object col4)
   tr(class 'odd' if odd)
-    @td (col1)
-    @td (col2)
-    @td (col3)
-    @td (col4)
+    cell(col1)
+    cell(col2)
+    cell(col3)
+    cell(col4)
 
-frag td
-  opt Object value
-  @cell (isTh false, value)
-
-frag th
-  opt Object value
-  @cell (isTh true, value)
-
-frag cell
-  in boolean isTh
-  opt Object value
+frag header(nullable Object value)
   if value !== null
-    if isTh
-      th value
-    else
-      td value
+    th value
+
+frag cell(nullable Object value)
+  if value !== null
+    td value

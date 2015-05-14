@@ -1,11 +1,9 @@
 package io.collap.bryg.internal.type;
 
-import io.collap.bryg.internal.Type;
+import io.collap.bryg.internal.*;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Types {
 

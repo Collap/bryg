@@ -22,7 +22,10 @@ public class ClosureCompiler extends UnitCompiler<ClosureType> {
         classVisitor.visit(
                 V1_7, ACC_PUBLIC, TypeHelper.toInternalName(unitType.getFullName()), null,
                 Types.fromClass(StandardClosure.class).getInternalName(),
-                new String[]{Types.fromClass(Closure.class).getInternalName()});
+                new String[] {
+                        Types.fromClass(Closure.class).getInternalName(),
+                        unitType.getInterfaceType().getInternalName()
+                });
         {
             classVisitor.visitSource(unitType.getParentTemplateType().getSimpleName() + ".bryg", null);
 
@@ -30,7 +33,7 @@ public class ClosureCompiler extends UnitCompiler<ClosureType> {
             // the compilation context is required to parse the nodes. And only then are we
             // able to know the fields that this closure has, since fields represent the captured
             // variables.
-            FragmentInfo fragmentInfo = unitType.getFragment(UnitType.DEFAULT_FRAGMENT_NAME);
+            FragmentInfo fragmentInfo = unitType.getDefaultFragment();
             FragmentScope fragmentScope = new FragmentScope(closureScope, unitType, fragmentInfo.getParameters());
 
             CompilationContext compilationContext = new CompilationContext(environment, fragmentInfo, unitType, null,

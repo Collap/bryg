@@ -11,8 +11,10 @@ import io.collap.bryg.internal.compiler.util.ObjectCompileHelper;
 import io.collap.bryg.internal.type.Types;
 import io.collap.bryg.parser.BrygParser;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static bryg.org.objectweb.asm.Opcodes.GETFIELD;
 
@@ -28,11 +30,16 @@ public class ClosureInstantiationExpression extends Expression {
         try {
             StandardEnvironment environment = compilationContext.getEnvironment();
 
-            closureType = new ClosureType(compilationContext.getUnitType().getParentTemplateType(), className,
-                    ctx.closureBody());
+            @Nullable BrygParser.ParameterListContext parameterListContext = ctx.parameterList();
             List<ParameterInfo> parameterList = FunctionUtil.parseParameterList(environment,
-                    ctx.parameterList().parameterDeclaration());
-            FragmentInfo defaultFragment = new FragmentInfo(closureType, UnitType.DEFAULT_FRAGMENT_NAME, parameterList);
+                    parameterListContext != null ? parameterListContext.parameterDeclaration() : null);
+            ClosureInterfaceType closureInterface = environment.getOrCreateClosureInterface(
+                    parameterList.stream().map(VariableInfo::getType).collect(Collectors.toList())
+            );
+
+            closureType = new ClosureType(compilationContext.getUnitType().getParentTemplateType(),
+                    closureInterface, className, ctx.closureBody());
+            FragmentInfo defaultFragment = new FragmentInfo(closureType, UnitType.DEFAULT_FRAGMENT_NAME, true, parameterList);
             closureType.addFragment(defaultFragment);
             setType(closureType);
 
@@ -40,7 +47,6 @@ public class ClosureInstantiationExpression extends Expression {
             ClosureCompiler compiler = new ClosureCompiler(environment, closureType, closureScope);
 
             StandardClassLoader classLoader = environment.getStandardClassLoader();
-            System.out.println("Load class " + className);
             classLoader.addCompiler(compiler);
             Class<? extends Closure> closureClass = (Class<? extends Closure>) classLoader.loadClass(className);
             closureType.setClosureClass(closureClass);
@@ -82,13 +88,9 @@ public class ClosureInstantiationExpression extends Expression {
 
         /* "Load" captured variables. */
         for (CompiledVariable capturedVariable : closureScope.getCapturedVariables()) {
-            System.out.println("Load captured variable: " + capturedVariable.getName());
             arguments.add(new VariableExpression(compilationContext, getLine(),
                     capturedVariable, VariableUsageInfo.withGetMode()));
         }
-
-        System.out.println("Closure parameters: " + closureType.getConstructorInfo().getParameters().size() + " ["
-                + closureType.getConstructorInfo().getDesc() + "]");
 
         new ObjectCompileHelper(mv, closureType).compileNew(closureType.getConstructorInfo().getDesc(), arguments);
         // -> Closure

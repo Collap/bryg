@@ -30,12 +30,13 @@ public class Domain {
 
         EnvironmentBuilder builder = new StandardEnvironmentBuilder();
         builder.setDebugConfiguration(new DebugConfiguration(
-                true,   // print tokens
-                true,   // print parse tree
-                true,   // print bytecode
-                true    // print AST
+                false,   // print tokens
+                false,   // print parse tree
+                true,    // print bytecode
+                false    // print AST
         ));
         builder.registerSourceLoader(new FileSourceLoader(new File("src/test/resources")));
+
         ClassResolver classResolver = new ClassResolver();
         classResolver.getRootPackageTree().addPackage("io.collap.bryg.test.object");
         classResolver.resolve();

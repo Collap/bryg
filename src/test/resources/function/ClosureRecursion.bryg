@@ -1,0 +1,7 @@
+
+default frag render()
+  val Closure<Integer> cl = \(Integer n)
+    if n > 0
+      p: "Hello \{n}!"
+      this(n - 1)
+  cl(10)
